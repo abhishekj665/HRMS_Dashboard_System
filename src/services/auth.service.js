@@ -45,6 +45,29 @@ export const logInService = async ({ email, password }) => {
     throw new ExpressError(404, "User not found");
   }
 
+  if (user.isBlocked) {
+    return { success: false, message: "User is blocked. Contact admin." };
+  }
+
+  let ipDetails = await UserIP.findOne({
+    where: { userId: user.id },
+    order: [["createdAt", "DESC"]],
+  });
+
+  if (ipDetails.isBlocked == true) {
+    throw new ExpressError(403, "Access from this IP is blocked");
+  }
+
+  if (ipDetails && ipDetails.failedLogInAttempt >= 3) {
+    user.isVerified = false;
+    await user.save();
+
+    throw new ExpressError(
+      403,
+      "Account locked due to multiple failed login attempts"
+    );
+  }
+
   if (!user.isVerified) {
     const otp = generateOtp();
 
@@ -55,46 +78,30 @@ export const logInService = async ({ email, password }) => {
     );
   }
 
-  let ipDetails = await UserIP.findOne({
-    where: { userId: user.id },
-    order: [["createdAt", "DESC"]],
-  });
-
-  if (ipDetails && ipDetails.faildeLoginAttempts >= 3) {
-    user.isVerified = false;
-    await user.save();
-
-    throw new ExpressError(
-      403,
-      "Account locked due to multiple failed login attempts"
-    );
-  }
-
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    await UserIP.increment("faildeLoginAttempts", {
+    await UserIP.increment("failedLogInAttempt", {
       where: { userId: user.id },
     });
     throw new ExpressError(401, "Invalid credentials");
   }
 
-  const token = jwtSign(user.id);
+  const token = jwtSign(user.id, user.role);
 
   user.login_At = new Date();
 
-  
   await user.save();
 
   return {
     success: true,
     id: user.id,
+    role: user.role,
     token,
     message: "Login successful",
   };
 };
 
 export const verifyOtpService = async (email, otp, purpose) => {
-  console.log(email, otp, purpose);
   const otpData = await findOtpData(email, purpose);
 
   if (!otpData) {
@@ -125,14 +132,11 @@ export const verifyOtpService = async (email, otp, purpose) => {
   let ipDetails = await UserIP.findOne({
     where: { userId: user.id },
     order: [["createdAt", "DESC"]],
-  }); 
+  });
   if (ipDetails) {
-    ipDetails.failedeLoginAttempts = 0;
+    ipDetails.failedLogInAttempt = 0;
     await ipDetails.save();
   }
-
-  ipDetails.faildeLoginAttempts = 0;
-  await ipDetails.save();
 
   if (purpose === "SIGNUP") {
     await User.update({ isVerified: true }, { where: { email } });

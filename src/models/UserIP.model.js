@@ -28,9 +28,13 @@ const UserIP = sequelize.define("UserIP", {
   isp: {
     type: DataTypes.STRING,
   },
-  faildeLoginAttempts: {
+  failedLogInAttempt: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
+  },
+  isBlocked: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
   userId: {
     type: DataTypes.UUID,

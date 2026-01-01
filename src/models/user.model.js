@@ -26,6 +26,11 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: "",
     },
+    role: {
+      type: DataTypes.ENUM("user", "admin"),
+      allowNull: false,
+      defaultValue: "user",
+    },
     contact: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -36,6 +41,10 @@ const User = sequelize.define(
       allowNull: false,
     },
     isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isBlocked : {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },

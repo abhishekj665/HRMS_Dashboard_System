@@ -29,7 +29,7 @@ export const verifyOtp = async (req, res, next) => {
     }
 
     const result = await authServices.verifyOtpService(email, otp, purpose);
-    
+
     return successResponse(res, result, result.message, STATUS.ACCEPTED);
   } catch (error) {
     next(error);
@@ -41,17 +41,26 @@ export const logIn = async (req, res, next) => {
     const result = await authServices.logInService(req.body);
 
     if (!result.success) {
-      
       return errorResponse(res, result.message, STATUS.UNAUTHORIZED);
     }
-
-    setCookie(res, "token", result.token);
 
     let ip = req.ip || req.socket?.remoteAddress || "127.0.0.1";
 
     if (ip === "::1") {
       ip = "1.1.1.1";
     }
+
+    let ipDetails = await UserIP.findOne({ where: { ipAddress: ip } });
+
+    if (ipDetails && ipDetails.isBlocked && result.role !== "admin") {
+      return errorResponse(
+        res,
+        "IP address is blocked. Contact admin.",
+        STATUS.UNAUTHORIZED
+      );
+    }
+
+    setCookie(res, "token", result.token);
 
     const userAgent = req.headers["user-agent"] || "UNKNOWN";
 
@@ -65,7 +74,7 @@ export const logIn = async (req, res, next) => {
       region: address.region_name,
       city: address.city,
       isp: address.isp,
-      failedeLoginAttempts: 0,
+      failedLogInAttempt: 0,
     });
 
     return successResponse(res, result, result.message, STATUS.OK);

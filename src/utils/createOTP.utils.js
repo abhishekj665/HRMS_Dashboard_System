@@ -11,5 +11,5 @@ export const createOTP = async (email, otp, purpose) => {
     purpose: purpose,
   });
 
-  await sendMailOtp(email, otp);
+  sendMailOtp(email, otp);
 };

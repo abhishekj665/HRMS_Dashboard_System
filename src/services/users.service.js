@@ -48,17 +48,15 @@ export const updateUser = async (userId, data) => {
       throw new ExpressError(401, err.message);
     }
 
-    const { first_name, last_name, contact, password, email } = data;
+    const updateData = {};
 
-    const updateData = {
-      first_name,
-      last_name,
-      contact,
-      email,
-    };
+    if (data.first_name !== undefined) updateData.first_name = data.first_name;
+    if (data.last_name !== undefined) updateData.last_name = data.last_name;
+    if (data.contact !== undefined) updateData.contact = data.contact;
+    if (data.email !== undefined) updateData.email = data.email;
 
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
+    if (data.password) {
+      updateData.password = await bcrypt.hash(data.password, 10);
     }
 
     const [updatedCount] = await User.update(updateData, {
@@ -81,7 +79,7 @@ export const deleteUser = async (id) => {
 
     if (!user) return { message: "User not found" };
 
-    console.log(user);
+    
 
     return { success: true, message: "User Deleted" };
   } catch (error) {
