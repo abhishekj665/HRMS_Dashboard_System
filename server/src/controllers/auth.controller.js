@@ -1,0 +1,84 @@
+import * as authServices from "../services/auth.service.js";
+import { successResponse, errorResponse } from "../utils/response.utils.js";
+import { setCookie } from "../utils/setCookie.utils.js";
+import STATUS from "../config/constants/Status.js";
+
+import { UserIP } from "../models/index.model.js";
+import { getLocationFromIp } from "../utils/geoInfo.utils.js";
+
+export const signUp = async (req, res, next) => {
+  try {
+    const result = await authServices.signUpService(req.body);
+    if (result.success) {
+      return successResponse(res, result, result.message, STATUS.ACCEPTED);
+    } else {
+      return errorResponse(res, result.message, STATUS.NOT_ACCEPTABLE);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyOtp = async (req, res, next) => {
+  try {
+    let { email, otp, purpose } = req.query;
+    if (purpose != undefined) {
+      purpose = purpose.toUpperCase();
+    } else {
+      throw new ExpressError(403, "Purpose is required");
+    }
+
+    const result = await authServices.verifyOtpService(email, otp, purpose);
+
+    return successResponse(res, result, result.message, STATUS.ACCEPTED);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logIn = async (req, res, next) => {
+  try {
+    const result = await authServices.logInService(req.body);
+
+    if (!result.success) {
+      return errorResponse(res, result.message, STATUS.UNAUTHORIZED);
+    }
+
+    let ip = req.ip || req.socket?.remoteAddress || "127.0.0.1";
+
+    if (ip === "::1") {
+      ip = "1.1.1.1";
+    }
+
+    let ipDetails = await UserIP.findOne({ where: { ipAddress: ip } });
+
+    if (ipDetails && ipDetails.isBlocked && result.role !== "admin") {
+      return errorResponse(
+        res,
+        "IP address is blocked. Contact admin.",
+        STATUS.UNAUTHORIZED
+      );
+    }
+
+    setCookie(res, "token", result.token);
+
+    const userAgent = req.headers["user-agent"] || "UNKNOWN";
+
+    // const address = await getLocationFromIp(ip);
+
+    // await UserIP.create({
+    //   userId: result.id,
+    //   ipAddress: ip,
+    //   userAgent,
+    //   country: address.country_name,
+    //   region: address.region_name,
+    //   city: address.city,
+    //   isp: address.isp,
+    //   failedLogInAttempt: 0,
+    // });
+
+    return successResponse(res, result, result.message, STATUS.OK);
+  } catch (error) {
+    next(error);
+  }
+};
