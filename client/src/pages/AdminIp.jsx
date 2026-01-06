@@ -16,8 +16,6 @@ export default function AdminIps() {
 
   const role = user.role;
 
-  let i = 0;
-
   const fetchUser = async () => {
     try {
       const response = await getUser();
@@ -112,12 +110,19 @@ export default function AdminIps() {
 
       {userIPs.length === 0 && <p className="text-gray-500">No IPs found</p>}
 
-      {userIPs.map((userip) => (
-        <div key={i++} className="p-2 border-b">
-          <p>{userip.ipAddress}</p>
-          <p className="text-sm text-gray-500">
-            Status: {userip.isBlocked ? "Blocked" : "Active"}
-          </p>
+      {userIPs.map((userip, index) => (
+        <div
+          key={userip.id || index}
+          className="p-2 border-b flex gap-4 items-center"
+        >
+          <span className="font-semibold text-gray-600 w-8">{index + 1}.</span>
+
+          <div>
+            <p>{userip.ipAddress}</p>
+            <p className="text-sm text-gray-500">
+              Status: {userip.isBlocked ? "Blocked" : "Active"}
+            </p>
+          </div>
         </div>
       ))}
     </>

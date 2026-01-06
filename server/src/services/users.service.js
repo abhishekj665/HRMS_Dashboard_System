@@ -1,10 +1,11 @@
-import { User, UserIP } from "../models/index.model.js";
+import { AssetRequest, User, UserIP } from "../models/index.model.js";
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
 import { getPagination } from "../utils/paginations.utils.js";
-import { Transaction } from "sequelize";
+import STATUS from "../config/constants/Status.js";
+import { successResponse } from "../utils/response.utils.js";
 
-export const getUsers = async (page, limits) => {
+export const getUsersService = async (page, limits) => {
   try {
     const { limit, offset } = getPagination(page, limits);
 
@@ -32,7 +33,7 @@ export const getUsers = async (page, limits) => {
   }
 };
 
-export const updateUser = async (userId, data) => {
+export const updateUserService = async (userId, data) => {
   try {
     if (!userId) {
       const err = new Error("User ID is required");
@@ -65,7 +66,7 @@ export const updateUser = async (userId, data) => {
   }
 };
 
-export const deleteUser = async (id) => {
+export const deleteUserService = async (id) => {
   try {
     let user = await User.destroy({ where: { id } });
 
@@ -88,5 +89,44 @@ export const getProfileService = async (id) => {
     return { success: true, user, message: "User Fetched" };
   } catch (err) {
     return res.status(500).json({ error: "Failed to load profile" });
+  }
+};
+
+export const createAssetRequestService = async (data, user) => {
+  try {
+    let userId = user.id;
+
+    const asset = await AssetRequest.create({
+      ...data,
+      userId: userId,
+    });
+
+    return {
+      success: true,
+      message: "Asset Request Created Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getAssetRequestService = async (id) => {
+  try {
+    const requestData = await AssetRequest.findAll({
+      where: { userId: id },
+      order: [["createdAt", "ASC"]],
+    });
+
+    if (!requestData) {
+      return { success: true, message: "No Data Found" };
+    }
+
+    return {
+      success: true,
+      requestData,
+      message: "Data Fetched",
+    };
+  } catch (error) {
+    return new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

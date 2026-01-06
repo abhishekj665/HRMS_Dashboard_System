@@ -4,6 +4,8 @@ import {
   updateUser,
   deleteUser,
   getProfile,
+  createAssetRequest,
+  getAssetRequest
 } from "../controllers/users.controller.js";
 import { auth } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -16,3 +18,5 @@ userRouter.use(auth);
 userRouter.route("/").get(getUsers).put(validate(userSchema), updateUser);
 userRouter.route("/profile").get(getProfile);
 userRouter.route("/:id").delete(deleteUser);
+userRouter.route("/asset").post(createAssetRequest);
+userRouter.route("/asset").get(getAssetRequest);
