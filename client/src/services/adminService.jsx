@@ -66,3 +66,42 @@ export const unBlockIP = async (ip) => {
     };
   }
 };
+
+export const getRequestData = async () => {
+  try {
+    let response = await API.get("/admin/request");
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const approveRequest = async (id) => {
+  try {
+    let response = await API.put(`/admin/request/approve/${id}`);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const rejectRequest = async (id) => {
+  try {
+    let response = await API.put(`/admin/request/reject/${id}`);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};

@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 
 export default function UserSidebar() {
   const linkClass = ({ isActive }) =>
@@ -12,7 +13,7 @@ export default function UserSidebar() {
 
       <nav className="flex flex-col gap-2">
         <NavLink to="/assest" className={linkClass}>
-          <Inventory2OutlinedIcon /> Assets
+          <PendingActionsRoundedIcon /> Assets
         </NavLink>
       </nav>
     </aside>

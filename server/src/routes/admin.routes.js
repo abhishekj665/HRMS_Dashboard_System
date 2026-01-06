@@ -9,16 +9,24 @@ import {
   unblockUserController,
   blockIPController,
   unblockIPController,
+  getRequestData,
+  approveRequest,
+  rejectRequest
 } from "../controllers/admin.controller.js";
 
 Router.use(auth);
 Router.use(adminAuth);
+
+Router.get("/request", getRequestData);
 
 Router.put("/block", blockIPController);
 Router.put("/unblock", unblockIPController);
 
 Router.put("/block/:id", blockUserController);
 Router.put("/unblock/:id", unblockUserController);
+
+Router.put("/request/approve/:id", approveRequest)
+Router.put("/request/reject/:id", rejectRequest)
 
 Router.get("", (req, res) => {
   res.status(404).json({ message: "Admin route not found" });

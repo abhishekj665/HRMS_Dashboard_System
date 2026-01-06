@@ -71,6 +71,7 @@ export default function AdminUserPage() {
   };
   useEffect(() => {
     fetchUser();
+    console.log(user);
   }, [getUser]);
 
   const handleLogIn = async () => {
@@ -90,20 +91,22 @@ export default function AdminUserPage() {
           </h1>
 
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-            <div className="grid grid-cols-5 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
+            <div className="grid grid-cols-6 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
+              <span>S.No</span>
               <span>Email</span>
               <span>Role</span>
               <span>Status</span>
               <span>Blocked</span>
-
               <span className="text-center">User Action</span>
             </div>
 
-            {userData.map((user) => (
+            {userData.map((user, index) => (
               <div
                 key={user.id}
-                className="grid grid-cols-5 px-4 py-3 text-sm text-gray-700 border-t hover:bg-gray-50 transition"
+                className="grid grid-cols-6 px-4 py-3 text-sm text-gray-700 border-t hover:bg-gray-50 transition"
               >
+                <span className="font-medium">{index + 1}</span>
+
                 <span className="truncate">{user.email}</span>
 
                 <span>

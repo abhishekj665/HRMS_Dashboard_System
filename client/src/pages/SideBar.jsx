@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonIcon from "@mui/icons-material/Person";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 
 export default function Sidebar() {
   const linkClass = ({ isActive }) =>
@@ -18,6 +19,10 @@ export default function Sidebar() {
 
         <NavLink to="/admin/ips" className={linkClass}>
           <PersonIcon /> IPs
+        </NavLink>
+
+        <NavLink to="/admin/requests" className={linkClass}>
+          <Inventory2OutlinedIcon /> Requests
         </NavLink>
       </nav>
     </aside>

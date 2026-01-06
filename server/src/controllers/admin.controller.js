@@ -35,7 +35,6 @@ export const unblockUserController = async (req, res, next) => {
 export const blockIPController = async (req, res, next) => {
   try {
     const { ip } = req.body;
-    
 
     const result = await adminServices.blockIPService(ip);
     if (!result.success) {
@@ -62,3 +61,51 @@ export const unblockIPController = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getRequestData = async (req, res, next) => {
+  try {
+    const response = await adminServices.getRequestDataService();
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED
+      );
+    } else {
+      return errorResponse(req, res, response.message, STATUS.BAD_REQUEST);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const approveRequest = async (req, res, next) => {
+  try{
+    let response = await adminServices.approveRequestService(req.params.id);
+    if(response.success){
+      return successResponse(res, response, response.message, STATUS.ACCEPTED);
+    }else{
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    }
+
+  }catch(error){
+    next(error)
+  }
+}
+
+export const rejectRequest = async (req, res, next) => {
+  try{
+    let response = await adminServices.rejectRequestService(req.params.id);
+    if(response.success){
+      return successResponse(res, response, response.message, STATUS.ACCEPTED);
+    }else{
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    }
+
+  }catch(error){
+    next(error)
+  }
+}
+

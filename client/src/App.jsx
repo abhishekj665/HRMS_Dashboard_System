@@ -8,12 +8,14 @@ import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLayoutPage from "./pages/AdminLayoutPage";
 import AdminIps from "./pages/AdminIp";
+import UserAssetPage from "./pages/UserAssetPage";
+import AdminRequest from "./pages/AdminRequest";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import UserAssetPage from "./pages/UserAssetPage";
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/admin" element={<AdminLayoutPage />}>
             <Route path="dashboard" element={<AdminUserPage />} />
             <Route path="ips" element={<AdminIps />} />
+            <Route path="requests" element={<AdminRequest />} />
           </Route>
 
           <Route path="/" element={<HomePage />}>
