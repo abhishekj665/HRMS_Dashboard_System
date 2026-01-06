@@ -41,61 +41,43 @@ export const signUpService = async ({ email, password }) => {
 
 export const logInService = async ({ email, password }) => {
   const user = await User.findOne({ where: { email } });
+
   if (!user) {
     throw new ExpressError(404, "User not found");
   }
 
   if (user.isBlocked) {
-    return { success: false, message: "User is blocked. Contact admin." };
-  }
-
-  let ipDetails = await UserIP.findOne({
-    where: { userId: user.id },
-    order: [["createdAt", "DESC"]],
-  });
-
-  if (ipDetails.isBlocked == true) {
-    throw new ExpressError(403, "Access from this IP is blocked");
-  }
-
-  if (ipDetails && ipDetails.failedLogInAttempt >= 3) {
-    user.isVerified = false;
-    await user.save();
-
-    throw new ExpressError(
-      403,
-      "Account locked due to multiple failed login attempts"
-    );
+    return { success: false, message: "User is blocked" };
   }
 
   if (!user.isVerified) {
     const otp = generateOtp();
-
     await createOTP(email, otp, "LOGIN");
-    throw new ExpressError(
-      STATUS.ACCEPTED,
-      "Please verify your account, opt has send to your email"
-    );
+
+    return {
+      success: false,
+      message: "Please verify your account",
+    };
   }
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    await UserIP.increment("failedLogInAttempt", {
-      where: { userId: user.id },
-    });
     throw new ExpressError(401, "Invalid credentials");
   }
 
   const token = jwtSign(user.id, user.role);
 
   user.login_At = new Date();
-
   await user.save();
 
   return {
     success: true,
-    id: user.id,
-    role: user.role,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+    },
     token,
     message: "Login successful",
   };
@@ -103,47 +85,35 @@ export const logInService = async ({ email, password }) => {
 
 export const verifyOtpService = async (email, otp, purpose) => {
   const otpData = await findOtpData(email, purpose);
-
-  if (!otpData) {
-    throw new ExpressError(400, "OTP not found");
-  }
+  if (!otpData) throw new ExpressError(400, "OTP not found");
 
   if (otpData.expiresAt < new Date()) {
     throw new ExpressError(400, "OTP expired");
   }
 
   const valid = await bcrypt.compare(otp, otpData.otp);
-  if (!valid) {
-    throw new ExpressError(400, "Invalid OTP");
-  }
+  if (!valid) throw new ExpressError(400, "Invalid OTP");
 
   otpData.isUsed = true;
   await otpData.save();
 
-  let user = await User.findOne({
-    where: {
-      email,
-    },
-  });
+  const user = await User.findOne({ where: { email } });
+  if (!user) throw new ExpressError(404, "User not found");
 
   user.isVerified = true;
+  user.login_At = new Date();
   await user.save();
 
-  let ipDetails = await UserIP.findOne({
-    where: { userId: user.id },
-    order: [["createdAt", "DESC"]],
-  });
-  if (ipDetails) {
-    ipDetails.failedLogInAttempt = 0;
-    await ipDetails.save();
-  }
+  const token = jwtSign(user.id, user.role);
 
-  if (purpose === "SIGNUP") {
-    await User.update({ isVerified: true }, { where: { email } });
-    return { success: true, message: "Account verified successfully" };
-  }
-
-  if (purpose === "LOGIN") {
-    return { success: true, message: "Login OTP verified" };
-  }
+  return {
+    success: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+    },
+    token,
+  };
 };

@@ -2,14 +2,14 @@ import { User } from "../models/index.model.js";
 import ExpressError from "../utils/Error.utils.js";
 import { UserIP } from "../models/index.model.js";
 
-export const blockUserService = async (userId) => {
+export const blockUserService = async (id) => {
   try {
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(id);
     if (!user) {
       return { success: false, message: "User not found" };
     }
 
-    if(user.role === 'admin'){
+    if (user.role === "admin") {
       return { success: false, message: "Cannot block an admin user" };
     }
     user.isBlocked = true;
@@ -36,16 +36,19 @@ export const unblockUserService = async (userId) => {
 
 export const blockIPService = async (ip) => {
   try {
-    let ipDetails = await UserIP.findOne({ where: { ipAddress: ip } });
+    const [updatedCount] = await UserIP.update(
+      { isBlocked: true },
+      { where: { ipAddress: ip } }
+    );
 
-    if (!ipDetails) {
+    if (updatedCount === 0) {
       throw new ExpressError(404, "IP address not found");
     }
 
-    ipDetails.isBlocked = true;
-    await ipDetails.save();
-
-    return { success: true, message: `IP ${ip} blocked successfully` };
+    return {
+      success: true,
+      message: `IP ${ip} blocked successfully for all users`,
+    };
   } catch (error) {
     return new ExpressError(400, error.message);
   }
@@ -53,13 +56,14 @@ export const blockIPService = async (ip) => {
 
 export const unblockIPService = async (ip) => {
   try {
-    let idpDetails = await UserIP.findOne({ where: { ipAddress: ip } });
+    const [updatedCount] = await UserIP.update(
+      { isBlocked: false },
+      { where: { ipAddress: ip } }
+    );
 
-    if (!idpDetails) {
+    if (updatedCount === 0) {
       throw new ExpressError(404, "IP address not found");
     }
-    idpDetails.isBlocked = false;
-    await idpDetails.save();
     return { success: true, message: `IP ${ip} unblocked successfully` };
   } catch (error) {
     return new ExpressError(400, error.message);

@@ -39,12 +39,20 @@ const LogInPage = () => {
     try {
       const response = await dispatch(loginUser(formData)).unwrap();
 
-      if (response.role === "admin") {
-        navigate("/dashboard");
-        toast.success(response.message);
-        resetData();
+      
+
+      if (response.success) {
+        if (response?.user?.role === "admin") {
+          navigate("/admin/dashboard");
+          toast.success(response.message);
+          resetData();
+        } else {
+          navigate("/home");
+          toast.success(response.message);
+          resetData();
+        }
       } else {
-        toast.error("Login failed");
+        toast.error(response.message);
         resetData();
       }
     } catch (error) {
@@ -55,15 +63,17 @@ const LogInPage = () => {
   };
   return (
     <div>
-      <div className="signup-container justify-center items-center flex flex-col gap-5">
-        <h1 className="text-3xl font-medium mt-5">LogIn</h1>
-        <p>
-          <a href="/signup" className=" text-blue-400 hover:text-blue-500">
-            Don't have an account?
-          </a>
-        </p>
+      <div className="signup-container justify-center items-center flex flex-col gap-5 mt-10">
         <form onSubmit={handleSubmit}>
-          <div className="form flex card flex-col gap-8">
+          <h2 className="text-left w-full text-2xl font-medium mb-5">
+            Login -{" "}
+          </h2>
+          <p className="mb-5">
+            <a href="/signup" className=" text-blue-400 hover:text-blue-500 ">
+              Don't have an account?
+            </a>
+          </p>
+          <div className="form flex card flex-col gap-8 w-80">
             <TextField
               label="Email"
               name="email"
@@ -71,6 +81,7 @@ const LogInPage = () => {
               value={formData.email}
               onChange={handleChange}
               variant="outlined"
+              className="[&_.MuiInputBase-root]:h-11 p"
               fullWidth
             />
 
@@ -81,12 +92,17 @@ const LogInPage = () => {
               value={formData.password}
               onChange={handleChange}
               variant="outlined"
+              className="[&_.MuiInputBase-root]:h-11 p"
               fullWidth
             />
           </div>
 
+          <p className="mt-4 hover:underline hover:text-blue-700 text-blue-400">
+            <a href="/verify">verify account ?</a>
+          </p>
+
           <Button
-            style={{ marginTop: "8px" }}
+            style={{ marginTop: "20px" }}
             type="submit"
             variant="contained"
           >

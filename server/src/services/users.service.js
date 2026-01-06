@@ -1,44 +1,36 @@
-import { User } from "../models/index.model.js";
+import { User, UserIP } from "../models/index.model.js";
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
 import { getPagination } from "../utils/paginations.utils.js";
+import { Transaction } from "sequelize";
 
-export const getUsers = async (page, limit) => {
+export const getUsers = async (page, limits) => {
   try {
-    let { limit, offset } = getPagination(page, limit);
+    const { limit, offset } = getPagination(page, limits);
 
     const { count, rows } = await User.findAndCountAll({
       limit,
       offset,
+      attributes: { exclude: ["password"] },
+      include: [
+        {
+          model: UserIP,
+          required: false,
+          attributes: ["ipAddress", "isBlocked", "createdAt", "updatedAt"],
+        },
+      ],
     });
 
     return {
       success: true,
       data: rows,
       totalPages: Math.ceil(count / limit),
+      currentPage: page,
     };
   } catch (error) {
-    return new ExpressError(400, error.message);
+    throw new ExpressError(400, error.message);
   }
 };
-
-// export const createUser = async (data) => {
-//   try {
-//     const { first_name, last_name,contact } = data;
-
-//     await User.update({
-
-//       first_name,
-//       last_name,
-//       contact,
-
-//     });
-
-//     return { success: true, message: "User created successfully" };
-//   } catch (error) {
-//     return new ExpressError(400, error.message);
-//   }
-// };
 
 export const updateUser = async (userId, data) => {
   try {
@@ -79,10 +71,22 @@ export const deleteUser = async (id) => {
 
     if (!user) return { message: "User not found" };
 
-    
-
     return { success: true, message: "User Deleted" };
   } catch (error) {
     return new ExpressError(400, error.message);
+  }
+};
+
+export const getProfileService = async (id) => {
+  try {
+    const user = await User.findOne({ where: { id } });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return { success: true, user, message: "User Fetched" };
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to load profile" });
   }
 };

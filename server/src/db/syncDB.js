@@ -1,5 +1,5 @@
-import sequelize from "../src/config/db.js";
-import { User } from "../src/models/index.model.js";
+import sequelize from "../config/db.js";
+import { User } from "../models/index.model.js";
 
 export const syncDB = async () => {
   try {

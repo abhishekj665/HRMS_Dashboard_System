@@ -7,6 +7,7 @@ export const getUsers = async (req, res, next) => {
     let limit = parseInt(req.query.limit, 10) || 5;
 
     const result = await userService.getUsers(page, limit);
+
     if (result.success) {
       return successResponse(res, result, result.message);
     } else {
@@ -49,6 +50,22 @@ export const deleteUser = async (req, res, next) => {
       return successResponse(res, result, result.message, 200);
     } else {
       return errorResponse(res, result.message, 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProfile = async (req, res, next) => {
+  try {
+    let id = req.user.id;
+
+    let response = await userService.getProfileService(id);
+
+    if (response.success) {
+      return successResponse(res, response, response.message, 200);
+    } else {
+      return errorResponse(res, response.message, 404);
     }
   } catch (error) {
     next(error);

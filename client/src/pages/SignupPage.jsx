@@ -5,13 +5,18 @@ import { useDispatch } from "react-redux";
 import { TextField, Button } from "@mui/material";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { login, verify } from "../redux/auth/authService.jsx";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    otp: "",
+    purpose: "",
   });
+
+  const [verification, setVerification] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,6 +27,7 @@ const SignUpPage = () => {
       ...prev,
       [name]: value,
     }));
+    // setVerification(false);
   };
 
   const handleSubmit = async (e) => {
@@ -33,16 +39,42 @@ const SignUpPage = () => {
     }
 
     try {
-      const response = await dispatch(registerUser(formData)).unwrap();
-      console.log(response.message);
-      toast.success(response.message);
-      resetData();
+      let response = await dispatch(registerUser(formData)).unwrap();
+      if (response.success) {
+        toast.success(response.message);
+        setVerification(true);
+      } else {
+        toast.error(response.message);
+        resetData();
+      }
     } catch (error) {
       console.log(error.message);
       toast.error(error.message);
       resetData();
     }
   };
+
+  const handleVerification = async () => {
+    formData.purpose = "signup";
+    try {
+      let response = await verify(formData);
+      if (response.success) {
+        navigate("/home");
+        toast.success("Veirfied Successfully, LoggedIn");
+      } else {
+        toast.error(response.message);
+        resetData();
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // if (response.token) {
+  //       await dispatch(loginUser(formData)).unwrap();
+  //       navigate("/");
+  //       return;
+  //     }
 
   const resetData = () => {
     setFormData({
@@ -54,15 +86,17 @@ const SignUpPage = () => {
 
   return (
     <>
-      <div className="signup-container justify-center items-center flex flex-col gap-5">
-        <h1 className="text-3xl font-medium mt-5">Sign Up</h1>
-        <p>
-          <a href="/login" className=" text-blue-400 hover:text-blue-500">
-            Already have an account?
-          </a>
-        </p>
+      <div className="signup-container justify-center items-center flex flex-col gap-5 mt-10">
         <form onSubmit={handleSubmit}>
-          <div className="form flex card flex-col gap-8">
+          <h1 className="text-left w-full text-2xl font-medium mb-5">
+            SignUp -
+          </h1>
+          <p className="mb-5">
+            <a href="/login" className=" text-blue-400 hover:text-blue-500 ">
+              Already have an account ?
+            </a>
+          </p>
+          <div className="form flex card flex-col gap-8 w-80 ">
             <TextField
               label="Username"
               name="username"
@@ -70,6 +104,8 @@ const SignUpPage = () => {
               onChange={handleChange}
               variant="outlined"
               fullWidth
+              required
+              className="[&_.MuiInputBase-root]:h-11 p"
             />
 
             <TextField
@@ -80,6 +116,8 @@ const SignUpPage = () => {
               onChange={handleChange}
               variant="outlined"
               fullWidth
+              required
+              className="[&_.MuiInputBase-root]:h-11 p"
             />
 
             <TextField
@@ -90,16 +128,43 @@ const SignUpPage = () => {
               onChange={handleChange}
               variant="outlined"
               fullWidth
+              required
+              className="[&_.MuiInputBase-root]:h-11 p"
             />
+            {verification == true ? (
+              <TextField
+                label="Enter OTP"
+                name="otp"
+                type="password"
+                value={formData.otp}
+                onChange={handleChange}
+                variant="outlined"
+                fullWidth
+                required
+                className="[&_.MuiInputBase-root]:h-11 p"
+              />
+            ) : (
+              ""
+            )}
           </div>
 
-          <Button
-            style={{ marginTop: "8px" }}
-            type="submit"
-            variant="contained"
-          >
-            Register
-          </Button>
+          {verification === true ? (
+            <Button
+              style={{ marginTop: "20px" }}
+              onClick={handleVerification}
+              variant="contained"
+            >
+              Verify
+            </Button>
+          ) : (
+            <Button
+              style={{ marginTop: "20px" }}
+              type="submit"
+              variant="contained"
+            >
+              Register
+            </Button>
+          )}
         </form>
       </div>
     </>

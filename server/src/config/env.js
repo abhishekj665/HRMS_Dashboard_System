@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-dotenv.config({ path: "../.env" });
+dotenv.config();
 
 export const env = {
   port: process.env.PORT,
@@ -14,5 +14,3 @@ export const env = {
   mail_pass: process.env.MAIL_PASS,
   geo_apikey: process.env.GEO_APIKEY,
 };
-
-

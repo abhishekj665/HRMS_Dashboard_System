@@ -1,8 +1,8 @@
 import app from "./app.js";
-import { connectDB } from "../db/connectDB.js";
+import { connectDB } from "./db/connectDB.js";
 import { env } from "./config/env.js";
 
-import { syncDB } from "../db/syncDB.js";
+import { syncDB } from "./db/syncDB.js";
 
 const startServer = async () => {
   await connectDB();

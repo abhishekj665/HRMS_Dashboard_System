@@ -5,7 +5,9 @@ import * as adminServices from "../services/admin.service.js";
 export const blockUserController = async (req, res, next) => {
   try {
     const userId = req.params.id;
+
     const result = await adminServices.blockUserService(userId);
+
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);
     } else {
@@ -33,6 +35,8 @@ export const unblockUserController = async (req, res, next) => {
 export const blockIPController = async (req, res, next) => {
   try {
     const { ip } = req.body;
+    
+
     const result = await adminServices.blockIPService(ip);
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);

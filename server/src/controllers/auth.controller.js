@@ -9,6 +9,7 @@ import { getLocationFromIp } from "../utils/geoInfo.utils.js";
 export const signUp = async (req, res, next) => {
   try {
     const result = await authServices.signUpService(req.body);
+
     if (result.success) {
       return successResponse(res, result, result.message, STATUS.ACCEPTED);
     } else {
@@ -21,7 +22,8 @@ export const signUp = async (req, res, next) => {
 
 export const verifyOtp = async (req, res, next) => {
   try {
-    let { email, otp, purpose } = req.query;
+    let { email, otp, purpose } = req.body;
+
     if (purpose != undefined) {
       purpose = purpose.toUpperCase();
     } else {
@@ -30,7 +32,38 @@ export const verifyOtp = async (req, res, next) => {
 
     const result = await authServices.verifyOtpService(email, otp, purpose);
 
-    return successResponse(res, result, result.message, STATUS.ACCEPTED);
+    if (result) {
+      setCookie(res, "token", result.token);
+
+      let ip = req.ip || req.socket?.remoteAddress || "127.0.0.1";
+      if (ip === "::1") ip = "1.1.1.1";
+
+      const userAgent = req.headers["user-agent"] || "UNKNOWN";
+
+      const existingIp = await UserIP.findOne({
+        where: { userId: result.user.id, ipAddress: ip },
+      });
+
+      if (existingIp) {
+        existingIp.failedLogInAttempt = 0;
+        await existingIp.save();
+      } else {
+        const address = await getLocationFromIp(ip);
+        await UserIP.create({
+          userId: result.user.id,
+          ipAddress: ip,
+          isBlocked: false,
+          userAgent,
+          country: address.country_name,
+          region: address.region_name,
+          city: address.city,
+          isp: address.isp,
+          failedLogInAttempt: 0,
+        });
+      }
+
+      return successResponse(res, result, result.message, STATUS.ACCEPTED);
+    }
   } catch (error) {
     next(error);
   }
@@ -52,7 +85,7 @@ export const logIn = async (req, res, next) => {
 
     let ipDetails = await UserIP.findOne({ where: { ipAddress: ip } });
 
-    if (ipDetails && ipDetails.isBlocked && result.role !== "admin") {
+    if (ipDetails && ipDetails.isBlocked && result.user.role !== "admin") {
       return errorResponse(
         res,
         "IP address is blocked. Contact admin.",
@@ -64,20 +97,42 @@ export const logIn = async (req, res, next) => {
 
     const userAgent = req.headers["user-agent"] || "UNKNOWN";
 
-    // const address = await getLocationFromIp(ip);
+    const address = await getLocationFromIp(ip);
 
-    // await UserIP.create({
-    //   userId: result.id,
-    //   ipAddress: ip,
-    //   userAgent,
-    //   country: address.country_name,
-    //   region: address.region_name,
-    //   city: address.city,
-    //   isp: address.isp,
-    //   failedLogInAttempt: 0,
-    // });
+    await UserIP.create({
+      userId: result.user.id,
+      ipAddress: ip,
+      isBlocked: false,
+      userAgent,
+      country: address.country_name,
+      region: address.region_name,
+      city: address.city,
+      isp: address.isp,
+      failedLogInAttempt: 0,
+    });
 
-    return successResponse(res, result, result.message, STATUS.OK);
+    return successResponse(
+      res,
+      {
+        success: true,
+        user: result.user,
+        token: result.token,
+      },
+      "Login successful",
+      STATUS.OK
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logOut = async (req, res, next) => {
+  try {
+    res.clearCookie("token");
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
   } catch (error) {
     next(error);
   }
