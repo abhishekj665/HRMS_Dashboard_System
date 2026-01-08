@@ -2,7 +2,7 @@ import { successResponse, errorResponse } from "../utils/response.utils.js";
 import STATUS from "../config/constants/Status.js";
 import * as adminServices from "../services/admin.service.js";
 import Asset from "../models/Asset.model.js";
-import e from "express";
+import { io } from "../server.js";
 
 export const blockUserController = async (req, res, next) => {
   try {
@@ -85,9 +85,18 @@ export const getRequestData = async (req, res, next) => {
 
 export const approveRequest = async (req, res, next) => {
   try {
-    let response = await adminServices.approveRequestService(req.params.id);
+    const adminRole = req.user.role;
+
+    const response = await adminServices.approveRequestService(
+      req.params.id,
+      adminRole
+    );
 
     if (response.success) {
+      io.to("admin").emit("requestUpdated");
+
+      io.to(`user:${response.userId}`).emit("requestUpdated");
+
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);
@@ -99,12 +108,18 @@ export const approveRequest = async (req, res, next) => {
 
 export const rejectRequest = async (req, res, next) => {
   try {
-    let remark = req.body.remark;
-    let response = await adminServices.rejectRequestService(
+    const remark = req.body.remark;
+
+    const response = await adminServices.rejectRequestService(
       req.params.id,
       remark
     );
+
     if (response.success) {
+      io.to("admin").emit("requestUpdated");
+
+      io.to(`user:${response.userId}`).emit("requestUpdated");
+
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);
@@ -116,6 +131,7 @@ export const rejectRequest = async (req, res, next) => {
 
 export const createAsset = async (req, res, next) => {
   try {
+    
     const response = await adminServices.createAssetService(req.body);
 
     if (response.success) {

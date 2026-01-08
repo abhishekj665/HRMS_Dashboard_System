@@ -19,9 +19,10 @@ import {
 } from "../controllers/admin.controller.js";
 
 Router.use(auth);
-Router.use(adminAuth);
 
 Router.get("/request", getRequestData);
+
+Router.use(adminAuth);
 
 Router.put("/block", blockIPController);
 Router.put("/unblock", unblockIPController);
@@ -36,8 +37,6 @@ Router.get("/asset", getAllAsset);
 Router.post("/asset", createAsset);
 Router.delete("/asset/:id", deleteAsset);
 Router.put("/asset/:id", updateAsset);
-
-
 
 Router.get("", (req, res) => {
   res.status(404).json({ message: "Admin route not found" });

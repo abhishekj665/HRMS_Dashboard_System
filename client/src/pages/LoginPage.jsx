@@ -39,8 +39,6 @@ const LogInPage = () => {
     try {
       const response = await dispatch(loginUser(formData)).unwrap();
 
-      
-
       if (response.success) {
         if (response?.user?.role === "admin") {
           navigate("/admin/dashboard");
@@ -52,6 +50,7 @@ const LogInPage = () => {
           resetData();
         }
       } else {
+        console.log("hello");
         toast.error(response.message);
         resetData();
       }

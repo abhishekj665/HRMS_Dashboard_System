@@ -2,6 +2,8 @@ import STATUS from "../config/constants/Status.js";
 import * as userService from "../services/users.service.js";
 import { successResponse, errorResponse } from "../utils/response.utils.js";
 
+import { io } from "../server.js";
+
 export const getUsers = async (req, res, next) => {
   try {
     let page = parseInt(req.query.page, 10) || 1;
@@ -64,14 +66,15 @@ export const createAssetRequest = async (req, res, next) => {
   try {
     const { assetId, quantity, description, title } = req.body;
 
-    
-
     let response = await userService.createAssetRequestService(
       { assetId, quantity, description, title },
       req.user
     );
 
     if (response.success) {
+      io.to("admin").emit("requestCreated", {
+        message: "New request created",
+      });
       return successResponse(res, response, response.message, STATUS.CREATED);
     } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);

@@ -17,6 +17,8 @@ import { approveRequest, rejectRequest } from "../services/adminService";
 
 import { useSelector } from "react-redux";
 
+import { socket } from "../socket";
+
 const statusColor = (status) => {
   if (status === "approved") return "success";
   if (status === "rejected") return "error";
@@ -48,19 +50,17 @@ const AdminRequest = () => {
     );
 
     if (!isConfirmed) return;
+
     try {
-      let response = await approveRequest(id);
+      const response = await approveRequest(id);
+
       if (response.success) {
         toast.success("Request Approved");
-        fetchRequestsData();
       } else {
-        console.log(response);
         toast.error(response.message);
-        fetchRequestsData();
       }
     } catch (error) {
       toast.error(error.message);
-      fetchRequestsData();
     }
   };
 
@@ -68,17 +68,30 @@ const AdminRequest = () => {
     const isConfirmed = window.confirm(
       "Are you sure you want to reject this request?"
     );
+
+    if (!isConfirmed) return;
+
     setOpenRejectBox(false);
     setRemark("");
 
-    if (!isConfirmed) return;
     await rejectRequest(id, remark);
     toast.success("Request Rejected");
-    fetchRequestsData();
   };
 
   useEffect(() => {
     fetchRequestsData();
+
+    const handleRequestUpdate = () => {
+      fetchRequestsData();
+    };
+
+    socket.on("requestCreated", handleRequestUpdate);
+    socket.on("requestUpdated", handleRequestUpdate);
+
+    return () => {
+      socket.off("requestCreated", handleRequestUpdate);
+      socket.off("requestUpdated", handleRequestUpdate);
+    };
   }, []);
 
   if (role != "admin") {
@@ -150,52 +163,6 @@ const AdminRequest = () => {
                           >
                             Reject
                           </Button>
-
-                          {openRejectBox && (
-                            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                              <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
-                                <h2 className="text-lg font-semibold mb-3">
-                                  Reject Request
-                                </h2>
-
-                                <textarea
-                                  className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
-                                  rows="4"
-                                  placeholder="Enter reject reason..."
-                                  value={remark}
-                                  onChange={(e) => setRemark(e.target.value)}
-                                />
-
-                                <div className="flex justify-end gap-3 mt-4">
-                                  <button
-                                    className="px-4 py-2 border rounded-lg"
-                                    onClick={() => {
-                                      setOpenRejectBox(false);
-                                      setRemark("");
-                                    }}
-                                  >
-                                    Cancel
-                                  </button>
-
-                                  <button
-                                    className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                                    onClick={async () => {
-                                      if (!remark.trim()) {
-                                        toast.error(
-                                          "Please enter reject reason"
-                                        );
-                                        return;
-                                      }
-
-                                      handleReject(rejectId, remark);
-                                    }}
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </>
                       ) : (
                         <span className="text-red-500 font-semibold">
@@ -209,6 +176,47 @@ const AdminRequest = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {openRejectBox && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+                  <h2 className="text-lg font-semibold mb-3">Reject Request</h2>
+
+                  <textarea
+                    className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
+                    rows="4"
+                    placeholder="Enter reject reason..."
+                    value={remark}
+                    onChange={(e) => setRemark(e.target.value)}
+                  />
+
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button
+                      className="px-4 py-2 border rounded-lg"
+                      onClick={() => {
+                        setOpenRejectBox(false);
+                        setRemark("");
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                      onClick={async () => {
+                        if (!remark.trim()) {
+                          toast.error("Please enter reject reason");
+                          return;
+                        }
+
+                        handleReject(rejectId, remark);
+                      }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

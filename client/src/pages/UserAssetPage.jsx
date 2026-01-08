@@ -8,6 +8,9 @@ import {
 } from "../services/userService";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
+import { Autocomplete } from "@mui/material";
+import { getRequestData } from "../services/adminService";
+import { socket } from "../socket";
 
 import {
   Table,
@@ -39,6 +42,7 @@ export default function UserAssetPage() {
   const [openForm, setOpenForm] = useState(false);
   const [requests, setRequests] = useState([]);
   const [assets, setAssets] = useState([]);
+  const [search, setSearch] = useState("");
 
   const [formData, setFormData] = useState({
     assetId: "",
@@ -71,7 +75,9 @@ export default function UserAssetPage() {
     try {
       let response = await createAssetRequest(formData);
       if (response) {
+        localStorage.setItem("ASSET_UPDATED", Date.now().toString());
         toast.success("Request Created Successfully");
+
         fetchRequest();
       }
     } catch (error) {
@@ -90,9 +96,7 @@ export default function UserAssetPage() {
         toast.error(response.message || "Failed to fetch requests");
         return;
       }
-
       console.log(response.data.requestData);
-
       setRequests(response.data.requestData);
     } catch (error) {
       console.error(error);
@@ -106,7 +110,17 @@ export default function UserAssetPage() {
   useEffect(() => {
     fetchRequest();
     fetchAssets();
-  }, [getAssetRequest]);
+
+    const handleRequestUpdated = () => {
+      fetchRequest();
+    };
+
+    socket.on("requestUpdated", handleRequestUpdated);
+
+    return () => {
+      socket.off("requestUpdated", handleRequestUpdated);
+    };
+  }, []);
 
   return (
     <div className="max-w-full mx-auto mt-10 px-6">
@@ -166,21 +180,20 @@ export default function UserAssetPage() {
                       {new Date(req.updatedAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      {req.Asset ? (
-                        <Chip
-                          label={req.Asset.status}
-                          size="small"
-                          color={statusColor(req.Asset.status)}
-                          sx={{ textTransform: "capitalize", fontWeight: 600 }}
-                        />
-                      ) : (
-                        <Chip
-                          label="not-available"
-                          size="small"
-                          color={statusColor("not-available")}
-                          sx={{ textTransform: "capitalize", fontWeight: 600 }}
-                        />
-                      )}
+                      <Chip
+                        label={
+                          req.Asset && req.Asset.availableQuantity > 0
+                            ? req.Asset.status
+                            : "not-available"
+                        }
+                        size="small"
+                        color={statusColor(
+                          req.Asset && req.Asset.availableQuantity > 0
+                            ? req.Asset.status
+                            : "not-available"
+                        )}
+                        sx={{ textTransform: "capitalize", fontWeight: 600 }}
+                      />
                     </TableCell>
                     <TableCell>
                       {req.adminRemark ? req.adminRemark : "Not Response Yet"}
@@ -208,29 +221,31 @@ export default function UserAssetPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <TextField
-                select
-                label="Select Asset"
-                name="assetId"
-                value={formData.assetId}
-                fullWidth
-                onChange={(e) => {
-                  const selectedId = e.target.value;
-                  const selectedAsset = assets.find((a) => a.id === selectedId);
+              <Autocomplete
+                options={assets}
+                getOptionLabel={(option) => option.title || ""}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(event, newValue) => {
+                  if (!newValue) {
+                    setFormData({ ...formData, assetId: "", title: "" });
+                    return;
+                  }
 
                   setFormData({
                     ...formData,
-                    assetId: selectedId,
-                    title: selectedAsset?.title || "",
+                    assetId: newValue.id,
+                    title: newValue.title,
                   });
                 }}
-              >
-                {assets.map((asset) => (
-                  <MenuItem key={asset.id} value={asset.id}>
-                    {asset.title} (Available: {asset.availableQuantity})
-                  </MenuItem>
-                ))}
-              </TextField>
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search Asset"
+                    placeholder="Type to search asset..."
+                  />
+                )}
+                noOptionsText="Not available"
+              />
 
               <TextField
                 label="Description"

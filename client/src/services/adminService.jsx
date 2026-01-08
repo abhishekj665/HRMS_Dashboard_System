@@ -124,7 +124,7 @@ export const getAllAssets = async () => {
 
 export const createAsset = async (data) => {
   try {
-    let response = await API.post(`/admin/asset`);
+    let response = await API.post(`/admin/asset`, data);
 
     return response.data;
   } catch (error) {
