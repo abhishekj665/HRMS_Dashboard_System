@@ -28,22 +28,51 @@ const AdminRequest = () => {
 
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
+  const [openRejectBox, setOpenRejectBox] = useState(false);
+  const [rejectId, setRejectId] = useState(null);
+  const [remark, setRemark] = useState("");
+
   const role = user.role;
 
   const fetchRequestsData = async () => {
     const response = await getRequestData();
 
+    console.log(response.data);
+
     if (response?.success) setRequestsData(response.data);
   };
 
   const handleApprove = async (id) => {
-    let response = await approveRequest(id);
-    toast.success("Request Approved");
-    fetchRequestsData();
+    const isConfirmed = window.confirm(
+      "Are you sure you want to approve this request?"
+    );
+
+    if (!isConfirmed) return;
+    try {
+      let response = await approveRequest(id);
+      if (response.success) {
+        toast.success("Request Approved");
+        fetchRequestsData();
+      } else {
+        console.log(response);
+        toast.error(response.message);
+        fetchRequestsData();
+      }
+    } catch (error) {
+      toast.error(error.message);
+      fetchRequestsData();
+    }
   };
 
-  const handleReject = async (id) => {
-    await rejectRequest(id);
+  const handleReject = async (id, remark) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to reject this request?"
+    );
+    setOpenRejectBox(false);
+    setRemark("");
+
+    if (!isConfirmed) return;
+    await rejectRequest(id, remark);
     toast.success("Request Rejected");
     fetchRequestsData();
   };
@@ -82,9 +111,10 @@ const AdminRequest = () => {
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{req.User.email.split("@")[0]}</TableCell>
 
-                <TableCell>{req.title}</TableCell>
+                <TableCell>{req.Asset?.title}</TableCell>
+
                 <TableCell>{req.description}</TableCell>
-                <TableCell>₹{req.price}</TableCell>
+                <TableCell>₹{req.Asset?.price}</TableCell>
                 <TableCell>
                   <Chip
                     label={req.status}
@@ -98,25 +128,80 @@ const AdminRequest = () => {
                 <TableCell align="center">
                   <div className="flex gap-2 justify-center">
                     {req.status === "pending" ? (
-                      <>
-                        <Button
-                          variant="contained"
-                          color="success"
-                          size="small"
-                          onClick={() => handleApprove(req.id)}
-                        >
-                          Approve
-                        </Button>
+                      req.Asset?.status === "available" ? (
+                        <>
+                          <Button
+                            variant="contained"
+                            color="success"
+                            size="small"
+                            onClick={() => handleApprove(req.id)}
+                          >
+                            Approve
+                          </Button>
 
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          onClick={() => handleReject(req.id)}
-                        >
-                          Reject
-                        </Button>
-                      </>
+                          <Button
+                            variant="contained"
+                            color="error"
+                            size="small"
+                            onClick={() => {
+                              setRejectId(req.id);
+                              setOpenRejectBox(true);
+                            }}
+                          >
+                            Reject
+                          </Button>
+
+                          {openRejectBox && (
+                            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+                              <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+                                <h2 className="text-lg font-semibold mb-3">
+                                  Reject Request
+                                </h2>
+
+                                <textarea
+                                  className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
+                                  rows="4"
+                                  placeholder="Enter reject reason..."
+                                  value={remark}
+                                  onChange={(e) => setRemark(e.target.value)}
+                                />
+
+                                <div className="flex justify-end gap-3 mt-4">
+                                  <button
+                                    className="px-4 py-2 border rounded-lg"
+                                    onClick={() => {
+                                      setOpenRejectBox(false);
+                                      setRemark("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+
+                                  <button
+                                    className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                                    onClick={async () => {
+                                      if (!remark.trim()) {
+                                        toast.error(
+                                          "Please enter reject reason"
+                                        );
+                                        return;
+                                      }
+
+                                      handleReject(rejectId, remark);
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-red-500 font-semibold">
+                          Asset not available
+                        </span>
+                      )
                     ) : (
                       <span className="text-gray-400 font-semibold">-</span>
                     )}

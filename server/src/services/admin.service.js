@@ -1,8 +1,9 @@
-import { AssetRequest, User } from "../models/index.model.js";
+import { AssetRequest, User, Asset, UserAsset } from "../models/index.model.js";
 import ExpressError from "../utils/Error.utils.js";
 import { UserIP } from "../models/index.model.js";
 import { successResponse } from "../utils/response.utils.js";
 import STATUS from "../config/constants/Status.js";
+import sequelize from "../config/db.js";
 
 export const blockUserService = async (id) => {
   try {
@@ -81,6 +82,10 @@ export const getRequestDataService = async () => {
           model: User,
           attributes: ["email"],
         },
+        {
+          model: Asset,
+          attributes: ["id", "title", "price", "status", "availableQuantity"],
+        },
       ],
     });
 
@@ -90,55 +95,218 @@ export const getRequestDataService = async () => {
       data: requests,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-    };
+    throw new ExpressError(400, error.message);
   }
+};
+
+export const rejectRequestService = async (id, remark) => {
+  const request = await AssetRequest.findByPk(id);
+
+  if (!request || request.status !== "pending") {
+    throw new ExpressError(400, "Invalid request");
+  }
+
+  request.status = "rejected";
+  request.adminRemark = remark;
+  await request.save();
+
+  return { success: true, message: "Request rejected successfully" };
 };
 
 export const approveRequestService = async (id) => {
-  try {
-    let request = await AssetRequest.findByPk(id);
+  const t = await sequelize.transaction();
 
-    if (request.status == "rejected" || request.status == "accepted") {
+  try {
+    const request = await AssetRequest.findByPk(id, { transaction: t });
+
+    if (!request || request.status !== "pending") {
+      throw new ExpressError(400, "Invalid request");
+    }
+
+    const asset = await Asset.findByPk(request.assetId, { transaction: t });
+
+    if (!asset || asset.availableQuantity < request.quantity) {
       return {
         success: false,
-        message: "You can't change the status of request",
+        message: "Not enough quantity available",
       };
     }
 
+    if (!asset || asset.status !== "available") {
+      return {
+        success: false,
+        message: "Not Assigned, Asset not available yet",
+      };
+    }
+
+    const totalCredited = await UserAsset.sum("quantity", {
+      where: { userId: request.userId },
+      transaction: t,
+    });
+
+    if ((totalCredited || 0) + request.quantity > 5) {
+      throw new ExpressError(400, "User credit limit exceeded");
+    }
+
+    asset.availableQuantity -= request.quantity;
+    await asset.save({ transaction: t });
+
+    await UserAsset.create(
+      {
+        userId: request.userId,
+        assetId: request.assetId,
+        quantity: request.quantity,
+      },
+      { transaction: t }
+    );
+
     request.status = "approved";
-    await request.save();
+    await request.save({ transaction: t });
+
+    await t.commit();
+    return { success: true, message: "Request approved and asset credited" };
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+};
+
+export const createAssetService = async (data) => {
+  const {
+    title,
+    description,
+    category,
+    status,
+    price,
+    expiresAt,
+    totalQuantity,
+  } = data;
+
+  if (!title || !description || !category || !price || !totalQuantity) {
+    throw new ExpressError(400, "All required fields must be provided");
+  }
+
+  title.toLowerCase();
+
+  const existingAsset = await Asset.findOne({
+    where: {
+      title,
+    },
+  });
+
+  if (existingAsset) {
+    existingAsset.totalQuantity += Number(totalQuantity);
+    existingAsset.availableQuantity += Number(totalQuantity);
+
+    await existingAsset.save();
 
     return {
       success: true,
-      message: "Request Approved Successfully",
+      message: "Asset already exists. Quantity increased.",
+      data: existingAsset,
+    };
+  }
+
+  const asset = await Asset.create({
+    title,
+    description,
+    category,
+    status: status || "available",
+    price,
+    expiresAt: expiresAt || null,
+    totalQuantity,
+    availableQuantity: totalQuantity,
+    isDeleted: false,
+  });
+
+  return {
+    success: true,
+    message: "Asset created successfully",
+    data: asset,
+  };
+};
+
+export const getAllAsset = async () => {
+  try {
+    let data = await Asset.findAll();
+
+    if (!data) {
+      return {
+        success: false,
+        message: "Not found any asset",
+      };
+    }
+
+    return {
+      success: true,
+      data: data,
+      message: "Asset Fetched Successfully",
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
 
-export const rejectRequestService = async (id) => {
+export const deleteAssetService = async (id) => {
   try {
-    let request = await AssetRequest.findByPk(id);
+    console.log(id);
+    let asset = await Asset.findAll({
+      where: { id },
+      include: {
+        model: AssetRequest,
+        required: false,
+      },
+    });
 
-    if (request.status == "rejected" || request.status == "accepted") {
-      return {
-        success: false,
-        message: "You can't change the status of request",
-      };
+    if (!asset) return { message: "Asset not found" };
+
+    await Asset.destroy({ where: { id } });
+
+    if (!asset) return { message: "Asset not found" };
+
+    return { success: true, message: "Asset Deleted" };
+  } catch (error) {
+    return new ExpressError(400, error.message);
+  }
+};
+
+export const updateAssetService = async (id, data) => {
+  try {
+    if (!id) {
+      throw new ExpressError(400, "Asset ID is required");
     }
 
-    request.status = "rejected";
-    await request.save();
+    const asset = await Asset.findByPk(id);
+
+    if (!asset || asset.isDeleted) {
+      throw new ExpressError(404, "Asset not found");
+    }
+
+    if (data.totalQuantity !== undefined) {
+      const oldTotal = asset.totalQuantity;
+      const oldAvailable = asset.availableQuantity;
+      const alreadyAssigned = oldTotal - oldAvailable;
+
+      const newTotal = Number(data.totalQuantity);
+
+      if (newTotal < alreadyAssigned) {
+        throw new ExpressError(
+          400,
+          `Cannot set total quantity below already assigned (${alreadyAssigned})`
+        );
+      }
+
+      data.availableQuantity = newTotal - alreadyAssigned;
+    }
+
+    await asset.update(data);
 
     return {
       success: true,
-      message: "Request Rejected Successfully",
+      data: asset,
+      message: "Asset updated successfully",
     };
   } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+    throw error;
   }
 };

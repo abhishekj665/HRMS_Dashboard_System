@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonIcon from "@mui/icons-material/Person";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import PermDataSettingOutlinedIcon from "@mui/icons-material/PermDataSettingOutlined";
 
 export default function Sidebar() {
   const linkClass = ({ isActive }) =>
@@ -14,11 +15,15 @@ export default function Sidebar() {
 
       <nav className="flex flex-col gap-2">
         <NavLink to="/admin/dashboard" className={linkClass}>
-          <DashboardIcon /> Dashboard
+          <PersonIcon /> Users
         </NavLink>
 
         <NavLink to="/admin/ips" className={linkClass}>
           <PersonIcon /> IPs
+        </NavLink>
+
+        <NavLink to="/admin/asset" className={linkClass}>
+          <PermDataSettingOutlinedIcon /> Create Asset
         </NavLink>
 
         <NavLink to="/admin/requests" className={linkClass}>

@@ -1,49 +1,49 @@
 import sequelize from "../config/db.js";
 import { DataTypes } from "sequelize";
 
-const AssetRequest = sequelize.define(
-  "AssetRequest",
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
+const AssetRequest = sequelize.define("AssetRequest", {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
 
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-    },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 
-    title: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
+  assetId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 
-    description: {
-      type: DataTypes.TEXT,
-    },
-
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
-    },
-
-    status: {
-      type: DataTypes.ENUM("pending", "approved", "rejected"),
-      defaultValue: "pending",
-    },
-
-    adminRemark: {
-      type: DataTypes.TEXT,
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 1,
+      max: 5,
     },
   },
-  {
-    timestamps: true,
-  }
-);
+
+  status: {
+    type: DataTypes.ENUM("pending", "approved", "rejected"),
+    defaultValue: "pending",
+  },
+
+  adminRemark: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+});
 
 export default AssetRequest;

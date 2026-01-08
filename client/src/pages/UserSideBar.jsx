@@ -12,7 +12,7 @@ export default function UserSidebar() {
       <h1 className="text-xl font-bold mb-8 text-gray-800">User Panel</h1>
 
       <nav className="flex flex-col gap-2">
-        <NavLink to="/assest" className={linkClass}>
+        <NavLink to="/asset" className={linkClass}>
           <PendingActionsRoundedIcon /> Assets
         </NavLink>
       </nav>

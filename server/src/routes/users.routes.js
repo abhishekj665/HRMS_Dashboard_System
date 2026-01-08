@@ -5,7 +5,8 @@ import {
   deleteUser,
   getProfile,
   createAssetRequest,
-  getAssetRequest
+  getAssetRequest,
+  getAvailableAssets
 } from "../controllers/users.controller.js";
 import { auth } from "../middlewares/auth.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -14,9 +15,13 @@ import userSchema from "../validators/user.validator.js";
 export const userRouter = express.Router();
 
 userRouter.use(auth);
-// 1st
+
+
 userRouter.route("/").get(getUsers).put(validate(userSchema), updateUser);
 userRouter.route("/profile").get(getProfile);
+userRouter.get("/assets", getAvailableAssets);
+
+
+userRouter.route("/asset/request").post(createAssetRequest);
+userRouter.route("/asset/request").get(getAssetRequest);
 userRouter.route("/:id").delete(deleteUser);
-userRouter.route("/asset").post(createAssetRequest);
-userRouter.route("/asset").get(getAssetRequest);

@@ -42,6 +42,12 @@ export default function AdminIps() {
       toast.error("IP address cannot be empty");
       return;
     }
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to block this ip?"
+    );
+
+    if (!isConfirmed) return;
     try {
       let response = await blockIP(searchInput);
       toast.success("IP Blocked");
@@ -57,6 +63,12 @@ export default function AdminIps() {
       toast.error("IP address cannot be empty");
       return;
     }
+
+    const isConfirmed = window.confirm(
+      "Are you sure you want to unblock this ip?"
+    );
+
+    if (!isConfirmed) return;
     try {
       let response = await unBlockIP(searchInput);
       fetchUser();

@@ -11,7 +11,11 @@ import {
   unblockIPController,
   getRequestData,
   approveRequest,
-  rejectRequest
+  rejectRequest,
+  createAsset,
+  getAllAsset,
+  deleteAsset,
+  updateAsset,
 } from "../controllers/admin.controller.js";
 
 Router.use(auth);
@@ -25,8 +29,15 @@ Router.put("/unblock", unblockIPController);
 Router.put("/block/:id", blockUserController);
 Router.put("/unblock/:id", unblockUserController);
 
-Router.put("/request/approve/:id", approveRequest)
-Router.put("/request/reject/:id", rejectRequest)
+Router.put("/request/approve/:id", approveRequest);
+Router.put("/request/reject/:id", rejectRequest);
+
+Router.get("/asset", getAllAsset);
+Router.post("/asset", createAsset);
+Router.delete("/asset/:id", deleteAsset);
+Router.put("/asset/:id", updateAsset);
+
+
 
 Router.get("", (req, res) => {
   res.status(404).json({ message: "Admin route not found" });

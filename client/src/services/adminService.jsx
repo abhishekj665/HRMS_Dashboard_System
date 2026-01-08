@@ -82,7 +82,36 @@ export const getRequestData = async () => {
 
 export const approveRequest = async (id) => {
   try {
-    let response = await API.put(`/admin/request/approve/${id}`);
+    const response = await API.put(`/admin/request/approve/${id}`);
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message || error.response?.data || error.message,
+    };
+  }
+};
+
+export const rejectRequest = async (id, remark) => {
+  try {
+    let response = await API.put(`/admin/request/reject/${id}`, {
+      remark: remark,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message || error.response?.data || error.message,
+    };
+  }
+};
+
+export const getAllAssets = async () => {
+  try {
+    let response = await API.get(`/admin/asset`);
 
     return response.data;
   } catch (error) {
@@ -93,15 +122,40 @@ export const approveRequest = async (id) => {
   }
 };
 
-export const rejectRequest = async (id) => {
+export const createAsset = async (data) => {
   try {
-    let response = await API.put(`/admin/request/reject/${id}`);
+    let response = await API.post(`/admin/asset`);
 
     return response.data;
   } catch (error) {
     return {
       success: false,
       message: error.message,
+    };
+  }
+};
+
+export const deleteAsset = async (id) => {
+  try {
+    let response = await API.delete(`/admin/asset/${id}`);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
+};
+
+export const updateAsset = async (id, data) => {
+  try {
+    const res = await API.put(`/admin/asset/${id}`, data);
+    return res.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
     };
   }
 };

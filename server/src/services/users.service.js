@@ -1,9 +1,17 @@
-import { AssetRequest, User, UserIP } from "../models/index.model.js";
+import {
+  AssetRequest,
+  User,
+  UserIP,
+  Asset,
+  UserAsset,
+} from "../models/index.model.js";
+
+import { Op } from "sequelize";
+
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
 import { getPagination } from "../utils/paginations.utils.js";
 import STATUS from "../config/constants/Status.js";
-import { successResponse } from "../utils/response.utils.js";
 
 export const getUsersService = async (page, limits) => {
   try {
@@ -93,40 +101,62 @@ export const getProfileService = async (id) => {
 };
 
 export const createAssetRequestService = async (data, user) => {
-  try {
-    let userId = user.id;
+  const { assetId, quantity, description } = data;
+  const userId = user.id;
 
-    const asset = await AssetRequest.create({
-      ...data,
-      userId: userId,
-    });
-
-    return {
-      success: true,
-      message: "Asset Request Created Successfully",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  if (!assetId || !quantity) {
+    throw new ExpressError(400, "assetId and quantity are required");
   }
+
+  const asset = await Asset.findByPk(assetId);
+
+  if (!asset) throw new ExpressError(404, "Asset not found");
+
+  await AssetRequest.create({
+    userId,
+    assetId,
+    title: asset.title,
+    quantity,
+    description,
+  });
+
+  return { success: true, message: "Asset request created successfully" };
 };
 
 export const getAssetRequestService = async (id) => {
   try {
     const requestData = await AssetRequest.findAll({
       where: { userId: id },
-      order: [["createdAt", "ASC"]],
+      include: [
+        {
+          model: Asset,
+          attributes: ["title", "category", "price", "status"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
     });
-
-    if (!requestData) {
-      return { success: true, message: "No Data Found" };
-    }
 
     return {
       success: true,
       requestData,
-      message: "Data Fetched",
+      message: "Data fetched",
     };
   } catch (error) {
-    return new ExpressError(STATUS.BAD_REQUEST, error.message);
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
+};
+
+export const getAvailableAssetsService = async () => {
+  let response = await Asset.findAll({
+    where: {
+      availableQuantity: { [Op.gt]: 0 },
+    },
+    attributes: ["id", "title", "price", "category", "availableQuantity"],
+  });
+
+  return {
+    success: true,
+    data: response,
+    message: "Assest Fetched Successfully",
+  };
 };

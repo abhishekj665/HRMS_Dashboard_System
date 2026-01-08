@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Card, CardContent, Button, TextField } from "@mui/material";
+import { Card, CardContent, Button, TextField, MenuItem } from "@mui/material";
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
-import { createAssetRequest, getAssetRequest } from "../services/userService";
+import {
+  createAssetRequest,
+  getAssetRequest,
+  getAssetInfo,
+} from "../services/userService";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -16,23 +20,53 @@ import {
   Chip,
 } from "@mui/material";
 
+const statusColor = (status) => {
+  switch (status) {
+    case "available":
+      return "success";
+    case "assigned":
+      return "primary";
+    case "repairing":
+      return "warning";
+    case "not-available":
+      return "error";
+    default:
+      return "default";
+  }
+};
+
 export default function UserAssetPage() {
   const [openForm, setOpenForm] = useState(false);
   const [requests, setRequests] = useState([]);
+  const [assets, setAssets] = useState([]);
 
   const [formData, setFormData] = useState({
-    title: "",
+    assetId: "",
     description: "",
-    price: "",
+    quantity: 1,
+    title: "",
   });
+
+  const fetchAssets = async () => {
+    const response = await getAssetInfo();
+
+    if (response?.success) {
+      setAssets(response.data.assets.data);
+    } else {
+      setAssets([]);
+      toast.error("Failed to load assets");
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async () => {
-    console.log("hello");
-    if (!formData.title || !formData.description || !formData.price) return;
+    if (!formData.assetId || !formData.description) {
+      toast.error("All field required to fill");
+      return;
+    }
 
     try {
       let response = await createAssetRequest(formData);
@@ -44,7 +78,7 @@ export default function UserAssetPage() {
       toast.error(error.message);
     }
 
-    setFormData({ title: "", description: "", price: "" });
+    setFormData({ assetId: "", description: "", title: "" });
     setOpenForm(false);
   };
 
@@ -56,7 +90,9 @@ export default function UserAssetPage() {
         toast.error(response.message || "Failed to fetch requests");
         return;
       }
-      console.log(response.data);
+
+      console.log(response.data.requestData);
+
       setRequests(response.data.requestData);
     } catch (error) {
       console.error(error);
@@ -69,6 +105,7 @@ export default function UserAssetPage() {
 
   useEffect(() => {
     fetchRequest();
+    fetchAssets();
   }, [getAssetRequest]);
 
   return (
@@ -77,58 +114,6 @@ export default function UserAssetPage() {
         Asset Requests
       </h1>
       <Button onClick={handleOpenForm}>Create a Request</Button>
-
-      {openForm && (
-        <div className="mt-8 p-5 border rounded-xl bg-white shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Create Asset Request</h2>
-            <Button onClick={handleOpenForm}>
-              <CancelPresentationRoundedIcon />
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <TextField
-              label="Title"
-              name="title"
-              fullWidth
-              value={formData.title}
-              onChange={handleChange}
-            />
-
-            <TextField
-              label="Description"
-              name="description"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.description}
-              onChange={handleChange}
-            />
-
-            <TextField
-              label="Price"
-              name="price"
-              type="number"
-              fullWidth
-              value={formData.price}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="flex gap-3">
-            <Button variant="contained" onClick={() => handleSubmit()}>
-              Submit
-            </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => setOpenForm(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
 
       {requests.length > 0 && (
         <div className="mt-10 p-6 ">
@@ -140,11 +125,14 @@ export default function UserAssetPage() {
                 <TableRow>
                   <TableCell>S.No</TableCell>
                   <TableCell>Title</TableCell>
+
                   <TableCell>Description</TableCell>
-                  <TableCell>Price</TableCell>
+
                   <TableCell>Status</TableCell>
                   <TableCell>Created At</TableCell>
                   <TableCell>Updated At</TableCell>
+                  <TableCell>Asset Status</TableCell>
+                  <TableCell>Admin Mark</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -152,10 +140,9 @@ export default function UserAssetPage() {
                 {requests.map((req, index) => (
                   <TableRow key={req.id}>
                     <TableCell>{index + 1}</TableCell>
+                    <TableCell>{req.title ? req.title : "-"}</TableCell>
 
-                    <TableCell>{req.title}</TableCell>
                     <TableCell>{req.description}</TableCell>
-                    <TableCell>₹{req.price}</TableCell>
 
                     <TableCell>
                       <Chip
@@ -178,11 +165,94 @@ export default function UserAssetPage() {
                     <TableCell>
                       {new Date(req.updatedAt).toLocaleDateString()}
                     </TableCell>
+                    <TableCell>
+                      {req.Asset ? (
+                        <Chip
+                          label={req.Asset.status}
+                          size="small"
+                          color={statusColor(req.Asset.status)}
+                          sx={{ textTransform: "capitalize", fontWeight: 600 }}
+                        />
+                      ) : (
+                        <Chip
+                          label="not-available"
+                          size="small"
+                          color={statusColor("not-available")}
+                          sx={{ textTransform: "capitalize", fontWeight: 600 }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {req.adminRemark ? req.adminRemark : "Not Response Yet"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
+        </div>
+      )}
+      {openForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={handleOpenForm}
+          />
+
+          <div className="relative bg-white w-full max-w-lg rounded-xl shadow-lg p-6 z-50">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Create Asset Request</h2>
+              <button onClick={handleOpenForm}>
+                <CancelPresentationRoundedIcon />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <TextField
+                select
+                label="Select Asset"
+                name="assetId"
+                value={formData.assetId}
+                fullWidth
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const selectedAsset = assets.find((a) => a.id === selectedId);
+
+                  setFormData({
+                    ...formData,
+                    assetId: selectedId,
+                    title: selectedAsset?.title || "",
+                  });
+                }}
+              >
+                {assets.map((asset) => (
+                  <MenuItem key={asset.id} value={asset.id}>
+                    {asset.title} (Available: {asset.availableQuantity})
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                label="Description"
+                name="description"
+                multiline
+                rows={3}
+                fullWidth
+                value={formData.description}
+                onChange={handleChange}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 mt-6">
+              <Button variant="outlined" color="error" onClick={handleOpenForm}>
+                Cancel
+              </Button>
+              <Button variant="contained" onClick={handleSubmit}>
+                Submit
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

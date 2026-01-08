@@ -62,15 +62,19 @@ export const getProfile = async (req, res, next) => {
 
 export const createAssetRequest = async (req, res, next) => {
   try {
+    const { assetId, quantity, description, title } = req.body;
+
+    
+
     let response = await userService.createAssetRequestService(
-      req.body,
+      { assetId, quantity, description, title },
       req.user
     );
 
     if (response.success) {
       return successResponse(res, response, response.message, STATUS.CREATED);
     } else {
-      errorResponse(res, response.message, STATUS.BAD_REQUEST);
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {
     next(error);
@@ -89,5 +93,14 @@ export const getAssetRequest = async (req, res, next) => {
     }
   } catch (error) {
     next(error);
+  }
+};
+
+export const getAvailableAssets = async (req, res, next) => {
+  try {
+    const assets = await userService.getAvailableAssetsService();
+    return successResponse(res, { assets }, "Assets fetched", 200);
+  } catch (e) {
+    next(e);
   }
 };

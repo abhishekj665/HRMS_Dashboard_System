@@ -97,19 +97,27 @@ export const logIn = async (req, res, next) => {
 
     const userAgent = req.headers["user-agent"] || "UNKNOWN";
 
-    const address = await getLocationFromIp(ip);
-
-    await UserIP.create({
-      userId: result.user.id,
-      ipAddress: ip,
-      isBlocked: false,
-      userAgent,
-      country: address.country_name,
-      region: address.region_name,
-      city: address.city,
-      isp: address.isp,
-      failedLogInAttempt: 0,
+    let ipInfo = await UserIP.findOne({
+      where: { ipAddress: ip, userId: result.user.id },
     });
+
+    if (ipInfo) {
+      ipInfo.updateAt = new Date();
+      await ipInfo.save();
+    } else {
+      const address = await getLocationFromIp(ip);
+      await UserIP.create({
+        userId: result.user.id,
+        ipAddress: ip,
+        isBlocked: false,
+        userAgent,
+        country: address.country_name,
+        region: address.region_name,
+        city: address.city,
+        isp: address.isp,
+        failedLogInAttempt: 0,
+      });
+    }
 
     return successResponse(
       res,

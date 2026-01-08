@@ -15,7 +15,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-
+import AdminAsset from "./pages/AdminAsset";
 
 function App() {
   return (
@@ -31,10 +31,11 @@ function App() {
             <Route path="dashboard" element={<AdminUserPage />} />
             <Route path="ips" element={<AdminIps />} />
             <Route path="requests" element={<AdminRequest />} />
+            <Route path="asset" element={<AdminAsset />} />
           </Route>
 
           <Route path="/" element={<HomePage />}>
-            <Route path="assest" element={<UserAssetPage />}></Route>
+            <Route path="asset" element={<UserAssetPage />}></Route>
           </Route>
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>

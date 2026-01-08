@@ -40,6 +40,11 @@ export default function AdminUserPage() {
   };
 
   const handleBlock = async (id) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to block this user?"
+    );
+
+    if (!isConfirmed) return;
     try {
       console.log(id);
       let response = await blockUser(id);
@@ -56,6 +61,11 @@ export default function AdminUserPage() {
   };
 
   const handleUnBlock = async (id) => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to unblock this user?"
+    );
+
+    if (!isConfirmed) return;
     try {
       let response = await unBlockUser(id);
       if (response.success) {
