@@ -305,9 +305,13 @@ const AdminAsset = () => {
                   <TableCell>{a.availableQuantity}</TableCell>
                   <TableCell>
                     <Chip
-                      label={a.status}
+                      label={
+                        a.availableQuantity > 0 ? a.status : "not available"
+                      }
                       size="small"
-                      color={statusColor(a.status)}
+                      color={statusColor(
+                        a.availableQuantity > 0 ? a.status : "not-available"
+                      )}
                       sx={{ textTransform: "capitalize", fontWeight: 600 }}
                     />
                   </TableCell>

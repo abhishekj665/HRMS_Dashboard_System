@@ -30,7 +30,8 @@
     "nanoid": "^5.1.6",
     "nodemailer": "^7.0.11",
     "redux-persist": "^6.0.0",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

@@ -110,10 +110,14 @@ export const rejectRequestService = async (id, remark) => {
   request.adminRemark = remark;
   await request.save();
 
-  return { success: true, message: "Request rejected successfully" };
+  return {
+    success: true,
+    userId: request.userId,
+    message: "Request rejected successfully",
+  };
 };
 
-export const approveRequestService = async (id) => {
+export const approveRequestService = async (id, admin) => {
   const t = await sequelize.transaction();
 
   try {
@@ -161,10 +165,15 @@ export const approveRequestService = async (id) => {
     );
 
     request.status = "approved";
+    request.adminRemark = `Approved by ${admin}`;
     await request.save({ transaction: t });
 
     await t.commit();
-    return { success: true, message: "Request approved and asset credited" };
+    return {
+      success: true,
+      userId: request.userId,
+      message: "Request approved and asset credited",
+    };
   } catch (error) {
     await t.rollback();
     throw error;
@@ -172,6 +181,7 @@ export const approveRequestService = async (id) => {
 };
 
 export const createAssetService = async (data) => {
+  
   const {
     title,
     description,

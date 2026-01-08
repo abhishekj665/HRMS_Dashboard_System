@@ -130,7 +130,13 @@ export const getAssetRequestService = async (id) => {
       include: [
         {
           model: Asset,
-          attributes: ["title", "category", "price", "status"],
+          attributes: [
+            "title",
+            "category",
+            "price",
+            "status",
+            "availableQuantity",
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],
