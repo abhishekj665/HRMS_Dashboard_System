@@ -3,6 +3,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonIcon from "@mui/icons-material/Person";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PermDataSettingOutlinedIcon from "@mui/icons-material/PermDataSettingOutlined";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
 export default function Sidebar() {
   const linkClass = ({ isActive }) =>
@@ -23,11 +24,15 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink to="/admin/asset" className={linkClass}>
-          <PermDataSettingOutlinedIcon /> Create Asset
+          <PermDataSettingOutlinedIcon /> Assets
         </NavLink>
 
         <NavLink to="/admin/requests" className={linkClass}>
-          <Inventory2OutlinedIcon /> Requests
+          <Inventory2OutlinedIcon /> Assest Requests
+        </NavLink>
+
+        <NavLink to="/admin/expenses" className={linkClass}>
+          <CurrencyExchangeIcon /> Expenses
         </NavLink>
       </nav>
     </aside>

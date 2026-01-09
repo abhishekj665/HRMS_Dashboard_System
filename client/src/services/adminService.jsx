@@ -2,7 +2,7 @@ import { API } from "../redux/auth/authService";
 
 export const getUser = async () => {
   try {
-    const response = await API.get("/users");
+    const response = await API.get("/admin/users");
     return {
       success: true,
       data: response.data,
@@ -117,7 +117,7 @@ export const getAllAssets = async () => {
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message: error.response?.data?.message || error.message,
     };
   }
 };
@@ -130,7 +130,7 @@ export const createAsset = async (data) => {
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message: error.response?.data?.message || error.message,
     };
   }
 };
@@ -143,7 +143,7 @@ export const deleteAsset = async (id) => {
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message: error.response?.data?.message || error.message,
     };
   }
 };
@@ -152,6 +152,45 @@ export const updateAsset = async (id, data) => {
   try {
     const res = await API.put(`/admin/asset/${id}`, data);
     return res.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const getAllExpenses = async () => {
+  try {
+    let response = await API.get("/admin/expense");
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const approveExpense = async (id) => {
+  try {
+    let response = await API.put(`/admin/expense/approve/${id}`);
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const rejectExpense = async (id, adminRemark) => {
+  try {
+    let response = await API.put(`/admin/expense/reject/${id}`, {
+      adminRemark: adminRemark,
+    });
+
+    return response.data;
   } catch (error) {
     return {
       success: false,

@@ -17,6 +17,7 @@ import {
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import { useSelector } from "react-redux";
 
 import { toast } from "react-toastify";
 import {
@@ -58,6 +59,11 @@ const AdminAsset = () => {
     totalQuantity: "",
     expiresAt: "",
   });
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  if (user.role != "admin") {
+    return <h1>You don't have permission for this page</h1>;
+  }
 
   const fetchAssets = async () => {
     const res = await getAllAssets();

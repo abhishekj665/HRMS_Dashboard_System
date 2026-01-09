@@ -4,6 +4,9 @@ import UserIP from "./UserIP.model.js";
 import AssetRequest from "./AssestRequest.model.js";
 import Asset from "./Asset.model.js";
 import UserAsset from "./UserAsset.model.js";
+import Expenses from "./Expenses.model.js";
+import Account from "./Account.model.js";
+
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -41,4 +44,24 @@ UserAsset.belongsTo(Asset, {
   onUpdate: "CASCADE",
 });
 
-export { User, OTP, UserIP, AssetRequest, Asset, UserAsset };
+
+
+User.hasMany(Expenses, { foreignKey: "userId" });
+Expenses.belongsTo(User, { foreignKey: "userId", as: "employee" });
+
+User.hasMany(Expenses, { foreignKey: "reviewedBy" });
+Expenses.belongsTo(User, { foreignKey: "reviewededBy", as: "reviewer" });
+
+
+User.hasOne(Account, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+});
+
+Account.belongsTo(User, {
+  foreignKey: "userId",
+});
+
+
+
+export { User, OTP, UserIP, AssetRequest, Asset, UserAsset, Account, Expenses };

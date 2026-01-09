@@ -42,11 +42,10 @@ io.on("connection", (socket) => {
   }
 
   socket.on("disconnect", (reason) => {
-  if (reason !== "transport close") {
-    console.log(`Socket disconnected: ${socket.id}, reason: ${reason}`);
-  }
-});
-
+    if (reason !== "transport close") {
+      console.log(`Socket disconnected: ${socket.id}, reason: ${reason}`);
+    }
+  });
 });
 
 const startServer = async () => {
