@@ -13,4 +13,7 @@ export const env = {
   mail_user: process.env.MAIL_USER,
   mail_pass: process.env.MAIL_PASS,
   geo_apikey: process.env.GEO_APIKEY,
+  cloud_name: process.env.CLOUD_NAME,
+  cloud_key: process.env.CLOUD_KEY,
+  cloud_secret: process.env.CLOUD_SECRET,
 };

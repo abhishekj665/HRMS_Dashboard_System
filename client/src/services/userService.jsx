@@ -7,7 +7,13 @@ export const getProfile = async () => {
     });
     return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
   }
 };
 
@@ -25,7 +31,10 @@ export const createAssetRequest = async (data) => {
   } catch (error) {
     return {
       success: false,
-      message: error.response?.data?.message || error.message,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
     };
   }
 };
@@ -37,7 +46,10 @@ export const getAssetRequest = async () => {
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
     };
   }
 };
@@ -50,7 +62,10 @@ export const getAssetInfo = async () => {
   } catch (error) {
     return {
       success: false,
-      message: error.message,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
     };
   }
 };

@@ -10,12 +10,14 @@ import AdminLayoutPage from "./pages/AdminLayoutPage";
 import AdminIps from "./pages/AdminIp";
 import UserAssetPage from "./pages/UserAssetPage";
 import AdminRequest from "./pages/AdminRequest";
+import ExpensesPage from "./pages/ExpensesPage";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import AdminAsset from "./pages/AdminAsset";
+import UserExpensePage from "./pages/UserExpensePage";
 
 function App() {
   return (
@@ -24,7 +26,10 @@ function App() {
         <Routes>
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/login" element={<LogInPage />} />
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />}>
+            <Route path="asset" element={<UserAssetPage />}></Route>
+            <Route path="expense" element={<UserExpensePage />}></Route>
+          </Route>
           <Route path="/verify" element={<VerifyPage />} />
 
           <Route path="/admin" element={<AdminLayoutPage />}>
@@ -32,11 +37,10 @@ function App() {
             <Route path="ips" element={<AdminIps />} />
             <Route path="requests" element={<AdminRequest />} />
             <Route path="asset" element={<AdminAsset />} />
+            <Route path="expenses" element={<ExpensesPage />} />
           </Route>
 
-          <Route path="/" element={<HomePage />}>
-            <Route path="asset" element={<UserAssetPage />}></Route>
-          </Route>
+          <Route path="/" element={<SignUpPage />}></Route>
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>

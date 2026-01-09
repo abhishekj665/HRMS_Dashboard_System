@@ -176,50 +176,50 @@ const AdminRequest = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {openRejectBox && (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-                <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
-                  <h2 className="text-lg font-semibold mb-3">Reject Request</h2>
-
-                  <textarea
-                    className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
-                    rows="4"
-                    placeholder="Enter reject reason..."
-                    value={remark}
-                    onChange={(e) => setRemark(e.target.value)}
-                  />
-
-                  <div className="flex justify-end gap-3 mt-4">
-                    <button
-                      className="px-4 py-2 border rounded-lg"
-                      onClick={() => {
-                        setOpenRejectBox(false);
-                        setRemark("");
-                      }}
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                      onClick={async () => {
-                        if (!remark.trim()) {
-                          toast.error("Please enter reject reason");
-                          return;
-                        }
-
-                        handleReject(rejectId, remark);
-                      }}
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </TableBody>
         </Table>
       </TableContainer>
+      {openRejectBox && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-3">Reject Request</h2>
+
+            <textarea
+              className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
+              rows="4"
+              placeholder="Enter reject reason..."
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                className="px-4 py-2 border rounded-lg"
+                onClick={() => {
+                  setOpenRejectBox(false);
+                  setRemark("");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                onClick={async () => {
+                  if (!remark.trim()) {
+                    toast.error("Please enter reject reason");
+                    return;
+                  }
+
+                  handleReject(rejectId, remark);
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
