@@ -20,7 +20,6 @@ io.on("connection", (socket) => {
     const cookieHeader = socket.handshake.headers.cookie;
 
     if (!cookieHeader) {
-      console.log(" NO COOKIE HEADER");
       socket.disconnect();
       return;
     }
@@ -30,19 +29,23 @@ io.on("connection", (socket) => {
 
     const decoded = jwt.verify(token, env.jwt_password);
 
-    console.log("Socket authenticated:", decoded.role, decoded.id);
-
     if (decoded.role === "admin") {
       socket.join("admin");
-      console.log("➡ joined admin room");
     } else if (decoded.role === "manager") {
       socket.join("manager");
-      console.log("➡ joined manager room");
     }
 
     socket.join(`user:${decoded.id}`);
+
+    socket.on("requestCreated", (data) => {
+      io.to("admin").emit("requestCreated", data);
+    });
+
+    socket.on("requestUpdated", (data) => {
+      io.to("admin").emit("requestUpdated", data);
+      io.to("manager").emit("requestUpdated", data);
+    });
   } catch (err) {
-    console.log("Socket auth failed:", err.message);
     socket.disconnect();
   }
 

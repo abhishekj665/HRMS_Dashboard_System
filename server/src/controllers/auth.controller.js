@@ -5,7 +5,7 @@ import STATUS from "../constants/Status.js";
 import ExpressError from "../utils/Error.utils.js";
 
 import { UserIP } from "../models/Associations.model.js";
-import { getLocationFromIp } from "../services/geo.service.js";
+import { getLocationFromIp } from "../utils/geo.utils.js";
 
 export const signUp = async (req, res, next) => {
   try {
