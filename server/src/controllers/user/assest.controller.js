@@ -1,10 +1,8 @@
-import * as assestServices from "../../services/user/asset.service.js"
-import STATUS from "../../config/constants/Status.js";
+import * as assestServices from "../../services/user/asset.service.js";
+import STATUS from "../../constants/Status.js";
 
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 import { io } from "../../server.js";
-
-
 
 export const createAssetRequest = async (req, res, next) => {
   try {
@@ -16,17 +14,16 @@ export const createAssetRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-  io.to("manager").emit("requestCreated", {
-    message: "New request created",
-  });
+      io.to("manager").emit("requestCreated", {
+        message: "New request created",
+      });
 
-  io.to("admin").emit("requestCreated", {
-    message: "New request created",
-  });
+      io.to("admin").emit("requestCreated", {
+        message: "New request created",
+      });
 
-  return successResponse(res, response, response.message, STATUS.CREATED);
-}
- else {
+      return successResponse(res, response, response.message, STATUS.CREATED);
+    } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {

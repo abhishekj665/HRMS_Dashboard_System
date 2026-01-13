@@ -1,11 +1,11 @@
 import express from "express";
-import { auth } from "../middlewares/auth.middleware.js";
+import { userAuth } from "../middlewares/auth.middleware.js";
 import * as expensesControllers from "../controllers/user/expenses.controller.js";
 import { uploadReceipt } from "../middlewares/upload.js";
 
 const router = express.Router();
 
-router.use(auth);
+router.use(userAuth);
 
 router
   .route("/")

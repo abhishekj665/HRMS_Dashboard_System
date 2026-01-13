@@ -1,8 +1,8 @@
-import STATUS from "../../config/constants/Status.js";
-import { Account, Expenses } from "../../models/index.model.js";
+import STATUS from "../../constants/Status.js";
+import { Account, Expenses } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
-import { successResponse } from "../../utils/response.utils.js";
-import { User } from "../../models/index.model.js";
+
+import { User } from "../../models/Associations.model.js";
 import bcrypt from "bcrypt";
 
 export const getExpenseDataService = async () => {

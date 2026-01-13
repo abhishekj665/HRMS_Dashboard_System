@@ -11,13 +11,13 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { getRequestData } from "../services/adminService";
+import { getRequestData } from "../../services/adminService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../services/adminService";
+import { approveRequest, rejectRequest } from "../../services/adminService";
 
 import { useSelector } from "react-redux";
 
-import { socket } from "../socket";
+import { socket } from "../../socket";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";

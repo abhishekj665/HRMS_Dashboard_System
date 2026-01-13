@@ -1,6 +1,6 @@
-import React from "react";
+
 import { useState } from "react";
-import { registerUser, loginUser } from "../redux/auth/authThunk.jsx";
+
 import { useDispatch } from "react-redux";
 import { TextField, Button } from "@mui/material";
 import { toast } from "react-toastify";

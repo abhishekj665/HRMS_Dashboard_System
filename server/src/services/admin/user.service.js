@@ -1,9 +1,9 @@
 import ExpressError from "../../utils/Error.utils.js";
-import { UserIP } from "../../models/index.model.js";
-import { User } from "../../models/index.model.js";
+import { UserIP } from "../../models/Associations.model.js";
+import { User } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
-import STATUS from "../../config/constants/Status.js";
-import { generateHash } from "../../utils/generateHash.utils.js";
+import STATUS from "../../constants/Status.js";
+import { generateHash } from "../../utils/hash.utils.js";
 
 export const getUsersService = async (page, limits) => {
   try {

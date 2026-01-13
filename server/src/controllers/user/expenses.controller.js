@@ -2,7 +2,7 @@ import { successResponse } from "../../utils/response.utils.js";
 import { errorResponse } from "../../utils/response.utils.js";
 
 import * as expensesServices from "../../services/user/expenses.service.js";
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import { io } from "../../server.js";
 
 import cloudinary from "../../config/cloudinary.js";
@@ -29,8 +29,6 @@ export const getExpenseData = async (req, res, next) => {
 export const createNewExpense = async (req, res, next) => {
   try {
     let receiptUrl = null;
-
-    
 
     if (req.file) {
       try {

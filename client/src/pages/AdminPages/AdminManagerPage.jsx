@@ -6,8 +6,8 @@ import {
   getManagersWithUsers,
   assignManager,
   registerNewManager,
-} from "../services/adminService";
-import { getUser } from "../services/adminService";
+} from "../../services/adminService";
+import { getUser } from "../../services/adminService";
 
 import {
   Dialog,

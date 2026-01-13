@@ -1,11 +1,11 @@
 import React from "react";
 import { useState } from "react";
-import { registerUser, loginUser } from "../redux/auth/authThunk.jsx";
+import { registerUser, loginUser } from "../../redux/auth/authThunk.jsx";
 import { useDispatch } from "react-redux";
 import { TextField, Button } from "@mui/material";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { login, verify } from "../redux/auth/authService.jsx";
+import { login, verify } from "../../redux/auth/authService.jsx";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({

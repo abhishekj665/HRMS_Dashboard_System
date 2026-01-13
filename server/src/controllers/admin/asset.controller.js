@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import * as assetServices from "../../services/admin/asset.service.js";
 
 export const createAsset = async (req, res, next) => {

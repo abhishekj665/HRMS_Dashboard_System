@@ -1,10 +1,8 @@
-import React from "react";
+
 
 import { useState, useEffect } from "react";
 import {
-  Button,
-  TextField,
-  MenuItem,
+  
   Table,
   TableBody,
   TableCell,
@@ -14,13 +12,11 @@ import {
   Paper,
   Chip,
 } from "@mui/material";
-import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+
 import { useSelector } from "react-redux";
 
-import { toast } from "react-toastify";
-import { getAllAssets } from "../services/managerService";
+
+import { getAllAssets } from "../../services/managerService";
 
 const statusColor = (status) => {
   switch (status) {
@@ -37,14 +33,14 @@ const statusColor = (status) => {
   }
 };
 
-const statusList = ["available", "not-available", "assigned", "repairing"];
+
 
 const ManagerAsset = () => {
-  const [openForm, setOpenForm] = useState(false);
+  
   const [assets, setAssets] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
+  
 
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   if (user.role != "manager") {
     return <h1>You don't have permission for this page</h1>;

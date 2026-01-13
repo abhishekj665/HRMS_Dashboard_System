@@ -1,12 +1,11 @@
-import Sidebar from "./SideBar";
-
-import Topbar from "./TopBar";
+import ManagerSidebar from "./ManagerSideBar";
+import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 
-export default function AdminLayout() {
+export default function ManagerLayout() {
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar />
+      <ManagerSidebar />
 
       <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar />

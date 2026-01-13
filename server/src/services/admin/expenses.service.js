@@ -1,7 +1,7 @@
-import STATUS from "../../config/constants/Status.js";
-import { Expenses } from "../../models/index.model.js";
+import STATUS from "../../constants/Status.js";
+import { Expenses } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
-import { User } from "../../models/index.model.js";
+import { User } from "../../models/Associations.model.js";
 
 export const getAllExpenseDataService = async () => {
   try {

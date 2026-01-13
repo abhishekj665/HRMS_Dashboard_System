@@ -1,10 +1,10 @@
-import { AssetRequest, Asset, User } from "../../models/index.model.js";
+import { AssetRequest, Asset, User } from "../../models/Associations.model.js";
 
 import { Op } from "sequelize";
 
 import ExpressError from "../../utils/Error.utils.js";
 
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 
 export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;

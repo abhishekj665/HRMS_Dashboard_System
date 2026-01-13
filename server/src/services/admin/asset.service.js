@@ -1,12 +1,7 @@
-import {
-  AssetRequest,
-  User,
-  Asset,
-  UserAsset,
-} from "../../models/index.model.js";
+import { AssetRequest, Asset } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 
 export const createAssetService = async (data) => {
   const {
@@ -18,8 +13,6 @@ export const createAssetService = async (data) => {
     expiresAt,
     totalQuantity,
   } = data;
-
-  
 
   if (!title || !description || !category || !price || !totalQuantity) {
     throw new ExpressError(400, "All required fields must be provided");
@@ -88,7 +81,6 @@ export const getAllAsset = async () => {
 
 export const deleteAssetService = async (id) => {
   try {
-    
     let asset = await Asset.findAll({
       where: { id },
       include: {

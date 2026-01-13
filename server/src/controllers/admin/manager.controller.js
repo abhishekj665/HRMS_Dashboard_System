@@ -1,6 +1,6 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import * as managerServices from "../../services/admin/manager.service.js";
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 
 export const getAllManagersData = async (req, res, next) => {
   try {
@@ -16,7 +16,7 @@ export const registerManager = async (req, res, next) => {
   try {
     let data = req.body.data;
 
-    console.log(data)
+    console.log(data);
 
     let response = await managerServices.registerManagerService(data);
 
@@ -51,11 +51,6 @@ export const assignWorkersToManager = async (req, res, next) => {
   }
 };
 
-
-
-
-
-
 export const getManagersWithUsers = async (req, res, next) => {
   try {
     const response = await managerServices.getManagersWithUsersService();
@@ -64,8 +59,3 @@ export const getManagersWithUsers = async (req, res, next) => {
     return next(error);
   }
 };
-
-
-
-
-

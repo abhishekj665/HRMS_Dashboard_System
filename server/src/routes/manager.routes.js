@@ -1,5 +1,5 @@
 import express from "express";
-import { managerAuth } from "../middlewares/managerAuth.middleware.js";
+import { managerAuth } from "../middlewares/auth.middleware.js";
 
 import * as managerUserController from "../controllers/manager/user.controller.js";
 import * as managerRequestController from "../controllers/manager/request.controller.js";

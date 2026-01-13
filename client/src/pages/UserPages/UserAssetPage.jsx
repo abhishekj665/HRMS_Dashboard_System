@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Card, CardContent, Button, TextField, MenuItem } from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
 import {
   createAssetRequest,
   getAssetRequest,
   getAssetInfo,
-} from "../services/userService";
+} from "../../services/userService";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { Autocomplete } from "@mui/material";
-import { getRequestData } from "../services/adminService";
-import { socket } from "../socket";
+
+import { socket } from "../../socket";
 
 import {
   Table,
@@ -42,7 +42,7 @@ export default function UserAssetPage() {
   const [openForm, setOpenForm] = useState(false);
   const [requests, setRequests] = useState([]);
   const [assets, setAssets] = useState([]);
-  const [search, setSearch] = useState("");
+  
 
   const [formData, setFormData] = useState({
     assetId: "",

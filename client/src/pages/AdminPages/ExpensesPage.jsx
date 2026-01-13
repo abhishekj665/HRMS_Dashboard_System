@@ -14,12 +14,12 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
-import { socket } from "../socket";
+import { socket } from "../../socket";
 import {
   getAllExpenses,
   approveExpense,
   rejectExpense,
-} from "../services/adminService";
+} from "../../services/adminService";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";

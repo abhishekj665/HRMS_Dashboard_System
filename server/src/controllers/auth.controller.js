@@ -1,11 +1,11 @@
 import * as authServices from "../services/auth.service.js";
 import { successResponse, errorResponse } from "../utils/response.utils.js";
-import { setCookie } from "../utils/setCookie.utils.js";
-import STATUS from "../config/constants/Status.js";
+import { setCookie } from "../services/cookie.service.js";
+import STATUS from "../constants/Status.js";
 import ExpressError from "../utils/Error.utils.js";
 
-import { UserIP } from "../models/index.model.js";
-import { getLocationFromIp } from "../utils/geoInfo.utils.js";
+import { UserIP } from "../models/Associations.model.js";
+import { getLocationFromIp } from "../services/geo.service.js";
 
 export const signUp = async (req, res, next) => {
   try {
@@ -24,8 +24,6 @@ export const signUp = async (req, res, next) => {
 export const verifyOtp = async (req, res, next) => {
   try {
     let { email, otp, purpose } = req.body;
-
-  
 
     if (purpose != undefined) {
       purpose = purpose.toUpperCase();

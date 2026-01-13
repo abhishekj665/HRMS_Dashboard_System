@@ -1,12 +1,7 @@
-import {
-    User,
-    UserIP
-} from "../../models/index.model.js";
-
+import { User } from "../../models/Associations.model.js";
 
 import bcrypt from "bcrypt";
 import ExpressError from "../../utils/Error.utils.js";
-import { getPagination } from "../../utils/paginations.utils.js";
 
 
 export const updateUserService = async (userId, data) => {

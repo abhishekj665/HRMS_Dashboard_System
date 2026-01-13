@@ -3,10 +3,10 @@ import {
   User,
   Asset,
   UserAsset,
-} from "../../models/index.model.js";
+} from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-import sequelize from "../../config/db.js";
+import { sequelize } from "../../config/db.js";
 
 export const getRequestDataService = async () => {
   try {

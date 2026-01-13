@@ -1,9 +1,8 @@
 import ExpressError from "../../utils/Error.utils.js";
-import STATUS from "../../config/constants/Status.js";
-import { User } from "../../models/index.model.js";
-import { generateHash } from "../../utils/generateHash.utils.js";
-import sequelize from "../../config/db.js";
-import { successResponse } from "../../utils/response.utils.js";
+import STATUS from "../../constants/Status.js";
+import { User } from "../../models/Associations.model.js";
+import { generateHash } from "../../utils/hash.utils.js";
+import { sequelize } from "../../config/db.js";
 
 export const getAllManagers = async () => {
   try {
@@ -94,9 +93,6 @@ export const assignWorkersToManagerService = async ({
   }
 };
 
-
-
-
 export const getManagersWithUsersService = async () => {
   const managers = await User.findAll({
     where: { role: "manager" },
@@ -115,4 +111,3 @@ export const getManagersWithUsersService = async () => {
     data: managers,
   };
 };
-

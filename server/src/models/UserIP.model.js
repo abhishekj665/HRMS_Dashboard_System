@@ -1,4 +1,4 @@
-import sequelize from "../config/db.js";
+import {sequelize} from "../config/db.js";
 import { DataTypes, UUIDV4 } from "sequelize";
 
 const UserIP = sequelize.define("UserIP", {

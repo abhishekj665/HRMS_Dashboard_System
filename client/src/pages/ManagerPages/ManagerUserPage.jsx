@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Table,
@@ -19,13 +19,13 @@ import {
   TextField,
 } from "@mui/material";
 
-import { registerUser } from "../services/managerService";
+import { registerUser } from "../../services/managerService";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { getUser } from "../services/managerService";
+import { getUser } from "../../services/managerService";
 
 const roleColor = (role) => {
   if (role === "admin") return "error";

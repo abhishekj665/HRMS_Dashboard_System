@@ -1,9 +1,7 @@
-import { Account } from "../../models/index.model.js";
+import { Account } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
-import STATUS from "../../config/constants/Status.js";
-import { generateHash } from "../../utils/generateHash.utils.js";
-import { successResponse } from "../../utils/response.utils.js";
-import { hash } from "bcrypt";
+import STATUS from "../../constants/Status.js";
+import { generateHash } from "../../utils/hash.utils.js";
 
 export const getAccountDataService = async (user) => {
   try {

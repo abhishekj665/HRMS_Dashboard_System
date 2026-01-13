@@ -1,29 +1,29 @@
-import HomePage from "./pages/UserLayoutPage";
-import AdminUserPage from "./pages/AdminUserPage";
-import SignUpPage from "./pages/SignupPage";
-import LogInPage from "./pages/LoginPage";
-import VerifyPage from "./pages/VerifyPage";
+import HomePage from "./pages/UserPages/UserLayoutPage";
+import AdminUserPage from "./pages/AdminPages/AdminUserPage";
+import SignUpPage from "./pages/Auth/SignupPage";
+import LogInPage from "./pages/Auth/LoginPage";
+import VerifyPage from "./pages/Auth/VerifyPage";
 import "./App.css";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AdminLayoutPage from "./pages/AdminLayoutPage";
-import AdminIps from "./pages/AdminIp";
-import UserAssetPage from "./pages/UserAssetPage";
-import AdminRequest from "./pages/AdminRequest";
-import ExpensesPage from "./pages/ExpensesPage";
-import ManagerPage from "./pages/AdminManagerPage";
-import ManagerAsset from "./pages/ManagerAssetPage";
+import AdminLayoutPage from "./pages/AdminPages/AdminLayoutPage";
+import AdminIps from "./pages/AdminPages/AdminIp";
+import UserAssetPage from "./pages/UserPages/UserAssetPage";
+import AdminRequest from "./pages/AdminPages/AdminRequest";
+import ExpensesPage from "./pages/AdminPages/ExpensesPage";
+import ManagerPage from "./pages/AdminPages/AdminManagerPage";
+import ManagerAsset from "./pages/ManagerPages/ManagerAssetPage";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import AdminAsset from "./pages/AdminAsset";
-import UserExpensePage from "./pages/UserExpensePage";
-import ManagerExpensesPage from "./pages/ManagerExpenses";
-import ManagerLayout from "./pages/ManagerLayoutPage";
-import ManagerUserPage from "./pages/ManagerUserPage";
-import ManagerAssetRequest from "./pages/ManagerRequest";
+import AdminAsset from "./pages/AdminPages/AdminAsset";
+import UserExpensePage from "./pages/UserPages/UserExpensePage";
+import ManagerExpensesPage from "./pages/ManagerPages/ManagerExpenses";
+import ManagerLayout from "./pages/ManagerPages/ManagerLayoutPage";
+import ManagerUserPage from "./pages/ManagerPages/ManagerUserPage";
+import ManagerAssetRequest from "./pages/ManagerPages/ManagerRequest";
 
 function App() {
   return (
