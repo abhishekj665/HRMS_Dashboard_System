@@ -1,4 +1,4 @@
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import * as expensesService from "../../services/manager/expense.service.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 import { io } from "../../server.js";
@@ -25,26 +25,25 @@ export const approveExpenseRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-  io.to("manager").emit("expenseUpdated", {
-    message: "Expense status updated",
-  });
+      io.to("manager").emit("expenseUpdated", {
+        message: "Expense status updated",
+      });
 
-  io.to("admin").emit("expenseUpdated", {
-    message: "Expense status updated",
-  });
+      io.to("admin").emit("expenseUpdated", {
+        message: "Expense status updated",
+      });
 
-  io.to(`user:${response.userId}`).emit("expenseUpdated", {
-    message: "Your expense status updated",
-  });
+      io.to(`user:${response.userId}`).emit("expenseUpdated", {
+        message: "Your expense status updated",
+      });
 
-  return successResponse(
-    res,
-    response.data,
-    response.message,
-    STATUS.ACCEPTED
-  );
-}
- else {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED
+      );
+    } else {
       return errorResponse(res, response.message);
     }
   } catch (error) {
@@ -61,26 +60,25 @@ export const rejectExpenseRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-  io.to("manager").emit("expenseUpdated", {
-    message: "Expense status updated",
-  });
+      io.to("manager").emit("expenseUpdated", {
+        message: "Expense status updated",
+      });
 
-  io.to("admin").emit("expenseUpdated", {
-    message: "Expense status updated",
-  });
+      io.to("admin").emit("expenseUpdated", {
+        message: "Expense status updated",
+      });
 
-  io.to(`user:${response.userId}`).emit("expenseUpdated", {
-    message: "Your expense status updated",
-  });
+      io.to(`user:${response.userId}`).emit("expenseUpdated", {
+        message: "Your expense status updated",
+      });
 
-  return successResponse(
-    res,
-    response.data,
-    response.message,
-    STATUS.ACCEPTED
-  );
-}
-else {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED
+      );
+    } else {
       return errorResponse(res, response.message);
     }
   } catch (error) {

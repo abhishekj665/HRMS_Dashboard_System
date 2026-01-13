@@ -1,6 +1,6 @@
 import express from "express";
-import { auth } from "../middlewares/auth.middleware.js";
-import { adminAuth } from "../middlewares/adminAuth.middleware.js";
+import { userAuth,  adminAuth } from "../middlewares/auth.middleware.js";
+
 
 const Router = express.Router();
 
@@ -10,7 +10,7 @@ import * as adminAssetController from "../controllers/admin/asset.controller.js"
 import * as adminExpenseController from "../controllers/admin/expenses.controller.js";
 import * as adminManagerController from "../controllers/admin/manager.controller.js";
 
-Router.use(auth);
+Router.use(userAuth);
 
 Router.get("/request", adminRequestController.getRequestData);
 

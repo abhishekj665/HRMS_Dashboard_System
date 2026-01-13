@@ -3,24 +3,25 @@ import {
   User,
   Asset,
   UserAsset,
-} from "../../models/index.model.js";
+} from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-import sequelize from "../../config/db.js";
+import { sequelize } from "../../config/db.js";
 
 export const getRequestDataService = async () => {
   try {
     const requests = await AssetRequest.findAll({
-  order: [["createdAt", "DESC"]],
-  include: [
-    { model: User, attributes: ["email", "role"] },       
-    { model: Asset, attributes: ["id","title","price","status","availableQuantity"] },
-    { model: User, as: "reviewer", attributes: ["id","email","role"] } 
-  ],
-});
+      order: [["createdAt", "DESC"]],
+      include: [
+        { model: User, attributes: ["email", "role"] },
+        {
+          model: Asset,
+          attributes: ["id", "title", "price", "status", "availableQuantity"],
+        },
+        { model: User, as: "reviewer", attributes: ["id", "email", "role"] },
+      ],
+    });
 
-
-    
     return {
       success: true,
       message: "Requests fetched successfully",

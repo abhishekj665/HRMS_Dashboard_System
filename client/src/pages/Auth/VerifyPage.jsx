@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TextField } from "@mui/material";
 import { Button } from "@mui/material";
-import { verify } from "../redux/auth/authService";
+import { verify } from "../../redux/auth/authService";
 import { toast } from "react-toastify";
 
 const VerifyPage = () => {

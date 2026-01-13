@@ -1,4 +1,4 @@
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import * as expensesService from "../../services/admin/expenses.service.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 import { io } from "../../server.js";
@@ -49,7 +49,6 @@ export const approveExpenseRequest = async (req, res, next) => {
 
 export const rejectExpenseRequest = async (req, res, next) => {
   try {
-    
     let response = await expensesService.rejectExpenseRequestService(
       req.params.id,
       req.user,

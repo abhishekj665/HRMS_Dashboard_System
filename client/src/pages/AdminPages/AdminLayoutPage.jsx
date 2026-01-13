@@ -1,12 +1,12 @@
-import React from "react";
-import Topbar from "./TopBar";
-import UserSidebar from "./UserSideBar";
+import Sidebar from "../../components/SideBar";
+
+import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 
-const HomePage = () => {
+export default function AdminLayout() {
   return (
     <div className="flex h-screen bg-gray-100">
-      <UserSidebar />
+      <Sidebar />
 
       <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar />
@@ -16,6 +16,4 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
-
-export default HomePage;
+}

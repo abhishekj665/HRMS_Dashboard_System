@@ -1,14 +1,9 @@
-import {
-  AssetRequest,
-  User,
-  Asset,
-  UserAsset,
-} from "../../models/index.model.js";
+import { Asset } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
 import { Op } from "sequelize";
 
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 
 export const getAllAsset = async () => {
   try {

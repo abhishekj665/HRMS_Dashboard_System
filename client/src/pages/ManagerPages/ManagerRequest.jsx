@@ -12,16 +12,16 @@ import {
 } from "@mui/material";
 
 import { Autocomplete } from "@mui/material";
-import { createAssetRequest } from "../services/managerService";
+import { createAssetRequest } from "../../services/managerService";
 
 import { useState, useEffect } from "react";
-import { getRequestData, getAssetInfo } from "../services/managerService";
+import { getRequestData, getAssetInfo } from "../../services/managerService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../services/managerService";
+import { approveRequest, rejectRequest } from "../../services/managerService";
 
 import { useSelector } from "react-redux";
 
-import { socket } from "../socket";
+import { socket } from "../../socket";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";
@@ -32,7 +32,7 @@ const statusColor = (status) => {
 const ManagerRequest = () => {
   const [requestData, setRequestsData] = useState([]);
 
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);

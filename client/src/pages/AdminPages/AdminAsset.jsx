@@ -1,4 +1,4 @@
-import React from "react";
+
 
 import { useState, useEffect } from "react";
 import {
@@ -25,7 +25,7 @@ import {
   getAllAssets,
   deleteAsset,
   updateAsset,
-} from "../services/adminService";
+} from "../../services/adminService";
 
 const statusColor = (status) => {
   switch (status) {
@@ -59,7 +59,7 @@ const AdminAsset = () => {
     totalQuantity: "",
     expiresAt: "",
   });
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   if (user.role != "admin") {
     return <h1>You don't have permission for this page</h1>;

@@ -1,5 +1,5 @@
 import * as userInfoServices from "../../services/user/userInfo.service.js";
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
 export const updateUser = async (req, res, next) => {

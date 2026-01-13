@@ -1,11 +1,10 @@
 import app from "./app.js";
-import { connectDB } from "./db/connectDB.js";
+import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
 import http from "http";
 import { Server } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
-import { syncDB } from "./db/syncDB.js";
 
 const server = http.createServer(app);
 
@@ -17,8 +16,6 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  
-
   try {
     const cookieHeader = socket.handshake.headers.cookie;
 

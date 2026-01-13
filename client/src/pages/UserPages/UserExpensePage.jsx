@@ -15,11 +15,11 @@ import {
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
 import { toast } from "react-toastify";
 
-import { createExpense } from "../services/expensesService";
-import { getExpenses } from "../services/expensesService";
-import { createAccount } from "../services/accountService";
+import { createExpense } from "../../services/expensesService";
+import { getExpenses } from "../../services/expensesService";
+import { createAccount } from "../../services/accountService";
 
-import { socket } from "../socket";
+import { socket } from "../../socket";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";

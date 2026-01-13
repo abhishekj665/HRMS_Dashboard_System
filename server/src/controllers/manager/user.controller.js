@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
-import STATUS from "../../config/constants/Status.js";
+import STATUS from "../../constants/Status.js";
 import * as userServices from "../../services/admin/user.service.js";
 
 export const registerUser = async (req, res, next) => {
@@ -15,10 +15,6 @@ export const registerUser = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
-
 
 export const getUsers = async (req, res, next) => {
   try {
