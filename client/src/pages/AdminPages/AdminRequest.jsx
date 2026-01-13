@@ -34,7 +34,7 @@ const AdminRequest = () => {
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
 
-  const role = user.role;
+  const role = user?.role;
 
   const fetchRequestsData = async () => {
     const response = await getRequestData();

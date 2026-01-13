@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Select, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 import {
   getManagersWithUsers,
@@ -34,6 +35,12 @@ export default function AdminManagersPage() {
     email: "",
     password: "",
   });
+
+  const { user } = useSelector((state) => state.auth);
+
+  if (user?.role != "admin") {
+    return <h1>You don't have permission for this</h1>;
+  }
 
   const fetchUsers = async (currentPage = 1) => {
     if (loadingUsers) return;
@@ -69,7 +76,6 @@ export default function AdminManagersPage() {
   };
 
   const handleAssign = async (managerId) => {
-    
     const workerIds = selectedUsers[managerId];
     if (!workerIds || workerIds.length === 0) {
       return toast.error("Select users first");

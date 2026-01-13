@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { TextField, Button } from "@mui/material";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/auth/authThunk";
 
 const LogInPage = () => {
   let [formData, setFormData] = useState({

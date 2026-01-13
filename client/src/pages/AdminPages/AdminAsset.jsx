@@ -61,7 +61,7 @@ const AdminAsset = () => {
   });
   const { user } = useSelector((state) => state.auth);
 
-  if (user.role != "admin") {
+  if (user?.role != "admin") {
     return <h1>You don't have permission for this page</h1>;
   }
 

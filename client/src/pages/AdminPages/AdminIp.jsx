@@ -14,7 +14,7 @@ export default function AdminIps() {
 
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
-  const role = user.role;
+  const role = user?.role;
 
   const fetchUser = async () => {
     try {
