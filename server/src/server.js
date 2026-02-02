@@ -1,6 +1,6 @@
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
-import { env, funct } from "./config/env.js";
+import { env } from "./config/env.js";
 import http from "http";
 import { Server } from "socket.io";
 import cookie from "cookie";
@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: env.client_url,
+    origin: env.client_url?.trim(),
     credentials: true,
   },
 });
