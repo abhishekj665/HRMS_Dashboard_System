@@ -31,6 +31,8 @@ function LoginPage() {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
+    setOtp("");
+    setCredentials(true);
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -48,8 +50,6 @@ function LoginPage() {
 
     try {
       const response = await dispatch(loginUser(formData)).unwrap();
-
-      
 
       if (response?.user?.isVerified === false) {
         setCredentials(false);
@@ -96,9 +96,14 @@ function LoginPage() {
         setOtp("");
         setCredentials(true);
         const res = await dispatch(loginUser(formData)).unwrap();
-        navigate("/welcome");
+        if (res?.user?.role === "admin") {
+          navigate("/admin/dashboard");
+        } else if (res?.user?.role === "manager") {
+          navigate("/manager/dashboard");
+        } else {
+          navigate("/home");
+        }
       } else {
-        
         toast.error(response.message);
       }
     } catch (error) {

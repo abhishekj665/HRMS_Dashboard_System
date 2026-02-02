@@ -10,7 +10,8 @@ import {
   Chip,
 } from "@mui/material";
 
-import { useState,useNavigate, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getRequestData } from "../../services/adminService";
 import { toast } from "react-toastify";
 import { approveRequest, rejectRequest } from "../../services/adminService";

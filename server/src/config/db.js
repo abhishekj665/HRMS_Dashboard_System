@@ -1,11 +1,23 @@
 import { Sequelize } from "sequelize";
 import { env } from "./env.js";
 
-export const sequelize = new Sequelize(env.db_name, env.db_user, env.db_password, {
-  host: env.db_host,
-  dialect: "mysql",
-  logging: false,
-});
+export const sequelize = new Sequelize(
+  env.db_name,
+  env.db_user,
+  env.db_password,
+  {
+    host: env.db_host,
+    port: Number(env.db_port),
+    dialect: "mysql",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+    logging: false,
+  },
+);
 
 export const closeDB = async () => {
   try {
@@ -19,13 +31,14 @@ export const closeDB = async () => {
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
+
+    
     console.log("Database connected successfully");
   } catch (error) {
     console.error("Database connection failed:", error.message);
     process.exit(1);
   }
 };
-
 
 export const syncDB = async () => {
   try {
@@ -36,9 +49,3 @@ export const syncDB = async () => {
     console.error("Error creating tables:", error.message);
   }
 };
-
-
-
-
-
-

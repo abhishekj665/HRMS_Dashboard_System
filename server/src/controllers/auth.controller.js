@@ -9,7 +9,7 @@ import { clearCookie } from "../services/cookie.service.js";
 export const signUp = async (req, res, next) => {
   try {
     const result = await authServices.signUpService(req.body);
-    
+
     if (result.success) {
       return successResponse(res, result, result.message, STATUS.ACCEPTED);
     } else {
@@ -23,7 +23,7 @@ export const signUp = async (req, res, next) => {
 export const verifyOtp = async (req, res, next) => {
   try {
     let { email, otp, purpose } = req.body;
-    
+
     if (purpose != undefined || otp != undefined || email != undefined) {
       purpose = purpose.toUpperCase();
     } else {
@@ -33,7 +33,7 @@ export const verifyOtp = async (req, res, next) => {
     const result = await authServices.verifyOtpService(email, otp, purpose);
 
     if (result.success) {
-      return successResponse(res, result.data, result.message, STATUS.ACCEPTED);
+      return successResponse(res, result, result.message, STATUS.ACCEPTED);
     } else {
       return errorResponse(res, result.message, STATUS.NOT_ACCEPTABLE);
     }
@@ -49,7 +49,7 @@ export const logIn = async (req, res, next) => {
     if (!result.success) {
       return errorResponse(
         res,
-        
+
         result.message,
         STATUS.UNAUTHORIZED,
       );
@@ -78,7 +78,7 @@ export const logOut = async (req, res, next) => {
     } else {
       return errorResponse(
         res,
-        
+
         "Something went wrong",
         STATUS.UNAUTHORIZED,
       );

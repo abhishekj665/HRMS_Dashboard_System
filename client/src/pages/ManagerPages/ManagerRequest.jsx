@@ -14,7 +14,9 @@ import {
 import { Autocomplete } from "@mui/material";
 import { createAssetRequest } from "../../services/managerService";
 
-import { useState,useNavigate, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { getRequestData, getAssetInfo } from "../../services/managerService";
 import { toast } from "react-toastify";
 import { approveRequest, rejectRequest } from "../../services/managerService";

@@ -1,4 +1,6 @@
-import { useState,useNavigate, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   Button,
   TextField,
@@ -62,12 +64,9 @@ export default function UserExpensePage() {
     return;
   }
 
-
   const fetchExpenses = async () => {
     try {
       const response = await getExpenses();
-
-      
 
       if (response?.success) {
         setExpenses(response.data);

@@ -42,7 +42,7 @@ function Hero() {
               md:text-lg
             "
           >
-            Unlock the potential of Tailwise, where developers craft
+            Unlock the potential of Dashboard, where developers craft
             meticulously structured, visually stunning dashboards with
             feature-rich modules. Join us today to shape the future of your
             application development.

@@ -8,7 +8,7 @@ import jwtSign from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
 import { findOtpData } from "../config/otpService.js";
 
-export const signUpService = async ({ first_name,email, password }) => {
+export const signUpService = async ({ first_name, email, password }) => {
   if (!email || !password) {
     return {
       success: false,
@@ -28,13 +28,11 @@ export const signUpService = async ({ first_name,email, password }) => {
 
   let user = await User.create({
     id: nanoid(),
-    first_name : first_name,
+    first_name: first_name,
     email: email,
     password: hashedPassword,
     isVerified: false,
   });
-
-  
 
   const otp = generateOtp();
 
@@ -81,6 +79,7 @@ export const logInService = async ({ email, password }) => {
   const token = jwtSign(user.id, user.role);
 
   user.login_At = new Date();
+  user.isVerified = true;
   await user.save();
 
   return {

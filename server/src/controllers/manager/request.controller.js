@@ -35,6 +35,11 @@ export const approveRequest = async (req, res, next) => {
     if (response.success) {
       io.to("manager").emit("requestUpdated");
 
+      io.to("admin").emit("requestUpdated", {
+        message: "Request status updated",
+      });
+
+
       io.to(`user:${response.userId}`).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
@@ -60,6 +65,11 @@ export const rejectRequest = async (req, res, next) => {
     if (response.success) {
       io.to("manager").emit("requestUpdated");
 
+      io.to("admin").emit("requestUpdated", {
+        message: "Request status updated",
+      });
+
+
       io.to(`user:${response.userId}`).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
@@ -84,6 +94,10 @@ export const createAssetRequest = async (req, res, next) => {
       io.to("manager").emit("requestCreated", {
         message: "New request created",
       });
+      io.to("admin").emit("requestUpdated", {
+        message: "Request status updated",
+      });
+
       return successResponse(res, response, response.message, STATUS.CREATED);
     } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);

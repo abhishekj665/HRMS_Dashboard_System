@@ -44,6 +44,7 @@ export default function Topbar() {
 
       toast.success("Logged out successfully");
       navigate("/login");
+      return;
     } catch (error) {
       toast.error(error || "Logout failed");
     }
@@ -64,9 +65,8 @@ export default function Topbar() {
     } else {
       let response = await punchIn();
       if (response.success) {
-      
         const serverTime = new Date(response.data).getTime();
-        
+
         setPunchInTime(serverTime);
         setPunch(true);
         toast.success(response.message);
