@@ -17,4 +17,5 @@ export const env = {
   cloud_key: process.env.CLOUD_KEY,
   cloud_secret: process.env.CLOUD_SECRET,
   db_port: process.env.DB_PORT,
+  client_url: process.env.CLIENT_URL,
 };

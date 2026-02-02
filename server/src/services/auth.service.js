@@ -1,4 +1,4 @@
-import { OTP, User } from "../models/Associations.model.js";
+import {  User } from "../models/Associations.model.js";
 import { generateOtp } from "../config/otpService.js";
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";

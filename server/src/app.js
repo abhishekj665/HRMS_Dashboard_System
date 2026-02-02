@@ -11,6 +11,7 @@ import {attendanceRouter} from "./routes/attendance.routes.js"
 
 import cors from "cors";
 import path from "path";
+import { env } from "./config/env.js";
 
 
 
@@ -18,7 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: env.client_url,
     credentials: true,
   })
 );
