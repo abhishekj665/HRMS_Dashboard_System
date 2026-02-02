@@ -4,13 +4,21 @@ import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 export default function AdminLayout() {
   const { user } = useSelector((state) => state.auth);
 
-  
+  const navigate = useNavigate();
 
   if (user?.role != "admin") {
-    return <h1>You don't have permission for this</h1>;
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
   }
 
   return (

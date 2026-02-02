@@ -55,13 +55,18 @@ const ManagerUserPage = () => {
 
   const navigate = useNavigate();
 
-  if (user?.role !== "manager") {
-    return <h1>You don't have permission for this page</h1>;
+  if (user?.role != "manager") {
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
   }
 
   const fetchUsers = async (currentPage = page) => {
     try {
-      const res = await getUser(currentPage, limit, search );
+      const res = await getUser(currentPage, limit, search);
 
       if (!res.data.success) {
         toast.error(res.message || "Failed to fetch users");

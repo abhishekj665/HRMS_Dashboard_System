@@ -1,5 +1,5 @@
 import { blockIP, getAllIps, unBlockIP } from "../../services/adminService";
-import { useEffect, useState } from "react";
+import { useEffect,useNavigate, useState } from "react";
 import { toast } from "react-toastify";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
@@ -13,6 +13,19 @@ export default function AdminIps() {
   const [isBlocked, setIsBlocked] = useState(false);
 
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+
+  
+
+  if (user?.role != "admin") {
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
+  }
 
   const role = user?.role;
 
