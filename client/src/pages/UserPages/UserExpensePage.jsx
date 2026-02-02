@@ -52,7 +52,7 @@ export default function UserExpensePage() {
     try {
       const response = await getExpenses();
 
-      console.log(response.data);
+      
 
       if (response?.success) {
         setExpenses(response.data);

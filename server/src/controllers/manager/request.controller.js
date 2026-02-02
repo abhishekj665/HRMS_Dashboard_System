@@ -16,7 +16,7 @@ export const getRequestData = async (req, res, next) => {
         STATUS.ACCEPTED
       );
     } else {
-      return errorResponse(req, res, response.message, STATUS.BAD_REQUEST);
+      return errorResponse(req, response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {
     next(error);
@@ -39,7 +39,7 @@ export const approveRequest = async (req, res, next) => {
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
-      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
+      return errorResponse(res,response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {
     next(error);

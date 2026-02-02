@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Table,
@@ -38,6 +38,7 @@ const AdminUserPage = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
+  const [search, setSearch] = useState("");
 
   const [users, setUsers] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -59,17 +60,15 @@ const AdminUserPage = () => {
 
   const fetchUsers = async (currentPage = page) => {
     try {
-      const res = await getUser(currentPage, limit);
+      const res = await getUser(currentPage, limit, search);
 
       if (!res.success) {
         toast.error(res.message || "Failed to fetch users");
         return;
       }
 
-    
-
-      setUsers(res.data.data.data);
-      setTotalPages(res.data.data.totalPages);
+      setUsers(res.data.users);
+      setTotalPages(res.data.pagination.totalPages);
     } catch (err) {
       console.error(err);
     }
@@ -102,8 +101,6 @@ const AdminUserPage = () => {
 
     try {
       const res = await registerUser(userForm);
-
-      
 
       if (res.success) {
         toast.success("User registered successfully");
@@ -253,7 +250,7 @@ const AdminUserPage = () => {
                   <Chip
                     label={u.role}
                     size="small"
-                    color={roleColor(u.role)}
+                    
                     sx={{ textTransform: "capitalize", fontWeight: 600 }}
                   />
                 </TableCell>
@@ -262,7 +259,7 @@ const AdminUserPage = () => {
                   <Chip
                     label={u.isVerified ? "Verified" : "Unverified"}
                     size="small"
-                    color={u.isVerified ? "success" : "error"}
+                    
                   />
                 </TableCell>
 
@@ -270,7 +267,7 @@ const AdminUserPage = () => {
                   <Chip
                     label={u.isBlocked ? "Yes" : "No"}
                     size="small"
-                    color={u.isBlocked ? "error" : "success"}
+                    
                   />
                 </TableCell>
 

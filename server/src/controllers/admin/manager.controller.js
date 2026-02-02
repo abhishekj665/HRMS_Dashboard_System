@@ -16,8 +16,6 @@ export const registerManager = async (req, res, next) => {
   try {
     let data = req.body.data;
 
-    console.log(data);
-
     let response = await managerServices.registerManagerService(data);
 
     if (response.success) {
@@ -25,14 +23,14 @@ export const registerManager = async (req, res, next) => {
         res,
         response.data,
         response.message,
-        STATUS.ACCEPTED
+        STATUS.ACCEPTED,
       );
     } else {
       return errorResponse(
         res,
-        response.data,
+
         response.message,
-        STATUS.BAD_GATEWAY
+        STATUS.BAD_GATEWAY,
       );
     }
   } catch (error) {
@@ -43,7 +41,7 @@ export const registerManager = async (req, res, next) => {
 export const assignWorkersToManager = async (req, res, next) => {
   try {
     const response = await managerServices.assignWorkersToManagerService(
-      req.body
+      req.body,
     );
     return res.status(200).json(response);
   } catch (error) {

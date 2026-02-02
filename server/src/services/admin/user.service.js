@@ -4,14 +4,28 @@ import { User } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
+import { Op, where } from "sequelize";
 
-export const getUsersService = async (page, limits) => {
+export const getUsersService = async (page, limits, search) => {
   try {
     const { limit, offset } = getPagination(page, limits);
+
+    let whereCondition = {};
+
+    if (search != "" && search.trim() !== "") {
+      whereCondition = {
+        [Op.or]: [
+          { email: { [Op.like]: `%${search}%` } },
+          { first_name: { [Op.like]: `%${search}%` } },
+          { last_name: { [Op.like]: `%${search}%` } },
+        ],
+      };
+    }
 
     const { count, rows } = await User.findAndCountAll({
       limit,
       offset,
+      where: whereCondition,
       attributes: { exclude: ["password"] },
       include: [
         {
@@ -27,11 +41,20 @@ export const getUsersService = async (page, limits) => {
       ],
     });
 
+    const hasNext = page * limit < count;
+
     return {
       success: true,
-      data: rows,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      data: {
+        users: rows,
+        pagination: {
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          currentPage: page,
+          hasNext,
+        },
+      },
+      message: "Users fetched successfully",
     };
   } catch (error) {
     throw new ExpressError(400, error.message);
@@ -74,7 +97,7 @@ export const blockIPService = async (ip) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: true },
-      { where: { ipAddress: ip } }
+      { where: { ipAddress: ip } },
     );
 
     if (updatedCount === 0) {
@@ -94,7 +117,7 @@ export const unblockIPService = async (ip) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: false },
-      { where: { ipAddress: ip } }
+      { where: { ipAddress: ip } },
     );
 
     if (updatedCount === 0) {
@@ -126,6 +149,21 @@ export const registerUserService = async ({ data }) => {
       success: true,
       data: userData,
       message: "User Registered Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getIPsService = async () => {
+  try {
+    const ips = await UserIP.findAll({
+      attributes: ["id", "ipAddress", "isBlocked", "createdAt", "updatedAt"],
+    });
+    return {
+      success: true,
+      data: ips,
+      message: "IPs fetched successfully",
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);

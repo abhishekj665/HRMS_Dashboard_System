@@ -24,7 +24,7 @@ export const createAssetRequest = async (req, res, next) => {
 
       return successResponse(res, response, response.message, STATUS.CREATED);
     } else {
-      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
+      return errorResponse(res,response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {
     next(error);

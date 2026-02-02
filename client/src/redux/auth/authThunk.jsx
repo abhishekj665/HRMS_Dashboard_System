@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { signup, login, logOut } from "./authService";
+import { signup, login, logOut } from "../../services/authService";
 
 import { getProfile } from "../../services/userService";
 
@@ -9,11 +9,12 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await signup(userData);
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
-  }
+  },
 );
 
 export const loginUser = createAsyncThunk(
@@ -25,7 +26,7 @@ export const loginUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
-  }
+  },
 );
 
 export const fetchUser = createAsyncThunk(
@@ -37,20 +38,19 @@ export const fetchUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error?.message || "Failed to fetch user");
     }
-  }
+  },
 );
 
 export const logOutUser = createAsyncThunk(
   "auth/logOutUser",
   async (_, { rejectWithValue }) => {
     try {
-      console.log("hello");
       await logOut();
       return true;
     } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message || error?.message || "Failed to logout"
+        error?.response?.data?.message || error?.message || "Failed to logout",
       );
     }
-  }
+  },
 );

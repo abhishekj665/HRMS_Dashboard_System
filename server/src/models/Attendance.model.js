@@ -33,7 +33,7 @@ export const Attendance = sequelize.define(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
     paranoid: true,
     indexes: [{ fields: ["userId"] }],
   },

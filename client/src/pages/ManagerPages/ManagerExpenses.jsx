@@ -44,7 +44,7 @@ const ManagerExpensesPage = () => {
   const fetchExpenses = async () => {
     const response = await getAllExpenses();
 
-    console.log(response.data);
+    
 
     if (response?.success) setExpenses(response.data);
   };

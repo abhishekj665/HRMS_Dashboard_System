@@ -1,4 +1,4 @@
-import { API } from "../redux/auth/authService";
+import { API } from "../services/authService";
 
 export const getUser = async (page, limit) => {
   try {

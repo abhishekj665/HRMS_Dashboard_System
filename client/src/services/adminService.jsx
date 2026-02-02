@@ -1,12 +1,12 @@
-import { API } from "../redux/auth/authService";
+import { API } from "../services/authService";
 
-export const getUser = async (page, limit) => {
+export const getUser = async (page, limit, search) => {
+
   try {
-    const response = await API.get(`/admin/users?page=${page}&limit=${limit}`);
-    return {
-      success: true,
-      data: response.data,
-    };
+    const response = await API.get(
+      `/admin/users?page=${page}&limit=${limit}&search=${search}`,
+    );
+    return response.data;
   } catch (error) {
     return {
       success: false,
@@ -42,7 +42,6 @@ export const unBlockUser = async (id) => {
 
 export const blockIP = async (ip) => {
   try {
-    
     const response = await API.put(`/admin/block`, { ip: ip });
 
     return response.data;
@@ -255,6 +254,18 @@ export const registerUser = async (data) => {
     let response = await API.post("/admin/user/register", {
       data: data,
     });
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const getAllIps = async () => {
+  try {
+    let response = await API.get("/admin/ips");
     return response.data;
   } catch (error) {
     return {

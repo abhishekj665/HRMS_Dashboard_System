@@ -1,4 +1,4 @@
-import { API } from "../redux/auth/authService";
+import { API } from "../services/authService";
 
 export const createAccount = async (data) => {
   try {

@@ -19,6 +19,7 @@ Router.use(adminAuth);
 Router.get("/users", adminUserController.getUsers);
 Router.post("/user/register", adminUserController.registerUser);
 
+Router.get("/ips", adminUserController.getIPs)
 Router.put("/block", adminUserController.blockIPController);
 Router.put("/unblock", adminUserController.unblockIPController);
 

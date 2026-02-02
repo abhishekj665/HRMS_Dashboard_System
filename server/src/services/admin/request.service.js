@@ -43,6 +43,7 @@ export const rejectRequestService = async (id, remark) => {
 
   request.status = "rejected";
   request.adminRemark = remark;
+  request.reviewedBy = "admin";
   await request.save();
 
   return {
@@ -96,7 +97,7 @@ export const approveRequestService = async (id, admin) => {
         assetId: request.assetId,
         quantity: request.quantity,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     request.status = "approved";

@@ -48,7 +48,7 @@ const ManagerAsset = () => {
 
   const fetchAssets = async () => {
     const res = await getAllAssets();
-    console.log(res);
+    
     if (res?.success) setAssets(res.data.data);
   };
 

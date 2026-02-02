@@ -44,6 +44,8 @@ const ManagerUserPage = () => {
 
   const [openCreateUser, setOpenCreateUser] = useState(false);
 
+  const [search, setSearch] = useState("");
+
   const [userForm, setUserForm] = useState({
     first_name: "",
     last_name: "",
@@ -59,9 +61,9 @@ const ManagerUserPage = () => {
 
   const fetchUsers = async (currentPage = page) => {
     try {
-      const res = await getUser(currentPage, limit);
+      const res = await getUser(currentPage, limit, search );
 
-      if (!res.success) {
+      if (!res.data.success) {
         toast.error(res.message || "Failed to fetch users");
         return;
       }
@@ -228,7 +230,6 @@ const ManagerUserPage = () => {
                   <Chip
                     label={u.role}
                     size="small"
-                    color={roleColor(u.role)}
                     sx={{ textTransform: "capitalize", fontWeight: 600 }}
                   />
                 </TableCell>
@@ -237,16 +238,11 @@ const ManagerUserPage = () => {
                   <Chip
                     label={u.isVerified ? "Verified" : "Unverified"}
                     size="small"
-                    color={u.isVerified ? "success" : "error"}
                   />
                 </TableCell>
 
                 <TableCell>
-                  <Chip
-                    label={u.isBlocked ? "Yes" : "No"}
-                    size="small"
-                    color={u.isBlocked ? "error" : "success"}
-                  />
+                  <Chip label={u.isBlocked ? "Yes" : "No"} size="small" />
                 </TableCell>
 
                 <TableCell>

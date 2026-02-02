@@ -30,7 +30,7 @@ export const registerAccount = async (req, res, next) => {
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {
-      errorResponse(res, response.message, STATUS.NOT_ACCEPTABLE);
+      return errorResponse(res, response.message, STATUS.NOT_ACCEPTABLE);
     }
   } catch (error) {
     next(error);

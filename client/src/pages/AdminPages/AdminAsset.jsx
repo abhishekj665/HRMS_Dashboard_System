@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -67,7 +65,7 @@ const AdminAsset = () => {
 
   const fetchAssets = async () => {
     const res = await getAllAssets();
-    
+
     if (res?.success) setAssets(res.data.data);
   };
 
@@ -91,14 +89,14 @@ const AdminAsset = () => {
 
     if (isEditMode) {
       const isConfirmed = window.confirm(
-        "Are you sure you want to edit this asset?"
+        "Are you sure you want to edit this asset?",
       );
 
       if (!isConfirmed) return;
       res = await updateAsset(editId, formData);
     } else {
       const isConfirmed = window.confirm(
-        "Are you sure you want to create this asset?"
+        "Are you sure you want to create this asset?",
       );
 
       if (!isConfirmed) return;
@@ -107,7 +105,9 @@ const AdminAsset = () => {
 
     if (res.success) {
       toast.success(
-        isEditMode ? "Asset updated successfully" : "Asset created successfully"
+        isEditMode
+          ? "Asset updated successfully"
+          : "Asset created successfully",
       );
 
       setFormData({
@@ -131,7 +131,7 @@ const AdminAsset = () => {
 
   const handleRemove = async (id) => {
     const isConfirmed = window.confirm(
-      "Are you sure you want to delete this asset?"
+      "Are you sure you want to delete this asset?",
     );
 
     if (!isConfirmed) return;
@@ -254,9 +254,9 @@ const AdminAsset = () => {
             </div>
 
             <TextField
-              className="mt-4"
               label="Description"
               name="description"
+              style={{ marginTop: "10px" }}
               multiline
               rows={3}
               fullWidth
@@ -316,7 +316,7 @@ const AdminAsset = () => {
                       }
                       size="small"
                       color={statusColor(
-                        a.availableQuantity > 0 ? a.status : "not-available"
+                        a.availableQuantity > 0 ? a.status : "not-available",
                       )}
                       sx={{ textTransform: "capitalize", fontWeight: 600 }}
                     />

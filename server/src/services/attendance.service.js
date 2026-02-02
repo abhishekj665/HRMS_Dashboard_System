@@ -22,8 +22,9 @@ export const registerInService = async (userId) => {
 
     if (existingAttendance) {
       return {
-        success: false,
-        message: "You Already PunchIn",
+        success: true,
+        message: "You Already Punched",
+        data: existingAttendance.punchInAt,
       };
     }
 
@@ -34,7 +35,7 @@ export const registerInService = async (userId) => {
 
     return {
       success: true,
-      data,
+      data : data.punchInAt,
       message: "PunchIn successfully",
     };
   } catch (error) {
@@ -58,8 +59,9 @@ export const registerOutService = async (userId) => {
         },
       },
       order: [["punchInAt", "DESC"]],
-      limit: 1,
     });
+
+  
 
     if (data) {
       data.punchOutAt = Date.now();
@@ -71,17 +73,19 @@ export const registerOutService = async (userId) => {
     const workingHour = time / (1000 * 60 * 60);
 
     if (workingHour < 8) {
+      data.punchOutAt = Date.now();
       data.totalLeaves += 1 / 2;
       data.presentDay += 1 / 2;
       await data.save();
 
       return {
         success: true,
-        message: "You Successfully PunchOut, HalfDay Marked",
+        message: "Punched Out, Half Day Marked",
       };
     }
 
     if (workingHour >= 8) {
+      data.punchOutAt = Date.now();
       data.totalLeaves += 1 / 2;
       data.presentDay += 1 / 2;
       await data.save();

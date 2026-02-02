@@ -1,4 +1,4 @@
-import { blockIP, getUser, unBlockIP } from "../../services/adminService";
+import { blockIP, getAllIps, unBlockIP } from "../../services/adminService";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import TextField from "@mui/material/TextField";
@@ -18,16 +18,16 @@ export default function AdminIps() {
 
   const fetchUser = async () => {
     try {
-      const response = await getUser();
+      const response = await getAllIps();
+
+      
 
       if (!response.success) {
         toast.error(response.message || "Failed to fetch users");
         return;
       }
 
-     
-
-      const ips = response.data.data.data[0]?.UserIPs || [];
+      const ips = response.data || [];
       setUserIPs(ips);
 
       if (searchInput) {
@@ -46,7 +46,7 @@ export default function AdminIps() {
     }
 
     const isConfirmed = window.confirm(
-      "Are you sure you want to block this ip?"
+      "Are you sure you want to block this ip?",
     );
 
     if (!isConfirmed) return;
@@ -67,7 +67,7 @@ export default function AdminIps() {
     }
 
     const isConfirmed = window.confirm(
-      "Are you sure you want to unblock this ip?"
+      "Are you sure you want to unblock this ip?",
     );
 
     if (!isConfirmed) return;
@@ -89,6 +89,10 @@ export default function AdminIps() {
     return <h1>You don't have permission for Dashboard</h1>;
   }
 
+  const uniqueIpOptions = Array.from(
+    new Set(userIPs.map((ip) => ip.ipAddress)),
+  );
+
   return (
     <>
       <h1 className="text-2xl font-semibold mb-6 text-gray-800">
@@ -100,13 +104,13 @@ export default function AdminIps() {
           <Autocomplete
             freeSolo
             disableClearable
-            options={userIPs.map((option) => option.ipAddress)}
+            options={uniqueIpOptions}
             inputValue={searchInput}
             onInputChange={(event, newInputValue) => {
               setSearchInput(newInputValue);
 
               const foundIp = userIPs.find(
-                (ip) => ip.ipAddress === newInputValue
+                (ip) => ip.ipAddress === newInputValue,
               );
               setIsBlocked(foundIp ? foundIp.isBlocked : false);
             }}
@@ -125,10 +129,7 @@ export default function AdminIps() {
       {userIPs.length === 0 && <p className="text-gray-500">No IPs found</p>}
 
       {userIPs.map((userip, index) => (
-        <div
-          key={userip.id || index}
-          className="p-2 border-b flex gap-4 items-center"
-        >
+        <div key={userip.id} className="p-2 border-b flex gap-4 items-center">
           <span className="font-semibold text-gray-600 w-8">{index + 1}.</span>
 
           <div>

@@ -23,7 +23,7 @@ export const blockUserController = async (req, res, next) => {
     const result = await userServices.blockUserService(userId);
 
     if (!result.success) {
-      return errorResponse(res, result.message, STATUS.BAD_REQUEST);
+      return errorResponse(res,result.message, STATUS.BAD_REQUEST);
     } else {
       return successResponse(res, result, result.message, STATUS.OK);
     }
@@ -80,11 +80,26 @@ export const getUsers = async (req, res, next) => {
   try {
     let page = parseInt(req.query.page, 10) || 1;
     let limit = parseInt(req.query.limit, 10) || 5;
+    const search = req.query.search || "";
 
-    const result = await userServices.getUsersService(page, limit);
+    const result = await userServices.getUsersService(page, limit, search);
 
     if (result.success) {
-      return successResponse(res, result, result.message);
+      return successResponse(res, result.data, result.message);
+    } else {
+      return errorResponse(res, result.message, 500);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const getIPs = async (req, res, next) => {
+  try {
+    const result = await userServices.getIPsService();
+    if (result.success) {
+      return successResponse(res, result.data, result.message);
     } else {
       return errorResponse(res, result.message, 500);
     }

@@ -1,38 +1,49 @@
-import { User } from "../models/Associations.model.js";
+import { OTP, User } from "../models/Associations.model.js";
 import { generateOtp } from "../config/otpService.js";
 import bcrypt from "bcrypt";
-import ExpressError from "../utils/Error.utils.js";
+import AppError from "../utils/Error.utils.js";
 import { nanoid } from "nanoid";
-import jwtSign from "../utils/jwtutils.js";
+
+import jwtSign from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
 import { findOtpData } from "../config/otpService.js";
 
-export const signUpService = async ({ email, password }) => {
+export const signUpService = async ({ first_name,email, password }) => {
   if (!email || !password) {
-    throw new ExpressError(400, "Email and password required");
+    return {
+      success: false,
+      message: "Email and password are required",
+    };
   }
 
   const exists = await User.findOne({ where: { email } });
   if (exists) {
-    throw new ExpressError(409, "User already exists");
+    return {
+      success: false,
+      message: "User already exists",
+    };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await User.create({
+  let user = await User.create({
     id: nanoid(),
-    email,
+    first_name : first_name,
+    email: email,
     password: hashedPassword,
     isVerified: false,
   });
 
+  
+
   const otp = generateOtp();
 
-  createOTP(email, otp, "SIGNUP");
+  await createOTP(email, otp, "SIGNUP");
 
   return {
     success: true,
     message: "You have to Verify your account first. OTP sent to email",
+    data: user,
   };
 };
 
@@ -41,6 +52,11 @@ export const logInService = async ({ email, password }) => {
 
   if (!user) {
     throw new ExpressError(404, "User not found");
+  }
+
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) {
+    throw new ExpressError(401, "Invalid Password");
   }
 
   if (user.isBlocked) {
@@ -52,14 +68,14 @@ export const logInService = async ({ email, password }) => {
     await createOTP(email, otp, "LOGIN");
 
     return {
-      success: false,
+      success: true,
+      user: {
+        id: user.id,
+        role: user.role,
+        isVerified: user.isVerified,
+      },
       message: "Please verify your account",
     };
-  }
-
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) {
-    throw new ExpressError(401, "Invalid Password");
   }
 
   const token = jwtSign(user.id, user.role);
@@ -82,35 +98,67 @@ export const logInService = async ({ email, password }) => {
 
 export const verifyOtpService = async (email, otp, purpose) => {
   const otpData = await findOtpData(email, purpose);
-  if (!otpData) throw new ExpressError(400, "OTP not found");
+
+  if (!otpData) {
+    return {
+      success: false,
+      message: "OTP not found",
+    };
+  }
 
   if (otpData.expiresAt < new Date()) {
-    throw new ExpressError(400, "OTP expired");
+    return {
+      success: false,
+      message: "OTP expired",
+    };
   }
 
   const valid = await bcrypt.compare(otp, otpData.otp);
-  if (!valid) throw new ExpressError(400, "Invalid OTP");
+  if (!valid) {
+    return {
+      success: false,
+      message: "Invalid OTP",
+    };
+  }
 
   otpData.isUsed = true;
   await otpData.save();
 
-  const user = await User.findOne({ where: { email } });
-  if (!user) throw new ExpressError(404, "User not found");
+  let user = await User.findOne({
+    where: {
+      email,
+    },
+  });
 
   user.isVerified = true;
-  user.login_At = new Date();
   await user.save();
 
-  const token = jwtSign(user.id, user.role);
+  if (purpose === "SIGNUP") {
+    await User.update({ isVerified: true }, { where: { email } });
+    return { success: true, message: "Account verified successfully" };
+  }
 
-  return {
-    success: true,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      isVerified: user.isVerified,
-    },
-    token,
-  };
+  if (purpose === "LOGIN") {
+    return { success: true, message: "Login OTP verified" };
+  }
+};
+
+export const logOutService = async (userId) => {
+  try {
+    const user = await User.findOne({ where: { id: userId }, raw: true });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    return {
+      success: true,
+      message: "User logged out successfully",
+    };
+  } catch (error) {
+    throw new AppError(400, error.message);
+  }
 };

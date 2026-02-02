@@ -95,7 +95,7 @@ export const approveRequestService = async (id, manager) => {
         assetId: request.assetId,
         quantity: request.quantity,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     request.status = "approved";

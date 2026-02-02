@@ -5,9 +5,22 @@ import ExpressError from "../../utils/Error.utils.js";
 import { User } from "../../models/Associations.model.js";
 import bcrypt from "bcrypt";
 
-export const getExpenseDataService = async () => {
+export const getExpenseDataService = async (id) => {
   try {
+
+    let expenseAccount = await Account.findOne({
+      where: { userId: id },
+    });
+
+      if (!expenseAccount) {
+        return {
+          success: false,
+          message: "Please create account first",
+        };
+      }
+
     let expenseData = await Expenses.findAll({
+      where : {userId : id},
       include: [
         { model: User, as: "employee", attributes: ["email"] },
         { model: User, as: "reviewer", attributes: ["email", "role"] },

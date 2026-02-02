@@ -96,7 +96,7 @@ export default function UserAssetPage() {
         toast.error(response.message || "Failed to fetch requests");
         return;
       }
-      console.log(response.data.requestData);
+      
       setRequests(response.data.requestData);
     } catch (error) {
       console.error(error);

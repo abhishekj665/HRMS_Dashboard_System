@@ -8,6 +8,7 @@ export const API = axios.create({
 
 export const login = async (userData) => {
   const response = await API.post("/auth/login", userData);
+
   return response.data;
 };
 
@@ -17,7 +18,6 @@ export const signup = async (userData) => {
 };
 
 export const verify = async (data) => {
-  
   const response = await API.post("/auth/verify", data);
   return response.data;
 };

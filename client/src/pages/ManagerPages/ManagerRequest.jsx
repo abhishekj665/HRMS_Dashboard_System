@@ -201,7 +201,7 @@ const ManagerRequest = () => {
                   {new Date(req.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  {req?.reviewer?.role ? req.reviewer.role : "-"}
+                  {req?.reviewer?.id == user.id ? "You" : req?.reviewer?.role || "-"}
                 </TableCell>
                 <TableCell align="center">
                   <div className="flex gap-2 justify-center">

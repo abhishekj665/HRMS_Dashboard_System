@@ -2,7 +2,7 @@ import HomePage from "./pages/UserPages/UserLayoutPage";
 import AdminUserPage from "./pages/AdminPages/AdminUserPage";
 import SignUpPage from "./pages/Auth/SignupPage";
 import LogInPage from "./pages/Auth/LoginPage";
-import VerifyPage from "./pages/Auth/VerifyPage";
+
 import "./App.css";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -36,7 +36,6 @@ function App() {
             <Route path="asset" element={<UserAssetPage />}></Route>
             <Route path="expense" element={<UserExpensePage />}></Route>
           </Route>
-          <Route path="/verify" element={<VerifyPage />} />
 
           <Route path="/admin" element={<AdminLayoutPage />}>
             <Route path="dashboard" element={<AdminUserPage />} />

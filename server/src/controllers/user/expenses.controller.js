@@ -10,13 +10,13 @@ import fs from "fs";
 
 export const getExpenseData = async (req, res, next) => {
   try {
-    let response = await expensesServices.getExpenseDataService(req.user);
+    let response = await expensesServices.getExpenseDataService(req.user.id);
     if (response.success) {
       return successResponse(
         res,
         response.data,
         response.message,
-        STATUS.ACCEPTED
+        STATUS.ACCEPTED,
       );
     } else {
       return errorResponse(res, response.message);
@@ -45,7 +45,7 @@ export const createNewExpense = async (req, res, next) => {
 
     let response = await expensesServices.newExpensesService(
       req.body,
-      req.user
+      req.user,
     );
 
     if (response.success) {
@@ -66,7 +66,7 @@ export const updateExpense = async (req, res, next) => {
   try {
     let response = await expensesServices.updateExpenses(
       req.params.id,
-      req.user
+      req.user,
     );
 
     if (response.success) {
@@ -86,7 +86,7 @@ export const updateExpense = async (req, res, next) => {
         res,
         response.data,
         response.message,
-        STATUS.ACCEPTED
+        STATUS.ACCEPTED,
       );
     } else {
       return errorResponse(res, response.message);

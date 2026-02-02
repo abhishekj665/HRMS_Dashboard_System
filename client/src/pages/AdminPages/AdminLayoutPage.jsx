@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 export default function AdminLayout() {
   const { user } = useSelector((state) => state.auth);
 
-  console.log(user);
+  
 
   if (user?.role != "admin") {
     return <h1>You don't have permission for this</h1>;

@@ -16,6 +16,14 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Autocomplete,
 } from "@mui/material";
 
 export default function AdminManagersPage() {
@@ -26,8 +34,15 @@ export default function AdminManagersPage() {
   const [openCreate, setOpenCreate] = useState(false);
 
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(true);
+
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  const [search, setSearch] = useState("");
+
+  const [userScrolled, setUserScrolled] = useState(false);
+
+  const [showUserList, setShowUserList] = useState(false);
 
   const [managerForm, setManagerForm] = useState({
     first_name: "",
@@ -42,22 +57,24 @@ export default function AdminManagersPage() {
     return <h1>You don't have permission for this</h1>;
   }
 
-  const fetchUsers = async (currentPage = 1) => {
+  const fetchUsers = async (currentPage = 1, searchValue = search) => {
     if (loadingUsers) return;
 
     try {
       setLoadingUsers(true);
 
-      const res = await getUser(currentPage, 10);
+      const res = await getUser(currentPage, 9, searchValue);
+
+      
 
       if (res.success) {
+        const newUsers = res.data.users;
+
         setUsers((prev) =>
-          currentPage === 1
-            ? res.data.data.data
-            : [...prev, ...res.data.data.data]
+          currentPage === 1 ? newUsers : [...prev, ...newUsers],
         );
 
-        setTotalPages(res.data.data.totalPages);
+        setHasNext(res.data.pagination.hasNext);
       }
     } catch {
       toast.error("Failed to load users");
@@ -126,6 +143,24 @@ export default function AdminManagersPage() {
     }
   };
 
+  const handleUserDropdownScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+
+    if (scrollHeight <= clientHeight) return;
+
+    if (
+      scrollTop + clientHeight >= scrollHeight - 20 &&
+      hasNext &&
+      !loadingUsers
+    ) {
+      setPage((prev) => {
+        const next = prev + 1;
+        fetchUsers(next);
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     fetchUsers(1);
   }, []);
@@ -134,23 +169,30 @@ export default function AdminManagersPage() {
     fetchData();
   }, []);
 
-  return (
-    <div
-      className="p-6 h-[85vh] overflow-y-auto"
-      onScroll={(e) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.target;
+  useEffect(() => {
+    const timers = Object.entries(search).map(([managerId, value]) =>
+      setTimeout(() => {
+        setUsers([]);
+        setPage(1);
+        setHasNext(true);
+        fetchUsers(1, value);
+      }, 600),
+    );
 
-        if (
-          scrollTop + clientHeight >= scrollHeight - 5 &&
-          !loadingUsers &&
-          page < totalPages
-        ) {
-          const next = page + 1;
-          setPage(next);
-          fetchUsers(next);
-        }
-      }}
-    >
+    return () => timers.forEach(clearTimeout);
+  }, [search]);
+
+  const handleUserSearch = (managerId, event, value, reason) => {
+    if (reason !== "input") return;
+
+    setSearchInputs((prev) => ({
+      ...prev,
+      [managerId]: value,
+    }));
+  };
+
+  return (
+    <div className="p-6 h-[85vh] overflow-y-auto">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">Manager Control</h1>
@@ -161,54 +203,143 @@ export default function AdminManagersPage() {
         </div>
 
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden mt-15">
-          <div className="grid grid-cols-5 bg-gray-50 px-4 py-3 text-sm font-semibold">
-            <span>Manager</span>
-            <span>Email</span>
-            <span>Assigned Users</span>
-            <span>Select Users</span>
-            <span>Action</span>
-          </div>
+          <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableCell>
+                    <b>Manager</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Email</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Assigned Users</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Select Users</b>
+                  </TableCell>
+                  <TableCell>
+                    <b>Action</b>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
 
-          {managers.map((m) => (
-            <div
-              key={m.id}
-              className="grid grid-cols-5 px-4 py-3 border-t items-center"
-            >
-              <span>{m.first_name}</span>
-              <span className="truncate">{m.email?.split("@")[0]}</span>
-              <span className="font-medium">{m.workers.length}</span>
-              <Select
-                multiple
-                size="small"
-                value={selectedUsers[m.id] || []}
-                onChange={(e) =>
-                  setSelectedUsers((prev) => ({
-                    ...prev,
-                    [m.id]: e.target.value,
-                  }))
-                }
-                renderValue={(selected) => `${selected.length} selected`}
-                sx={{ width: "10vw" }}
-              >
-                {users
-                  .filter((u) => u.role !== "admin" && u.role !== "manager")
-                  .map((u) => (
-                    <MenuItem key={u.id} value={u.id}>
-                      {u.email?.split("@")[0]}
-                    </MenuItem>
-                  ))}
-              </Select>
+              <TableBody>
+                {managers.map((m) => {
+                  const filteredUsers = users.filter(
+                    (u) =>
+                      !m.workers.some((w) => w.id === u.id) &&
+                      u.email.toLowerCase().includes(search.toLowerCase()),
+                  );
 
-              <Button
-                size="small"
-                className="w-[10vw]"
-                variant="contained"
-                onClick={() => handleAssign(m.id)}
-              >
-                Assign
-              </Button>
-            </div>
-          ))}
+                  return (
+                    <TableRow key={m.id}>
+                      <TableCell>{m.first_name}</TableCell>
+
+                      <TableCell>{m.email?.split("@")[0]}</TableCell>
+
+                      <TableCell>{m.workers.length}</TableCell>
+
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          placeholder="Search users..."
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setShowUserList(false);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (search.trim() !== "") {
+                                setShowUserList(true);
+                                setUsers([]);
+                                setPage(1);
+                                setHasNext(true);
+                                fetchUsers(1, search);
+                              }
+                            }
+                          }}
+                          fullWidth
+                        />
+
+                        {search.trim() !== "" && (
+                          <Paper
+                            sx={{
+                              mt: 1,
+                              maxHeight: 150,
+                              overflowY: "auto",
+                              border: "1px solid #ddd",
+                            }}
+                            onWheel={() => setUserScrolled(true)}
+                            onScroll={handleUserDropdownScroll}
+                          >
+                            {filteredUsers.map((u) => {
+                              const checked = selectedUsers[m.id]?.includes(
+                                u.id,
+                              );
+
+                              return (
+                                <MenuItem
+                                  key={u.id}
+                                  onClick={() =>
+                                    setSelectedUsers((prev) => {
+                                      const prevSelected = prev[m.id] || [];
+
+                                      return {
+                                        ...prev,
+                                        [m.id]: checked
+                                          ? prevSelected.filter(
+                                              (id) => id !== u.id,
+                                            )
+                                          : [...prevSelected, u.id],
+                                      };
+                                    })
+                                  }
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    readOnly
+                                    style={{ marginRight: 8 }}
+                                  />
+                                  {u.email.split("@")[0]}
+                                </MenuItem>
+                              );
+                            })}
+
+                            {loadingUsers && (
+                              <MenuItem disabled>Loading...</MenuItem>
+                            )}
+
+                            {!loadingUsers && filteredUsers.length === 0 && (
+                              <MenuItem disabled>No users found</MenuItem>
+                            )}
+                          </Paper>
+                        )}
+
+                        <div style={{ fontSize: 12, marginTop: 4 }}>
+                          Selected: {selectedUsers[m.id]?.length || 0}
+                        </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          onClick={() => handleAssign(m.id)}
+                        >
+                          Assign
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </div>
         <Dialog
           open={openCreate}

@@ -33,6 +33,7 @@ export const getAssetRequestService = async (id) => {
   try {
     const requestData = await AssetRequest.findAll({
       order: [["createdAt", "DESC"]],
+      where: { userId : id },
       include: [
         { model: User, attributes: ["email", "role"] },
         {

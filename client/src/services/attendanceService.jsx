@@ -1,10 +1,11 @@
-import { API } from "../redux/auth/authService";
+import { API } from "../services/authService";
 
 export const punchIn = async () => {
   try {
     const response = await API.post("/attendance/in", {
       withCredentials: true,
     });
+    
     return response.data;
   } catch (error) {
     return {
