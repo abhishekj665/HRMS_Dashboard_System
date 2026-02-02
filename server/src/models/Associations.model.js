@@ -1,12 +1,12 @@
 import User from "./User.model.js";
-import OTP from "./Otp.models.js";
+import OTP from "./Otp.model.js";
 import UserIP from "./UserIP.model.js";
 import AssetRequest from "./AssestRequest.model.js";
 import Asset from "./Asset.model.js";
 import UserAsset from "./UserAsset.model.js";
 import Expenses from "./Expenses.model.js";
 import Account from "./Account.model.js";
-import { Attendance } from "./Attendance.model.js";
+import  Attendance  from "./Attendance.model.js";
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });

@@ -2,12 +2,12 @@ import { now } from "sequelize/lib/utils";
 import { sequelize } from "../config/db.js";
 import { DataTypes, DATE, UUID, UUIDV4 } from "sequelize";
 
-export const Attendance = sequelize.define(
+const Attendance = sequelize.define(
   "Attendance",
   {
     id: {
       type: DataTypes.UUID,
-      allownull: false,
+      allowNull: false,
       primaryKey: true,
       defaultValue: UUIDV4,
     },
@@ -38,3 +38,5 @@ export const Attendance = sequelize.define(
     indexes: [{ fields: ["userId"] }],
   },
 );
+
+export default Attendance;
