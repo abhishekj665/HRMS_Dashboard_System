@@ -54,8 +54,13 @@ const AdminUserPage = () => {
 
   const navigate = useNavigate();
 
-  if (user?.role !== "admin") {
-    return <h1>You don't have permission for this page</h1>;
+  if (user?.role != "admin") {
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
   }
 
   const fetchUsers = async (currentPage = page) => {

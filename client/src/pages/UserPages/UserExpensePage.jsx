@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState,useNavigate, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -14,6 +14,7 @@ import {
 
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 import { createExpense } from "../../services/expensesService";
 import { getExpenses } from "../../services/expensesService";
@@ -47,6 +48,20 @@ export default function UserExpensePage() {
     bill: null,
     pin: "",
   });
+
+  const { user } = useSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+
+  if (!user) {
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Please login to access this page");
+    }, 800);
+
+    return;
+  }
+
 
   const fetchExpenses = async () => {
     try {

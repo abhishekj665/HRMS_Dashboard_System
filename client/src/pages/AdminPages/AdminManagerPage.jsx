@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect,useNavigate, useState } from "react";
 import { Button, Select, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -53,8 +53,15 @@ export default function AdminManagersPage() {
 
   const { user } = useSelector((state) => state.auth);
 
+  const navigate = useNavigate();
+
   if (user?.role != "admin") {
-    return <h1>You don't have permission for this</h1>;
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
   }
 
   const fetchUsers = async (currentPage = 1, searchValue = search) => {

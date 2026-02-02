@@ -10,7 +10,7 @@ import {
   Chip,
 } from "@mui/material";
 
-import { useState, useEffect } from "react";
+import { useState,useNavigate, useEffect } from "react";
 import { getRequestData } from "../../services/adminService";
 import { toast } from "react-toastify";
 import { approveRequest, rejectRequest } from "../../services/adminService";
@@ -33,6 +33,17 @@ const AdminRequest = () => {
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
+
+  const navigate = useNavigate();
+
+  if (user?.role != "admin") {
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
+  }
 
   const role = user?.role;
 

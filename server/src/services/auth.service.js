@@ -1,7 +1,7 @@
 import { OTP, User } from "../models/Associations.model.js";
 import { generateOtp } from "../config/otpService.js";
 import bcrypt from "bcrypt";
-import AppError from "../utils/Error.utils.js";
+import ExpressError from "../utils/Error.utils.js";
 import { nanoid } from "nanoid";
 
 import jwtSign from "../utils/jwt.utils.js";

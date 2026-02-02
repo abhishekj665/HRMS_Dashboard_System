@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useNavigate, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -59,8 +59,15 @@ const AdminAsset = () => {
   });
   const { user } = useSelector((state) => state.auth);
 
+  const navigate = useNavigate();
+
   if (user?.role != "admin") {
-    return <h1>You don't have permission for this page</h1>;
+    setTimeout(() => {
+      navigate("/login");
+      toast.error("Only admin can access this page");
+    }, 800);
+
+    return;
   }
 
   const fetchAssets = async () => {

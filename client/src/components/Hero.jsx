@@ -10,7 +10,7 @@ function Hero() {
         
         items-center 
         bg-gray-400
-        bg-[url('https://imgs.search.brave.com/ZQYJ0vfbK4uQbPLot6dzxEhRF7zghuD-b_mCJtA-t3c/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzE2LzY3LzI2LzUz/LzM2MF9GXzE2Njcy/NjUzNzBfenpJUUhX/aEt6OGlJa2J0elNM/YkpDYk1GUUp1RTJw/S3UuanBn')]
+        bg-[url('https://imgs.search.brave.com/N8Lj7B9fG5lTZuspuF8K5CaEA4vbgIb8nyl6H62tsvE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTU5/NDA1MDk4OS92ZWN0/b3IvYmxhY2stYW5k/LXdoaXRlLWJsYW5r/LXBvc3RlcnMtaGFu/Z2luZy13aXRoLXBh/cGVyLWNsaXBzLWE0/LXBhcGVyLXBhZ2Ut/c2hlZXQtb24td2Fs/bC5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9NktPWkg4VXZY/ZloxR1U2ZEozQ1Yz/RnBTX1JibGZ0TFJI/a050ZkFPSnhpMD0')]
         bg-cover 
         bg-center
       "
@@ -28,9 +28,9 @@ function Hero() {
               lg:text-4xl
             "
           >
-            Optimize Your Backend.
+            Embrace Excellence
             <br />
-            Elevate Your System.
+            in Dashboard Development
           </h1>
 
           <p
@@ -42,9 +42,10 @@ function Hero() {
               md:text-lg
             "
           >
-            Analyze and refine backend code to reduce bottlenecks, improve
-            execution flow, and build faster, more reliable server-side
-            applications.
+            Unlock the potential of Tailwise, where developers craft
+            meticulously structured, visually stunning dashboards with
+            feature-rich modules. Join us today to shape the future of your
+            application development.
           </p>
         </div>
       </div>
