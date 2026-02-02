@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+
+
 export const env = {
   port: process.env.PORT,
   secret: process.env.SECRET,
@@ -19,3 +21,5 @@ export const env = {
   db_port: process.env.DB_PORT,
   client_url: process.env.CLIENT_URL,
 };
+
+

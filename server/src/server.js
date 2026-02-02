@@ -1,6 +1,6 @@
 import app from "./app.js";
 import { connectDB } from "./config/db.js";
-import { env } from "./config/env.js";
+import { env, funct } from "./config/env.js";
 import http from "http";
 import { Server } from "socket.io";
 import cookie from "cookie";
@@ -15,6 +15,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
 
 io.on("connection", (socket) => {
   try {
@@ -64,6 +65,8 @@ const startServer = async () => {
     console.log(`Server listening on port ${env.port}`);
   });
 };
+
+funct();
 
 startServer();
 
