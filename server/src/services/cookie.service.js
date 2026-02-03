@@ -6,10 +6,12 @@ export const clearCookie = (res, name) => {
 };
 
 export const setCookie = (res, name, value, options = {}) => {
+  const isProd = process.env.NODE_ENV === "production";
+
   const defaultOptions = {
     httpOnly: true,
-
-    sameSite: "strict",
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
     maxAge: 24 * 60 * 60 * 1000,
   };
 
