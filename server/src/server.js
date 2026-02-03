@@ -11,10 +11,12 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: env.client_url?.trim(),
+    origin: [env.client_url?.trim()],
     credentials: true,
   },
 });
+
+
 
 
 io.on("connection", (socket) => {

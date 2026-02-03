@@ -2,11 +2,13 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-console.log(import.meta.env.VITE_BASE_URL);
+
 
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL:  import.meta.env.VITE_BASE_URL,
 });
+
+
 
 export const login = async (userData) => {
   const response = await API.post("/auth/login", userData);

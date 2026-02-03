@@ -16,7 +16,9 @@ export const userAuth = (req, res, next) => {
 };
 
 export const adminAuth = (req, res, next) => {
+  
   const token = req.cookies.token;
+
   if (!token) return res.status(401).json({ message: "User not verified" });
   try {
     const decode = jwt.verify(token, env.jwt_password);

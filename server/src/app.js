@@ -15,7 +15,9 @@ import { env } from "./config/env.js";
 
 const app = express();
 
-const allowList = [env.client_url?.trim()].filter(Boolean);
+const allowList = [ env.client_url?.trim()].filter(Boolean);
+
+
 
 app.use(
   cors({
