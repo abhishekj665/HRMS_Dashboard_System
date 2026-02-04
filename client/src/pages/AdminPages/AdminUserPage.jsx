@@ -274,7 +274,7 @@ const AdminUserPage = () => {
                   <Chip
                     label={u.isBlocked ? "Yes" : "No"}
                     size="small"
-                    color={u.isVerified ? "success" : "error"}
+                    color={u.isBlocked ? "error" : "success"}
                   />
                 </TableCell>
 
