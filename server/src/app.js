@@ -15,7 +15,7 @@ import { env } from "./config/env.js";
 
 const app = express();
 
-const allowList = [env.client_url?.trim(),"http://localhost:5173"];
+const allowList = [env.client_url?.trim()];
 
 
 app.use(
