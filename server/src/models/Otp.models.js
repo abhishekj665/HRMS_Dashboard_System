@@ -23,7 +23,7 @@ const OTP = sequelize.define(
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: () => new Date(Date.now() + 5 * 60 * 1000),
+      
     },
   },
   {
@@ -31,6 +31,10 @@ const OTP = sequelize.define(
   }
 );
 
-await OTP.sync();
+OTP.beforeCreate((otp) => {
+  otp.expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+});
+
+
 
 export default OTP;

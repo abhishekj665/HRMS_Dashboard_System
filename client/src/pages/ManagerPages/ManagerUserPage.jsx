@@ -254,7 +254,7 @@ const ManagerUserPage = () => {
                   <Chip
                     label={u.isBlocked ? "Yes" : "No"}
                     size="small"
-                    color={u.isBlocked ? "success" : "error"}
+                    color={u.isBlocked ? "error" :   "success"}
                   />
                 </TableCell>
 

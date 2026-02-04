@@ -34,11 +34,9 @@ export default function UserSidebar({open, setOpen}) {
         bg-white
       `}
     >
-      <h1 className="text-xl font-bold mb-8 text-gray-800">
-        <div className="text-lg font-medium flex italic tracking-tight">
-          <p>{user?.role?.toUpperCase()} DASHBOARD</p>
-        </div>
-      </h1>
+      <h1 className="text-lg font-medium mb-8 text-gray-800 italic tracking-tight">
++        {user?.role?.toUpperCase() ?? "USER"} DASHBOARD
++      </h1>
 
       <nav className="flex flex-col gap-2">
         <NavLink to="/home/asset" onClick={() => setOpen(false)} className={linkClass}>
