@@ -1,4 +1,4 @@
-import {sequelize} from "../config/db.js";
+import { sequelize } from "../config/db.js";
 import { DataTypes } from "sequelize";
 
 const OTP = sequelize.define(
@@ -23,18 +23,12 @@ const OTP = sequelize.define(
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      
+      defaultValue: () => new Date(Date.now() + 5 * 60 * 1000),
     },
   },
   {
     timestamps: false,
-  }
+  },
 );
-
-OTP.beforeCreate((otp) => {
-  otp.expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-});
-
-
 
 export default OTP;
