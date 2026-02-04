@@ -18,8 +18,6 @@ export default function AdminIps() {
 
   const navigate = useNavigate();
 
-  
-
   if (user?.role != "admin") {
     setTimeout(() => {
       navigate("/login");
@@ -34,8 +32,6 @@ export default function AdminIps() {
   const fetchUser = async () => {
     try {
       const response = await getAllIps();
-
-      
 
       if (!response.success) {
         toast.error(response.message || "Failed to fetch users");
@@ -110,12 +106,12 @@ export default function AdminIps() {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold mb-6 text-gray-800">
+      <h1 className="text-2xl m-5 font-semibold mb-6 text-gray-800">
         IP Management
       </h1>
 
-      <div className="flex">
-        <Stack spacing={2} sx={{ width: 300 }}>
+      <div className="flex ">
+        <Stack spacing={2} sx={{ width: 300, margin: "10px" }}>
           <Autocomplete
             freeSolo
             disableClearable
@@ -141,7 +137,9 @@ export default function AdminIps() {
         )}
       </div>
 
-      {userIPs.length === 0 && <p className="text-gray-500">No IPs found</p>}
+      {userIPs.length === 0 && (
+        <p className="text-gray-500 m-5">No IPs found</p>
+      )}
 
       {userIPs.map((userip, index) => (
         <div key={userip.id} className="p-2 border-b flex gap-4 items-center">
