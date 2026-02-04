@@ -60,7 +60,10 @@ function App() {
       </BrowserRouter>
 
       <ToastContainer
-        className="w-2/5"
+        toastStyle={{
+          width: "280px",
+          height: "1vh",
+        }}
         position="top-right"
         autoClose={3000}
         theme="colored"
