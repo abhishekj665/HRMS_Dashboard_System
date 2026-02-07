@@ -80,7 +80,7 @@ function SignupPage() {
         setOtp("");
         setCredentials(true);
         const res = await dispatch(loginUser(formData)).unwrap();
-        navigate("/welcome");
+        navigate("/home");
       } else {
         toast.error(response.message);
       }
