@@ -4,7 +4,8 @@ import { User } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
+import { sequelize } from "../../config/db.js";
 
 export const getUsersService = async (page, limits, search) => {
   try {
@@ -158,10 +159,13 @@ export const registerUserService = async ({ data }) => {
 export const getIPService = async () => {
   try {
     const ips = await UserIP.findAll({
-      distinct: true,
-      col: "ipAddress",
-      attributes: ["id", "ipAddress", "isBlocked", "createdAt", "updatedAt"],
+      attributes: [
+        [sequelize.fn("DISTINCT", sequelize.col("ipAddress")), "ipAddress"],
+      ],
+      raw: true,
     });
+
+    console.log(ips);
     return {
       success: true,
       data: ips,
