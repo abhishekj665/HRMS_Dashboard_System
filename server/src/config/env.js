@@ -20,6 +20,7 @@ export const env = {
   cloud_secret: process.env.CLOUD_SECRET,
   db_port: process.env.DB_PORT,
   client_url: process.env.CLIENT_URL,
+  brevo_api_key:process.env.BREVO_API_KEY
 };
 
 

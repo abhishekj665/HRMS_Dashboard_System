@@ -1,45 +1,59 @@
 import { OTP } from "../models/Associations.model.js";
 import { generateHash } from "../utils/hash.utils.js";
-import nodemailer from "nodemailer";
-
 import { env } from "./env.js";
+import * as brevo from "@getbrevo/brevo";
+
+
+const apiInstance = new brevo.TransactionalEmailsApi();
+
+apiInstance.setApiKey(
+  brevo.TransactionalEmailsApiApiKeys.apiKey,
+  env.brevo_api_key
+);
+
+
 
 export const createOTP = async (email, otp, purpose) => {
-  let hashedOtp = await generateHash(otp);
+  const hashedOtp = await generateHash(otp);
 
   await OTP.create({
     email,
     otp: hashedOtp,
-    purpose: purpose,
+    purpose,
   });
 
   sendMailOtp(email, otp);
 };
 
-
-
 export const sendMailOtp = async (email, otp) => {
-  await transporter.sendMail({
-    from: env.mail_user,
-    to: email,
-    subject: "OTP Verification",
-    text: `Your OTP is ${otp}. It expires in 5 minutes.`,
-  });
+  const html = `
+    <h2>Your OTP is ${otp}</h2>
+    <p>It expires in 5 minutes.</p>
+  `;
+
+  await sendMail(email, "OTP Verification", html);
 };
 
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: env.mail_user,
-    pass: env.mail_pass,
-  },
-});
+
+export async function sendMail(to, subject, html) {
+  const mail = new brevo.SendSmtpEmail();
+
+  mail.to = [{ email: to }];
+  mail.subject = subject;
+  mail.htmlContent = html;
+  mail.sender = {
+    name: "Dashboard System",
+    email: env.mail_user, 
+  };
+
+  return apiInstance.sendTransacEmail(mail);
+}
+
+
 
 export const findOtpData = async (email, purpose) => {
-  const otpData = await OTP.findOne({
+  return OTP.findOne({
     where: {
       email,
       purpose,
@@ -47,12 +61,7 @@ export const findOtpData = async (email, purpose) => {
     },
     order: [["expiresAt", "DESC"]],
   });
-
-  return otpData;
 };
 
-export const generateOtp = () => {
-  let otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  return otp;
-};
+export const generateOtp = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
