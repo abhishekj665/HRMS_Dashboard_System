@@ -68,7 +68,7 @@ export const logInService = async ({ email, password }) => {
   if (ipDetails.isBlocked && user.role != "admin") {
     return {
       success: false,
-      message: "Your IP address is blocked, Contact",
+      message: "Your IP address is blocked, Contact Admin",
     };
   }
 

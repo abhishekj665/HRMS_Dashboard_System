@@ -155,9 +155,11 @@ export const registerUserService = async ({ data }) => {
   }
 };
 
-export const getIPsService = async () => {
+export const getIPService = async () => {
   try {
     const ips = await UserIP.findAll({
+      distinct: true,
+      col: "ipAddress",
       attributes: ["id", "ipAddress", "isBlocked", "createdAt", "updatedAt"],
     });
     return {

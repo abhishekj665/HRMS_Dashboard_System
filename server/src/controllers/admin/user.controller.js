@@ -23,7 +23,7 @@ export const blockUserController = async (req, res, next) => {
     const result = await userServices.blockUserService(userId);
 
     if (!result.success) {
-      return errorResponse(res,result.message, STATUS.BAD_REQUEST);
+      return errorResponse(res, result.message, STATUS.BAD_REQUEST);
     } else {
       return successResponse(res, result, result.message, STATUS.OK);
     }
@@ -94,10 +94,9 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
-
 export const getIPs = async (req, res, next) => {
   try {
-    const result = await userServices.getIPsService();
+    const result = await userServices.getIPService();
     if (result.success) {
       return successResponse(res, result.data, result.message);
     } else {
