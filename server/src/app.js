@@ -17,7 +17,6 @@ const app = express();
 
 const allowList = [env.client_url?.trim(), "http://localhost:5173"];
 
-
 app.use(
   cors({
     origin: function (origin, callback) {

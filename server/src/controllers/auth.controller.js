@@ -3,8 +3,10 @@ import { successResponse, errorResponse } from "../utils/response.utils.js";
 import { setCookie } from "../services/cookie.service.js";
 import STATUS from "../constants/Status.js";
 import AppError from "../utils/Error.utils.js";
+import {UserIP} from "../models/Associations.model.js"
 
 import { clearCookie } from "../services/cookie.service.js";
+import { getLocationFromIp } from "../utils/geo.utils.js";
 
 export const signUp = async (req, res, next) => {
   try {
@@ -56,6 +58,20 @@ export const logIn = async (req, res, next) => {
     }
 
     setCookie(res, "token", result.token);
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+    const ipData = await getLocationFromIp("8.8.8.8");
+
+    await UserIP.create({
+      userAgent: req.headers["user-agent"] || "unknown",
+      ipAddress: ipData?.ip || ip,
+      country: ipData?.country_name || null,
+      region: ipData?.state_prov || null,
+      city: ipData?.city || null,
+      isp: ipData?.isp || ipData?.organization || null,
+      userId: result.user.id,
+    });
 
     return successResponse(res, result, result.message, STATUS.OK);
   } catch (error) {

@@ -5,7 +5,7 @@ import {
   UserAsset,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
-
+import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
 
 export const getRequestDataService = async () => {
@@ -13,7 +13,15 @@ export const getRequestDataService = async () => {
     const requests = await AssetRequest.findAll({
       order: [["createdAt", "DESC"]],
       include: [
-        { model: User, attributes: ["email", "role"] },
+        {
+          model: User,
+          attributes: ["email", "role", "managerId"],
+          where: {
+            managerId: { [Op.ne]: null },
+          },
+          required: true,
+        },
+
         {
           model: Asset,
           attributes: ["id", "title", "price", "status", "availableQuantity"],

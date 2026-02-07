@@ -2,13 +2,24 @@ import STATUS from "../../constants/Status.js";
 import { Expenses } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import { User } from "../../models/Associations.model.js";
+import { Op } from "sequelize";
 
-export const getAllExpenseDataService = async () => {
+export const getAllExpenseDataService = async (managerId) => {
   try {
     let expenseData = await Expenses.findAll({
       include: [
-        { model: User, as: "employee", attributes: ["email"] },
-        { model: User, as: "reviewer", attributes: ["email", "role"] },
+        {
+          model: User,
+          as: "employee",
+          attributes: ["email", "role", "managerId"],
+          where: { managerId: managerId },
+          required: true,
+        },
+        {
+          model: User,
+          as: "reviewer",
+          attributes: ["email", "role"],
+        },
       ],
       order: [["updatedAt", "DESC"]],
     });

@@ -10,6 +10,20 @@ export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;
   const userId = user.id;
 
+  const userData = await User.findOne({
+    where: { id: user.id },
+    attributes: { include: "managerId" },
+  });
+
+  
+
+  if (userData.managerId === null || userData.managerId === undefined) {
+    return {
+      success: false,
+      message: "You don't have an assigned manager to send this request",
+    };
+  }
+
   if (!assetId || !quantity) {
     throw new ExpressError(400, "assetId and quantity are required");
   }
@@ -33,7 +47,7 @@ export const getAssetRequestService = async (id) => {
   try {
     const requestData = await AssetRequest.findAll({
       order: [["createdAt", "DESC"]],
-      where: { userId : id },
+      where: { userId: id },
       include: [
         { model: User, attributes: ["email", "role"] },
         {

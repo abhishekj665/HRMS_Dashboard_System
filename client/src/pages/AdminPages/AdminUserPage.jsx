@@ -280,7 +280,7 @@ const AdminUserPage = () => {
 
                 <TableCell>
                   {u.manager
-                    ? `${u.manager.first_name} ${u.manager.last_name || ""}`
+                    ? `${u.manager.email.split("@")[0]}`
                     : "Manager Not Assigned"}
                 </TableCell>
 

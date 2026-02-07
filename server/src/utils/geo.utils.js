@@ -3,15 +3,23 @@ import { env } from "../config/env.js";
 
 export const getLocationFromIp = async (ip) => {
   try {
-    const response = await axios.get(`http://api.ipstack.com/${ip}`, {
-      params: {
-        access_key: env.geo_apikey,
-      },
-    });
+    const cleanIp = ip.replace("::ffff:", "");
 
-    return response.data;
+    if (cleanIp === "127.0.0.1" || cleanIp === "::1") {
+      return null;
+    }
+
+    const url = `https://api.ipgeolocation.io/ipgeo?apiKey=${env.geo_api_key}&ip=${cleanIp}`;
+
+    const res = await fetch(url);
+
+    const text = await res.text();
+
+    if (!res.ok) throw new Error("ipgeolocation request failed");
+
+    return JSON.parse(text);
   } catch (error) {
-    console.error("IP location lookup failed:", error.message);
+    console.error("Geo lookup failed:", error.message);
     return null;
   }
 };

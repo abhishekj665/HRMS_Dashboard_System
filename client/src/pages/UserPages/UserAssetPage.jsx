@@ -42,7 +42,6 @@ export default function UserAssetPage() {
   const [openForm, setOpenForm] = useState(false);
   const [requests, setRequests] = useState([]);
   const [assets, setAssets] = useState([]);
-  
 
   const [formData, setFormData] = useState({
     assetId: "",
@@ -74,13 +73,17 @@ export default function UserAssetPage() {
 
     try {
       let response = await createAssetRequest(formData);
-      if (response) {
+      console.log(response);
+      if (response.success) {
         localStorage.setItem("ASSET_UPDATED", Date.now().toString());
         toast.success("Request Created Successfully");
 
         fetchRequest();
+      } else {
+        toast.info(response.message);
       }
     } catch (error) {
+      console.log(error);
       toast.error(error.message);
     }
 
@@ -96,7 +99,7 @@ export default function UserAssetPage() {
         toast.error(response.message || "Failed to fetch requests");
         return;
       }
-      
+
       setRequests(response.data.requestData);
     } catch (error) {
       console.error(error);
@@ -165,8 +168,8 @@ export default function UserAssetPage() {
                           req.status === "approved"
                             ? "success"
                             : req.status === "rejected"
-                            ? "error"
-                            : "warning"
+                              ? "error"
+                              : "warning"
                         }
                         size="small"
                       />
@@ -190,7 +193,7 @@ export default function UserAssetPage() {
                         color={statusColor(
                           req.Asset && req.Asset.availableQuantity > 0
                             ? req.Asset.status
-                            : "not-available"
+                            : "not-available",
                         )}
                         sx={{ textTransform: "capitalize", fontWeight: 600 }}
                       />

@@ -7,20 +7,19 @@ import bcrypt from "bcrypt";
 
 export const getExpenseDataService = async (id) => {
   try {
-
     let expenseAccount = await Account.findOne({
       where: { userId: id },
     });
 
-      if (!expenseAccount) {
-        return {
-          success: false,
-          message: "Please create account first",
-        };
-      }
+    if (!expenseAccount) {
+      return {
+        success: false,
+        message: "Please create account first",
+      };
+    }
 
     let expenseData = await Expenses.findAll({
-      where : {userId : id},
+      where: { userId: id },
       include: [
         { model: User, as: "employee", attributes: ["email"] },
         { model: User, as: "reviewer", attributes: ["email", "role"] },
@@ -67,6 +66,19 @@ export const newExpensesService = async (data, user) => {
       return {
         success: false,
         message: "Invalid PIN",
+      };
+    }
+
+    const userData = await User.findOne({
+      where: { id: user.id },
+      attributes: { include: "managerId" },
+    });
+
+    if (!userData || userData.managerId === null) {
+      return {
+        success: false,
+        message:
+          "You are not asssigned to manager yet, So you can't create a request yet",
       };
     }
 

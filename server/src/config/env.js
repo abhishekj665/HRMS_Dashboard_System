@@ -2,8 +2,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
-
 export const env = {
   port: process.env.PORT,
   secret: process.env.SECRET,
@@ -14,13 +12,11 @@ export const env = {
   jwt_password: process.env.JWT_PASSWORD,
   mail_user: process.env.MAIL_USER,
   mail_pass: process.env.MAIL_PASS,
-  geo_apikey: process.env.GEO_APIKEY,
+  geo_api_key: process.env.GEO_API_KEY,
   cloud_name: process.env.CLOUD_NAME,
   cloud_key: process.env.CLOUD_KEY,
   cloud_secret: process.env.CLOUD_SECRET,
   db_port: process.env.DB_PORT,
   client_url: process.env.CLIENT_URL,
-  brevo_api_key:process.env.BREVO_API_KEY
+  brevo_api_key: process.env.BREVO_API_KEY,
 };
-
-

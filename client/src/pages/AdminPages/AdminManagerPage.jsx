@@ -40,7 +40,7 @@ export default function AdminManagersPage() {
 
   const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const [search, setSearch] = useState("");
+  const [searchInputs, setSearchInputs] = useState({});
 
   const [userScrolled, setUserScrolled] = useState(false);
 
@@ -66,7 +66,7 @@ export default function AdminManagersPage() {
     return;
   }
 
-  const fetchUsers = async (currentPage = 1, searchValue = search) => {
+  const fetchUsers = async (currentPage = 1, searchValue = "") => {
     if (loadingUsers) return;
 
     try {
@@ -176,18 +176,7 @@ export default function AdminManagersPage() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const timers = Object.entries(search).map(([managerId, value]) =>
-      setTimeout(() => {
-        setUsers([]);
-        setPage(1);
-        setHasNext(true);
-        fetchUsers(1, value);
-      }, 600),
-    );
-
-    return () => timers.forEach(clearTimeout);
-  }, [search]);
+  
 
   const handleUserSearch = (managerId, event, value, reason) => {
     if (reason !== "input") return;
@@ -241,7 +230,9 @@ export default function AdminManagersPage() {
                   const filteredUsers = users.filter(
                     (u) =>
                       !m.workers.some((w) => w.id === u.id) &&
-                      u.email.toLowerCase().includes(search.toLowerCase()),
+                      u.email
+                        .toLowerCase()
+                        .includes((searchInputs[m.id] || "").toLowerCase()),
                   );
 
                   return (
@@ -256,10 +247,12 @@ export default function AdminManagersPage() {
                         <TextField
                           size="small"
                           placeholder="Search users..."
-                          value={search}
+                          value={searchInputs[m.id] || ""}
                           onChange={(e) => {
-                            setSearch(e.target.value);
-                            setShowUserList(false);
+                            setSearchInputs((prev) => ({
+                              ...prev,
+                              [m.id]: e.target.value,
+                            }));
                           }}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -269,14 +262,14 @@ export default function AdminManagersPage() {
                                 setUsers([]);
                                 setPage(1);
                                 setHasNext(true);
-                                fetchUsers(1, search);
+                                fetchUsers(1, searchInputs[m.id]);
                               }
                             }
                           }}
                           fullWidth
                         />
 
-                        {search.trim() !== "" && (
+                        {(searchInputs[m.id] || "").trim() !== "" && (
                           <Paper
                             sx={{
                               mt: 1,
