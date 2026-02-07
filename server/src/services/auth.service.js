@@ -1,4 +1,4 @@
-import {  User } from "../models/Associations.model.js";
+import { User, UserIP } from "../models/Associations.model.js";
 import { generateOtp } from "../config/otpService.js";
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
@@ -55,6 +55,21 @@ export const logInService = async ({ email, password }) => {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
     throw new ExpressError(401, "Invalid Password");
+  }
+
+  const ipDetails = await UserIP.findOne({
+    where: { userId: user.id },
+    order: [["createdAt", "DESC"]],
+    attributes: {
+      include: ["isBlocked"],
+    },
+  });
+
+  if (ipDetails.isBlocked && user.role != "admin") {
+    return {
+      success: false,
+      message: "Your IP address is blocked, Contact",
+    };
   }
 
   if (user.isBlocked) {
