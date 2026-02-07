@@ -91,7 +91,7 @@ function SignupPage() {
 
   return (
     <>
-      <div className="container w-full">
+      <div className="w-full">
         <Box
           sx={{
             minHeight: "100vh",
@@ -102,6 +102,7 @@ function SignupPage() {
             bgcolor: "#f1f5f9",
             gap: 4,
             px: 2,
+            paddingRight: "0",
           }}
         >
           <Paper
