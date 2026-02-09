@@ -176,3 +176,26 @@ export const logOutService = async (userId) => {
     throw new AppError(400, error.message);
   }
 };
+
+export const me = async (userId) => {
+  try {
+    const userData = await User.findOne({ where: { id: userId } });
+
+    if (!userData) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    return {
+      success: true,
+      user: {
+        email: userData.email,
+        role: userData.role,
+        isBlocked: userData.isBlocked,
+        isVerified: userData.isVerified,
+      },
+    };
+  } catch {}
+};
