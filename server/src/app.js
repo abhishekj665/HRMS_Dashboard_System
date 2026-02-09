@@ -19,16 +19,14 @@ const allowList = [env.client_url?.trim()];
 
 app.set("trust proxy", 1);
 
+const allowedOrigins = ["http://localhost:5173", env.client_url?.trim()];
+
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowList.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Blocked by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
