@@ -3,7 +3,7 @@ import { successResponse, errorResponse } from "../utils/response.utils.js";
 import { setCookie } from "../services/cookie.service.js";
 import STATUS from "../constants/Status.js";
 import AppError from "../utils/Error.utils.js";
-import {UserIP} from "../models/Associations.model.js"
+import { UserIP } from "../models/Associations.model.js";
 
 import { clearCookie } from "../services/cookie.service.js";
 import { getLocationFromIp } from "../utils/geo.utils.js";
@@ -98,6 +98,20 @@ export const logOut = async (req, res, next) => {
         "Something went wrong",
         STATUS.UNAUTHORIZED,
       );
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const me = async (req, res, next) => {
+  try {
+    const response = authServices.me();
+
+    if (response.success) {
+      return successResponse(res, response.user, response.message, STATUS.OK);
+    } else {
+      return errorResponse(res, response.message, STATUS.UNAUTHORIZED);
     }
   } catch (error) {
     next(error);
