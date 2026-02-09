@@ -1,7 +1,9 @@
 export const clearCookie = (res, name) => {
   res.clearCookie(name, {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
+    secure : true,
+    path : "/"
   });
 };
 
