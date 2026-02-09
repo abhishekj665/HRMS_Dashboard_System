@@ -42,20 +42,9 @@ const ManagerAsset = () => {
   const [assets, setAssets] = useState([]);
   
 
-  const { user } = useSelector((state) => state.auth);
-
-  const navigate = useNavigate();
-
-  if (user?.role != "manager") {
-      setTimeout(() => {
-        navigate("/login");
-        toast.error("Only admin can access this page");
-      }, 800);
   
-      return;
+
   
-      
-    }
 
   const fetchAssets = async () => {
     const res = await getAllAssets();

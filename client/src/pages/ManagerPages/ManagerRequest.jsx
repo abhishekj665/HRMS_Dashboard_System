@@ -50,16 +50,9 @@ const ManagerRequest = () => {
     title: "",
   });
 
-  const navigate = useNavigate();
+  
 
-  if (user?.role != "manager") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
+  
   const role = user.role;
 
   const fetchRequestsData = async () => {

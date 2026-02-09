@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -59,18 +59,6 @@ const AdminAsset = () => {
     totalQuantity: "",
     expiresAt: "",
   });
-  const { user } = useSelector((state) => state.auth);
-
-  const navigate = useNavigate();
-
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
 
   const fetchAssets = async () => {
     const res = await getAllAssets();

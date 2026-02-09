@@ -41,18 +41,9 @@ const ExpensesPage = () => {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const navigate = useNavigate();
+  
 
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-
-    
-  }
+  
 
   const role = user?.role;
 

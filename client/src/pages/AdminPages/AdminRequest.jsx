@@ -35,16 +35,9 @@ const AdminRequest = () => {
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
 
-  const navigate = useNavigate();
+  
 
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
+  
 
   const role = user?.role;
 

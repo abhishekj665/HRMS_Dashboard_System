@@ -34,7 +34,7 @@ const roleColor = (role) => {
 };
 
 const AdminUserPage = () => {
-  const { user } = useSelector((state) => state.auth);
+  
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
@@ -52,16 +52,9 @@ const AdminUserPage = () => {
     password: "",
   });
 
-  const navigate = useNavigate();
+  
 
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
+  
 
   const fetchUsers = async (currentPage = page) => {
     try {

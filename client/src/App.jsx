@@ -24,8 +24,16 @@ import ManagerExpensesPage from "./pages/ManagerPages/ManagerExpenses";
 import ManagerLayout from "./pages/ManagerPages/ManagerLayoutPage";
 import ManagerUserPage from "./pages/ManagerPages/ManagerUserPage";
 import ManagerAssetRequest from "./pages/ManagerPages/ManagerRequest";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { fetchUser } from "./redux/auth/authThunk";
 
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchUser());
+  }, []);
+
   return (
     <>
       <BrowserRouter>

@@ -51,18 +51,9 @@ export default function UserExpensePage() {
     pin: "",
   });
 
-  const { user } = useSelector((state) => state.auth);
+  
 
-  const navigate = useNavigate();
-
-  if (!user) {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Please login to access this page");
-    }, 800);
-
-    return;
-  }
+  
 
   const fetchExpenses = async () => {
     try {

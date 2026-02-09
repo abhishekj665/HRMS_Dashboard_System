@@ -1,27 +1,29 @@
 import Sidebar from "../../components/SideBar";
-
 import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
-
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
 
-  const { user } = useSelector((state) => state.auth);
-
+  const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  if (user?.role != "admin") {
-    setTimeout(() => {
+  useEffect(() => {
+    if (!loading && user?.role !== "admin") {
       navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
+    }
+  }, [user, loading, navigate]);
 
-    return;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (user?.role !== "admin") {
+    return null;
   }
 
   return (
