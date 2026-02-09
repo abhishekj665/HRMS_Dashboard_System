@@ -29,7 +29,7 @@ app.use(
     credentials: true,
   }),
 );
-
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
