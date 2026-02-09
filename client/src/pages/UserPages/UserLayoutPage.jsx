@@ -5,22 +5,26 @@ import { Outlet } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useState } from "react";
+import { useEffect } from "react";
 
 const HomePage = () => {
   const [open, setOpen] = useState(false);
-  const { user } = useSelector((state) => state.auth);
-
+  const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  if (!user) {
-    setTimeout(() => {
+  useEffect(() => {
+    if (!loading && user?.role !== "user") {
       navigate("/login");
-      toast.error("Please login to access this page");
-    }, 800);
+    }
+  }, [user, loading, navigate]);
 
-    return;
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
+  if (user?.role !== "user") {
+    return null;
+  }
   return (
     <div className="flex h-[96vh] bg-gray-100 relative">
       {open && (

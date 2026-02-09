@@ -53,18 +53,10 @@ export default function AdminManagersPage() {
     password: "",
   });
 
-  const { user } = useSelector((state) => state.auth);
+  
+  
 
-  const navigate = useNavigate();
-
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
+  
 
   const fetchUsers = async (currentPage = 1, searchValue = "") => {
     if (loadingUsers) return;

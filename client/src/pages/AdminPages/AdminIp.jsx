@@ -16,17 +16,6 @@ export default function AdminIps() {
 
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
-  const navigate = useNavigate();
-
-  if (user?.role != "admin") {
-    setTimeout(() => {
-      navigate("/login");
-      toast.error("Only admin can access this page");
-    }, 800);
-
-    return;
-  }
-
   const role = user?.role;
 
   const fetchUser = async () => {

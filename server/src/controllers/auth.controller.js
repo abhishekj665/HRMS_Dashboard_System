@@ -73,6 +73,8 @@ export const logIn = async (req, res, next) => {
       userId: result.user.id,
     });
 
+    
+
     return successResponse(res, result, result.message, STATUS.OK);
   } catch (error) {
     next(error);

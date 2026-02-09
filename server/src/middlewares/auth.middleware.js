@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
+
 export const userAuth = (req, res, next) => {
   const token = req.cookies.token;
 
@@ -16,8 +17,9 @@ export const userAuth = (req, res, next) => {
 };
 
 export const adminAuth = (req, res, next) => {
-  
   const token = req.cookies.token;
+
+ 
 
   if (!token) return res.status(401).json({ message: "User not verified" });
   try {
@@ -31,7 +33,6 @@ export const adminAuth = (req, res, next) => {
     return res.status(403).json({ message: error.message });
   }
 };
-
 
 export const managerAuth = (req, res, next) => {
   const token = req.cookies.token;
@@ -47,4 +48,3 @@ export const managerAuth = (req, res, next) => {
     return res.status(403).json({ message: error.message });
   }
 };
-
