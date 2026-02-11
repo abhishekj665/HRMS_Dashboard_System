@@ -2,7 +2,7 @@ import { API } from "../services/authService";
 
 export const getExpenses = async () => {
   try {
-    const response = await API.get("/expenses");
+    const response = await API.get("/users/expenses");
     return response.data;
   } catch (error) {
     return {
@@ -17,7 +17,7 @@ export const getExpenses = async () => {
 
 export const createExpense = async (formData) => {
   try {
-    const response = await API.post("/expenses", formData, {
+    const response = await API.post("/users/expenses", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 

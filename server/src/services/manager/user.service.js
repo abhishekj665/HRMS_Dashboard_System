@@ -1,9 +1,10 @@
 import ExpressError from "../../utils/Error.utils.js";
-import { UserIP } from "../../models/Associations.model.js";
+import { AttendancePolicy, UserIP } from "../../models/Associations.model.js";
 import { User } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
+import { Attendance } from "../../models/Associations.model.js";
 
 export const getUsersService = async (page, limits, user) => {
   try {
@@ -51,9 +52,14 @@ export const registerUserService = async ({ data }) => {
 
     let hashedPassword = await generateHash(data.password);
 
-    let userData = await User.create({
+    const attendancePolicy = await AttendancePolicy.findOne({
+      where: { isDefault: true },
+    });
+
+    const userData = await User.create({
       ...data,
       password: hashedPassword,
+      attendancePolicyId: attendancePolicy.id,
     });
 
     return {
@@ -65,3 +71,4 @@ export const registerUserService = async ({ data }) => {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
+

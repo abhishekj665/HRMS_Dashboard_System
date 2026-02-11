@@ -137,11 +137,8 @@ export const registerOutService = async (userId) => {
 
     if (row.workedMinutes < halfLimit) {
       row.isHalfDay = true;
-      user.totalPresentDays += 0.5;
-      user.totalLeaves += 0.5;
     } else {
       row.isHalfDay = false;
-      user.totalPresentDays += 1;
     }
 
     const shiftEnd = new Date(now.toDateString() + " " + policy.endTime);

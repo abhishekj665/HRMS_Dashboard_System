@@ -10,8 +10,16 @@ const AttendancePolicy = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
+    shiftType : {
+      type : DataTypes.ENUM("SAMEDAY", "OVERNIGHT")
+    },
     createdBy: {
       type: DataTypes.UUID,
+      allowNull: false,
+    },
+    isDefault: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
       allowNull: false,
     },
     startTime: {
@@ -55,7 +63,7 @@ const AttendancePolicy = sequelize.define(
     timestamps: true,
     tableName: "AttendancePolicy",
     paranoid: true,
-    indexes: [{ fields: ["startTime", "endTime"] }],
+    indexes: [{ fields: ["startTime", "endTime", "isDefault"] }],
   },
 );
 

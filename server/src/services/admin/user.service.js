@@ -1,6 +1,6 @@
 import ExpressError from "../../utils/Error.utils.js";
 import { UserIP } from "../../models/Associations.model.js";
-import { User } from "../../models/Associations.model.js";
+import { User, AttendancePolicy } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
@@ -11,7 +11,7 @@ export const getUsersService = async (page, limits, search) => {
   try {
     const { limit, offset } = getPagination(page, limits);
 
-    let whereCondition = {};
+    let whereCondition = { role: "user" };
 
     if (search != "" && search.trim() !== "") {
       whereCondition = {
@@ -143,9 +143,14 @@ export const registerUserService = async ({ data }) => {
 
     let hashedPassword = await generateHash(data.password);
 
+    const attendancePolicy = await AttendancePolicy.findOne({
+      where: { isDefault: true },
+    });
+
     let userData = await User.create({
       ...data,
       password: hashedPassword,
+      attendancePolicyId: attendancePolicy.id,
     });
 
     return {

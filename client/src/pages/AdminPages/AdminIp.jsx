@@ -131,7 +131,10 @@ export default function AdminIps() {
       )}
 
       {userIPs.map((userip, index) => (
-        <div key={userip.id} className="p-2 border-b flex gap-4 items-center">
+        <div
+          key={userip.ipAddress}
+          className="p-2 border-b flex gap-4 items-center"
+        >
           <span className="font-semibold text-gray-600 w-8">{index + 1}.</span>
 
           <div>

@@ -46,26 +46,26 @@ export const getAttendancePolicies = async (req, res, next) => {
   }
 };
 
-export const getAttendancePolicyById = async (req, res, next) => {
-  try {
-    const response = await attendancePolicyServices.getAttendancePolicyById(
-      req.params.id,
-    );
+// export const getAttendancePolicyById = async (req, res, next) => {
+//   try {
+//     const response = await attendancePolicyServices.getAttendancePolicyById(
+//       req.params.id,
+//     );
 
-    if (response.success) {
-      return successResponse(
-        res,
-        response.data,
-        response.message,
-        STATUS.ACCEPTED,
-      );
-    } else {
-      return errorResponse(res, response.message);
-    }
-  } catch (error) {
-    next(error);
-  }
-};
+//     if (response.success) {
+//       return successResponse(
+//         res,
+//         response.data,
+//         response.message,
+//         STATUS.ACCEPTED,
+//       );
+//     } else {
+//       return errorResponse(res, response.message);
+//     }
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const updateAttendancePolicy = async (req, res, next) => {
   try {

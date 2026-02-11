@@ -14,6 +14,14 @@ const Attendance = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    isApproved: {
+      type: DataTypes.ENUM("APPROVED", "REJECTED", "PENDING"),
+      defaultValue: "PENDING",
+    },
+    verifiedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     punchInAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -27,10 +35,6 @@ const Attendance = sequelize.define(
       allowNull: true,
     },
 
-    isApproved: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
     workedMinutes: {
       type: DataTypes.INTEGER,
       defaultValue: 0,

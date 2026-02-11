@@ -27,6 +27,7 @@ import ManagerAssetRequest from "./pages/ManagerPages/ManagerRequest";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./redux/auth/authThunk";
+import AttendancePolicy from "./pages/AdminPages/AttendancePolicy";
 
 function App() {
   const dispatch = useDispatch();
@@ -52,6 +53,7 @@ function App() {
             <Route path="asset" element={<AdminAsset />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="manager" element={<ManagerPage />} />
+            <Route path="attendancePolicy" element={<AttendancePolicy />} />
           </Route>
 
           <Route path="/manager/dashboard" element={<ManagerLayout />}>

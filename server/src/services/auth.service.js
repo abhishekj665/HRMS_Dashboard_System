@@ -1,4 +1,8 @@
-import { User, UserIP } from "../models/Associations.model.js";
+import {
+  AttendancePolicy,
+  User,
+  UserIP,
+} from "../models/Associations.model.js";
 import { generateOtp } from "../config/otpService.js";
 import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
@@ -92,6 +96,14 @@ export const logInService = async ({ email, password }) => {
   }
 
   const token = jwtSign(user.id, user.role);
+
+  const attendancePolicy = await AttendancePolicy.findOne({
+    where: { isDefault: true },
+  });
+
+  if (attendancePolicy) {
+    user.attendancePolicyId = attendancePolicy.id;
+  }
 
   user.login_At = new Date();
   user.isVerified = true;

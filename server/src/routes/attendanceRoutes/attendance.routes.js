@@ -1,7 +1,7 @@
 
-import * as attendanceController from "../controllers/attendance/attendance.controller.js";
+import * as attendanceController from "../../controllers/attendance/attendance.controller.js";
 
-import { userAuth } from "../middlewares/auth.middleware.js";
+import { userAuth } from "../../middlewares/auth.middleware.js";
 
 import express from "express";
 

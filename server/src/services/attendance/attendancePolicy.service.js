@@ -9,9 +9,38 @@ export const createAttendancePolicy = async (userId, data) => {
   try {
     const { overtimePolicy, ...attendancePolicy } = data;
 
+    const existing = await AttendancePolicy.count();
+
+    if (existing > 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Attendance policy already exists. Update instead of creating.",
+      );
+    }
+
+    const shiftType = attendancePolicy.shiftType.toUpperCase();
+    const endTime = attendancePolicy.endTime;
+    const startTime = attendancePolicy.startTime;
+
+    if (shiftType === "SAMEDAY" && endTime <= startTime) {
+      throw new Error("Invalid same-day shift time range");
+    }
+
+    if (shiftType === "OVERNIGHT" && endTime >= startTime) {
+      throw new Error("Overnight shift must end next day");
+    }
+
+    if (attendancePolicy.startTime == attendancePolicy.endTime) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Same Start and End time not allwoed",
+      );
+    }
+
     const attendance = await AttendancePolicy.create(
       {
         ...attendancePolicy,
+        shiftType: shiftType,
         createdBy: userId,
       },
       {
@@ -19,7 +48,14 @@ export const createAttendancePolicy = async (userId, data) => {
       },
     );
 
-    if (overtimePolicy) {
+    if (overtimePolicy.overtimeMinutes < 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Overtime Less than 0 not allowed",
+      );
+    }
+
+    if (overtimePolicy.enable) {
       await OvertimePolicy.create(
         {
           ...overtimePolicy,
@@ -48,7 +84,8 @@ export const createAttendancePolicy = async (userId, data) => {
 
 export const getAttendancePolicies = async () => {
   try {
-    const policyData = await AttendancePolicy.findAll({
+    const policyData = await AttendancePolicy.findOne({
+      where: { isDefault: true },
       include: [OvertimePolicy],
     });
 
@@ -66,30 +103,49 @@ export const getAttendancePolicies = async () => {
   }
 };
 
-export const getAttendancePolicyById = async (id) => {
-  try {
-    const policyData = await AttendancePolicy.findByPk(id, {
-      include: [OvertimePolicy],
-    });
+// export const getAttendancePolicyById = async (id) => {
+//   try {
+//     const policyData = await AttendancePolicy.findByPk(id, {
+//       include: [OvertimePolicy],
+//     });
 
-    if (!policyData) {
-      return { success: false, message: "Attendance Policy Data Not Found" };
-    }
+//     if (!policyData) {
+//       return { success: false, message: "Attendance Policy Data Not Found" };
+//     }
 
-    return {
-      success: true,
-      data: policyData,
-      message: "Attendance Policy Data Fetched Successfully",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
+//     return {
+//       success: true,
+//       data: policyData,
+//       message: "Attendance Policy Data Fetched Successfully",
+//     };
+//   } catch (error) {
+//     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+//   }
+// };
 
 export const updateAttendancePolicy = async (id, data) => {
   const t = await sequelize.transaction();
   try {
     const { overtimePolicy, ...attendanceData } = data;
+
+    const shiftType = attendanceData.shiftType.toUpperCase();
+    const endTime = attendanceData.endTime;
+    const startTime = attendanceData.startTime;
+
+    if (shiftType === "SAMEDAY" && endTime <= startTime) {
+      throw new Error("Invalid same-day shift time range");
+    }
+
+    if (shiftType === "OVERNIGHT" && endTime >= startTime) {
+      throw new Error("Overnight shift must end next day");
+    }
+
+    if (attendancePolicy.startTime == attendanceData.endTime) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Same Start and End time not allwoed",
+      );
+    }
 
     const [affectedRows] = await AttendancePolicy.update(attendanceData, {
       where: { id },

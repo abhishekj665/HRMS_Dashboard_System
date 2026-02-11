@@ -1,14 +1,13 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import authRouter from "./routes/auth.routes.js";
-import { adminRouter } from "./routes/admin.routes.js";
-import { userRouter } from "./routes/users.routes.js";
+import { authRouter } from "./routes/authRoutes/auth.routes.js";
+import { adminRouter } from "./routes/adminRoutes/admin.routes.js";
+import { userRouter } from "./routes/userRoutes/users.routes.js";
 import { globalErrorHandler } from "./middlewares/error.midlleware.js";
-import { expensesRouter } from "./routes/expenses.routes.js";
-import { accountRouter } from "./routes/account.routes.js";
-import { managerRouter } from "./routes/manager.routes.js";
-import { attendanceRouter } from "./routes/attendance.routes.js";
-import { attendancePolicyRouter } from "./routes/attendancePolicy.routes.js";
+import { accountRouter } from "./routes/accountRoutes/account.routes.js";
+import { managerRouter } from "./routes/managerRoutes/manager.routes.js";
+import { attendanceRouter } from "./routes/attendanceRoutes/attendance.routes.js";
+import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePolicy.routes.js";
 
 import cors from "cors";
 import path from "path";
@@ -37,7 +36,7 @@ app.use("/users", userRouter);
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
 app.use("/manager", managerRouter);
-app.use("/expenses", expensesRouter);
+
 app.use("/account", accountRouter);
 app.use("/attendance", attendanceRouter);
 app.use("/attendance-policy", attendancePolicyRouter);

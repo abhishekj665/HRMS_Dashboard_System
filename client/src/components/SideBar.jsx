@@ -78,6 +78,14 @@ export default function Sidebar({ open, setOpen }) {
         >
           <ManageAccountsIcon /> Managers
         </NavLink>
+
+        <NavLink
+          to="/admin/attendancePolicy"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <LocalMallIcon /> Assets
+        </NavLink>
       </nav>
     </aside>
   );

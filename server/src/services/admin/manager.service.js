@@ -1,12 +1,12 @@
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
-import { User } from "../../models/Associations.model.js";
+import { User , AttendancePolicy} from "../../models/Associations.model.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { sequelize } from "../../config/db.js";
 
 export const getAllManagers = async () => {
   try {
-    let managerData = await User.findAll({ where: { role: "manager" } });
+    const managerData = await User.findAll({ where: { role: "manager" } });
 
     if (!managerData) {
       return {
@@ -27,9 +27,13 @@ export const getAllManagers = async () => {
 
 export const registerManagerService = async (data) => {
   try {
-    let { email, password } = data;
+    const { email, password } = data;
 
-    let hashedPassword = await generateHash(password);
+    const hashedPassword = await generateHash(password);
+
+    const attendancePolicy = await AttendancePolicy.findOne({
+      where: { isDefault: true },
+    });
 
     const managerData = await User.create({
       first_name: data.first_name || "Manager2",
@@ -38,6 +42,7 @@ export const registerManagerService = async (data) => {
       contact: data.contact || 0,
       password: hashedPassword,
       role: "manager",
+      attendancePolicyId : attendancePolicy.id
     });
 
     return {
