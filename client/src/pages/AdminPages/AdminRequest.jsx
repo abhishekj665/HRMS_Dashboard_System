@@ -102,10 +102,10 @@ const AdminRequest = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       <h1 className="text-2xl w-5 font-semibold mb-4">Asset Requests</h1>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

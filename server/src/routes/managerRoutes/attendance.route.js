@@ -5,18 +5,6 @@ import * as managerUserController from "../../controllers/manager/attendance.con
 const Router = express.Router();
 
 Router.get("/attendance", managerUserController.getAttendanceData);
-Router.get(
-  "/attendance/approved",
-  managerUserController.approvedAttendanceRequest,
-);
-Router.get(
-  "/attendance/rejected",
-  managerUserController.rejectedAttendanceRequest,
-);
-Router.get(
-  "/attendance/pending",
-  managerUserController.pendingAttendanceRequest,
-);
 Router.patch(
   "/attendance/approve/:id",
   managerUserController.approveAttendanceRequest,

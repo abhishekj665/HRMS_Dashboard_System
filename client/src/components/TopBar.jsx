@@ -59,7 +59,7 @@ export default function Topbar({ open, setOpen }) {
   };
   const handlePunch = async () => {
     if (punch) {
-      const response = await punchOut({lat, lng});
+      const response = await punchOut({ lat, lng });
 
       if (!response.success) {
         toast.error(response.message);
@@ -71,7 +71,7 @@ export default function Topbar({ open, setOpen }) {
       return;
     }
 
-    const response = await punchIn({lat, lng});
+    const response = await punchIn({ lat, lng });
 
     if (!response.success) {
       toast.error(response.message);
@@ -135,7 +135,7 @@ export default function Topbar({ open, setOpen }) {
   }, [punchInTime, baseMinutes]);
 
   return (
-    <div className="h-16 shadow flex items-center justify-between px-6">
+    <div className="h-16 shadow flex items-center justify-between px-2">
       <div className="flex items-center mr-5 gap-2">
         <div className="md:hidden">
           <IconButton onClick={() => setOpen(!open)}>

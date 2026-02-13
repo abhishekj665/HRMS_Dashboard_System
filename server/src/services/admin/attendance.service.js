@@ -6,10 +6,26 @@ import {
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-export const getAllAttendance = async () => {
+export const getAttendance = async (filters = {}) => {
   try {
-    const attendanceData = await AttendanceRequest.findAll({
-      attributes: ["id", "reviewedBy", "status"],
+    const { status, role, requestedTo, page = 1, limit = 10 } = filters;
+
+    const where = {};
+    if (status) where.status = status.toUpperCase();
+    if (requestedTo) where.requestedTo = requestedTo;
+
+    const requesterWhere = {};
+    if (role) requesterWhere.role = role;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const { rows, count } = await AttendanceRequest.findAndCountAll({
+      attributes: ["id", "reviewedBy", "status", "createdAt"],
+      where,
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset,
+      distinct: true,
       include: [
         {
           model: Attendance,
@@ -21,208 +37,33 @@ export const getAllAttendance = async () => {
             "breakMinutes",
           ],
         },
-        { model: User, attributes: ["id", "role", "email"], as: "requester" },
-      ],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-    };
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getUserAttendance = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      include: [
         {
           model: User,
-          where: { role: "user" },
-          attributes: ["id", "role", "isVerified"],
           as: "requester",
+          attributes: ["id", "role", "email"],
+          required: true,
+          where: Object.keys(requesterWhere).length
+            ? requesterWhere
+            : undefined,
+        },
+        {
+          model: User,
+          as: "approver",
+          attributes: ["id", "email"],
+          required: false,
         },
       ],
     });
 
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
+    
 
     return {
       success: true,
-      data: attendanceData,
-    };
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getManagerAttendance = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-    };
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const pendingUserAttendanceRequests = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "PENDING" },
-      include: [
-        {
-          model: User,
-          where: { role: "user" },
-          attributes: ["id", "role", "isVerified"],
-          as: "requester",
-        },
-      ],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "No pending attendance record found",
-      );
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Data Fetched Successfully",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const pendingManagerAttendanceRequests = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "PENDING" },
-      include: [
-        {
-          model: User,
-          where: { role: "manager" },
-          attributes: ["id", "role", "isVerified"],
-          as: "requester",
-        },
-      ],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "No pending attendance record found",
-      );
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Data Fetched Successfully",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const approvedUserAttendanceRequest = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "APPROVED" },
-      include: [{ model: User, where: { role: "user" }, as: "requester" }],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const approvedManagerAttendanceRequest = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "APPROVED" },
-      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const rejectedUserAttendanceRequest = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "REJECTED" },
-      include: [{ model: User, where: { role: "user" }, as: "requester" }],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const rejectedManagerAttendanceRequest = async () => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "REJECTED" },
-      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
+      data: rows,
+      total: count,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
@@ -236,12 +77,19 @@ export const approveAttendanceRequest = async (adminId, id) => {
         id: id,
         status: "PENDING",
         requestedTo: adminId,
-        as: "approver",
       },
+      include: [{ model: Attendance, attributes: ["punchOutAt", "punchInAt"] }],
     });
 
     if (!attendanceData) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Data Not Found");
+    }
+
+    if (attendanceData.Attendance.punchOutAt == null) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You can't approved attendance before punch out",
+      );
     }
 
     attendanceData.status = "APPROVED";
@@ -265,9 +113,8 @@ export const rejectAttendanceRequest = async (adminId, id) => {
     const attendanceData = await AttendanceRequest.findOne({
       where: {
         id: id,
-        isApproved: "PENDING",
+        status: "PENDING",
         requestedTo: adminId,
-        as: "approver",
       },
     });
 
@@ -287,7 +134,6 @@ export const rejectAttendanceRequest = async (adminId, id) => {
       message: "Attendance Rejected Successfully ",
     };
   } catch (error) {
-    n;
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

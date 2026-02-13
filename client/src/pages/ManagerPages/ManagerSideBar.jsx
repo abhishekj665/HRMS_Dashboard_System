@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useSelector } from "react-redux";
 
 export default function ManagerSidebar({ open, setOpen }) {
@@ -57,6 +58,13 @@ export default function ManagerSidebar({ open, setOpen }) {
           className={linkClass}
         >
           <CurrencyExchangeIcon /> Expense Requests
+        </NavLink>
+        <NavLink
+          to="/manager/dashboard/attendance"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <AccessTimeIcon /> Attendance Data
         </NavLink>
       </nav>
     </aside>

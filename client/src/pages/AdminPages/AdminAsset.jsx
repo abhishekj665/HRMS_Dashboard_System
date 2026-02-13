@@ -174,13 +174,13 @@ const AdminAsset = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto mt-10 px-6">
+    <div className="max-w-full mx-auto mt-10 px-2 ">
       <h1 className="text-2xl font-semibold mb-6">Asset Management</h1>
 
       <Button onClick={handleCreateClick}>Create Asset</Button>
 
       {openForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center  justify-center">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setOpenForm(false)}
@@ -279,10 +279,13 @@ const AdminAsset = () => {
         </div>
       )}
 
-      <div className="mt-10">
+      <div className="mt-10 ">
         <h2 className="text-xl font-semibold mb-4">All Assets</h2>
 
-        <TableContainer component={Paper}>
+        <TableContainer
+          style={{ backgroundColor: "#F5F5F5" }}
+          component={Paper}
+        >
           <Table>
             <TableHead>
               <TableRow>

@@ -25,7 +25,7 @@ const weekendDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const initialForm = {
   shiftType: "SAMEDAY",
-  isDefault: false,
+  isDefault: true,
   startTime: "",
   endTime: "",
   breakTime: "",

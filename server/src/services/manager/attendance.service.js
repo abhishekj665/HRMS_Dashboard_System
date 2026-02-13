@@ -6,87 +6,61 @@ import {
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-export const getAttendance = async (managerId) => {
+export const getAttendance = async (filters = {}, managerId) => {
   try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { requestedTo: managerId },
-    });
+    const { status, role, page = 1, limit = 10 } = filters;
 
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
+    const where = { requestedTo: managerId };
+    if (status) where.status = status.toUpperCase();
+
+    const requesterWhere = {};
+    if (role) requesterWhere.role = role;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const { rows, count } = await AttendanceRequest.findAndCountAll({
+      where,
+      attributes: ["id", "reviewedBy", "requestedTo", "status", "createdAt"],
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset,
+      distinct: true,
+      include: [
+        {
+          model: Attendance,
+          attributes: [
+            "id",
+            "punchInAt",
+            "punchOutAt",
+            "workedMinutes",
+            "breakMinutes",
+          ],
+        },
+        {
+          model: User,
+          as: "requester",
+          attributes: ["id", "role", "email"],
+          required: true,
+          where: Object.keys(requesterWhere).length
+            ? requesterWhere
+            : undefined,
+        },
+      ],
+    });
 
     return {
       success: true,
-      data: attendanceData,
-    };
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const pendingAttendanceRequests = async (managerId) => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "PENDING", requestedTo: managerId },
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "No pending attendance record found",
-      );
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Data Fetched Successfully",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
-
-export const approvedAttendanceRequest = async (managerId) => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "APPROVED", requestedTo: managerId },
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
+      data: rows,
+      total: count,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
 
-export const rejectedAttendanceRequest = async (managerId) => {
-  try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { status: "REJECTED" },
-    });
-
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
-
-    return {
-      success: true,
-      data: attendanceData,
-      message: "Attendance Data Found",
-    };
-  } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-  }
-};
 
 export const approveAttendanceRequest = async (managerId, id) => {
   try {
@@ -128,7 +102,7 @@ export const approveAttendanceRequest = async (managerId, id) => {
 export const rejectAttendanceRequest = async (managerId, id) => {
   try {
     const attendanceData = await AttendanceRequest.findOne({
-      where: { id: id, isApproved: "PENDING" },
+      where: { id: id, status: "PENDING" },
       include: [{ model: Attendance, attributes: ["punchOutAt", "punchInAt"] }],
     });
 
@@ -148,7 +122,6 @@ export const rejectAttendanceRequest = async (managerId, id) => {
       message: "Attendance Rejected Successfully ",
     };
   } catch (error) {
-    n;
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

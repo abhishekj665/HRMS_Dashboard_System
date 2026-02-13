@@ -15,17 +15,12 @@ export const getUsersService = async (page, limits, user) => {
       limit,
       offset,
       where: { managerId: user.id },
-      attributes: { exclude: ["password"] },
+      attributes: ["id", "isVerified", "isBlocked", "email", "role"],
       include: [
         {
           model: User,
           as: "manager",
           attributes: ["id", "email", "first_name", "last_name"],
-        },
-        {
-          model: UserIP,
-          required: false,
-          attributes: ["ipAddress", "isBlocked", "createdAt", "updatedAt"],
         },
       ],
     });
@@ -71,4 +66,3 @@ export const registerUserService = async ({ data }) => {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
-

@@ -130,7 +130,7 @@ const AdminUserPage = () => {
   }, [page, limit]);
 
   return (
-    <div className="max-w-full mx-auto mt-10 px-6">
+    <div className="max-w-full mx-auto mt-10 px-2">
       <Dialog
         open={openCreateUser}
         onClose={() => setOpenCreateUser(false)}
@@ -213,7 +213,7 @@ const AdminUserPage = () => {
         </div>
       </div>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

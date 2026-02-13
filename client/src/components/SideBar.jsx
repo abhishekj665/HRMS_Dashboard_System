@@ -5,8 +5,8 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import AccessibilityIcon from "@mui/icons-material/Accessibility";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
-import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import ManageHistoryIcon from "@mui/icons-material/ManageHistory";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ContactPageIcon from "@mui/icons-material/ContactPage";
 import { useSelector } from "react-redux";
 
@@ -94,7 +94,7 @@ export default function Sidebar({ open, setOpen }) {
           onClick={() => setOpen(false)}
           className={linkClass}
         >
-          <ContactPageIcon /> Attendance Data
+          <AccessTimeIcon /> Attendance Data
         </NavLink>
       </nav>
     </aside>

@@ -53,11 +53,6 @@ export default function AdminManagersPage() {
     password: "",
   });
 
-  
-  
-
-  
-
   const fetchUsers = async (currentPage = 1, searchValue = "") => {
     if (loadingUsers) return;
 
@@ -168,19 +163,8 @@ export default function AdminManagersPage() {
     fetchData();
   }, []);
 
-  
-
-  const handleUserSearch = (managerId, event, value, reason) => {
-    if (reason !== "input") return;
-
-    setSearchInputs((prev) => ({
-      ...prev,
-      [managerId]: value,
-    }));
-  };
-
   return (
-    <div className="p-6 h-[85vh] overflow-y-auto">
+    <div className="p-1  overflow-y-auto">
       <div className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">Manager Control</h1>
@@ -229,7 +213,9 @@ export default function AdminManagersPage() {
 
                   return (
                     <TableRow key={m.id}>
-                      <TableCell>{m.first_name}</TableCell>
+                      <TableCell>
+                        {m.first_name ? `${m.first_name} ` : "Manager"}
+                      </TableCell>
 
                       <TableCell>{m.email?.split("@")[0]}</TableCell>
 

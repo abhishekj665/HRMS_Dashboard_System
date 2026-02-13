@@ -123,7 +123,7 @@ User.hasMany(AttendanceRequest, {
 });
 
 AttendanceRequest.belongsTo(User, {
-  foreignKey: "approvedBy",
+  foreignKey: "reviewedBy",
   as: "approver",
 });
 

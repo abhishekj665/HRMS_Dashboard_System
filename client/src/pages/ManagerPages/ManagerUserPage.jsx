@@ -23,7 +23,6 @@ import { registerUser } from "../../services/managerService";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 import { getUser } from "../../services/managerService";
 
@@ -34,7 +33,7 @@ const roleColor = (role) => {
 };
 
 const ManagerUserPage = () => {
-  
+  const currentUser = useSelector((state) => state.auth.user);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
@@ -52,10 +51,6 @@ const ManagerUserPage = () => {
     email: "",
     password: "",
   });
-
-  
-
-  
 
   const fetchUsers = async (currentPage = page) => {
     try {
@@ -247,14 +242,16 @@ const ManagerUserPage = () => {
                   <Chip
                     label={u.isBlocked ? "Yes" : "No"}
                     size="small"
-                    color={u.isBlocked ? "error" :   "success"}
+                    color={u.isBlocked ? "error" : "success"}
                   />
                 </TableCell>
 
                 <TableCell>
-                  {u.manager
-                    ? `${u.manager.first_name} ${u.manager.last_name || ""}`
-                    : "Not Assigned Yet"}
+                  {u.manager && u.manager.id == currentUser.id
+                    ? "You"
+                    : u.manager
+                      ? `${u.manager.first_name} ${u.manager.last_name || ""}`
+                      : "Not Assigned Yet"}
                 </TableCell>
               </TableRow>
             ))}
