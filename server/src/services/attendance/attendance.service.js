@@ -73,7 +73,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       transaction,
     });
 
-    if (row) {
+    if (row && user.role != "admin") {
       let requestData = await AttendanceRequest.findOne({
         where: { attendanceId: row.id },
         attributes: ["status"],
