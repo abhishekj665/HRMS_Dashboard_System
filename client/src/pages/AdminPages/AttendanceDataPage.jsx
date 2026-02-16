@@ -384,6 +384,7 @@ export default function AttendanceTable() {
           {/* Table */}
           <TableContainer
             style={{ backgroundColor: "#F5F5F5" }}
+            ove
             component={Paper}
             className="rounded-xl"
           >

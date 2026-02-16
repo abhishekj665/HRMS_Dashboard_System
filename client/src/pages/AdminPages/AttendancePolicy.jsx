@@ -28,6 +28,7 @@ import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import { toast } from "react-toastify";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { TableContainer } from "@mui/material";
 
 import {
   getAttendancePolicyList,
@@ -177,73 +178,83 @@ export default function AttendancePolicyAdmin() {
       </Stack>
 
       {/* TABLE */}
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Shift</TableCell>
-              <TableCell>Start</TableCell>
-              <TableCell>End</TableCell>
-              <TableCell>Break (M)</TableCell>
-              <TableCell>Grace Late(M)</TableCell>
-              <TableCell>Grace Half(M)</TableCell>
-              <TableCell>Grace Absent(M)</TableCell>
-              <TableCell>From</TableCell>
-              <TableCell>To</TableCell>
-              <TableCell>Active</TableCell>
+      <TableContainer
+        component={Paper}
+        sx={{
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        <Table size="small" sx={{ minWidth: 1000 }}>
+          <Paper>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Shift</TableCell>
+                  <TableCell>Start</TableCell>
+                  <TableCell>End</TableCell>
+                  <TableCell>Break (M)</TableCell>
+                  <TableCell>Grace Late(M)</TableCell>
+                  <TableCell>Grace Half(M)</TableCell>
+                  <TableCell>Grace Absent(M)</TableCell>
+                  <TableCell>From</TableCell>
+                  <TableCell>To</TableCell>
+                  <TableCell>Active</TableCell>
 
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell>{r.shiftType}</TableCell>
-                <TableCell>{formatTimeAMPM(r.startTime)}</TableCell>
-                <TableCell>{formatTimeAMPM(r.endTime)}</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell>{r.shiftType}</TableCell>
+                    <TableCell>{formatTimeAMPM(r.startTime)}</TableCell>
+                    <TableCell>{formatTimeAMPM(r.endTime)}</TableCell>
 
-                <TableCell>{r.breakMinute}</TableCell>
-                <TableCell>{r.graceLateMinute}</TableCell>
-                <TableCell>{r.graceHalfDayMinute}</TableCell>
-                <TableCell>{r.graceAbsentMinute}</TableCell>
-                <TableCell>{formatIndianDate(r.effectiveFrom)}</TableCell>
-                <TableCell>{formatIndianDate(r.effectiveTo)}</TableCell>
+                    <TableCell>{r.breakMinute}</TableCell>
+                    <TableCell>{r.graceLateMinute}</TableCell>
+                    <TableCell>{r.graceHalfDayMinute}</TableCell>
+                    <TableCell>{r.graceAbsentMinute}</TableCell>
+                    <TableCell>{formatIndianDate(r.effectiveFrom)}</TableCell>
+                    <TableCell>{formatIndianDate(r.effectiveTo)}</TableCell>
 
-                <TableCell>
-                  <Chip
-                    label={r.isDefault ? "Yes" : "No"}
-                    size="small"
-                    color={r.isDefault ? "success" : "default"}
-                  />
-                </TableCell>
-
-                <TableCell>
-                  <Stack direction="row" gap={1}>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => openEdit(r)}
-                    >
-                      <EditOutlinedIcon />
-                    </Button>
-
-                    {!r.isDefault && (
-                      <Button
+                    <TableCell>
+                      <Chip
+                        label={r.isDefault ? "Yes" : "No"}
                         size="small"
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleDelete(r.id)}
-                      >
-                        <DeleteOutlinedIcon />
-                      </Button>
-                    )}
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+                        color={r.isDefault ? "success" : "default"}
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Stack direction="row" gap={1}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => openEdit(r)}
+                        >
+                          <EditOutlinedIcon />
+                        </Button>
+
+                        {!r.isDefault && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDelete(r.id)}
+                          >
+                            <DeleteOutlinedIcon />
+                          </Button>
+                        )}
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Paper>
         </Table>
-      </Paper>
+      </TableContainer>
 
       {/* DIALOG FORM */}
       <Dialog
