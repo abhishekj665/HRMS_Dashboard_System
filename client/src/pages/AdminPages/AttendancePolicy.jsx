@@ -113,6 +113,8 @@ export default function AttendancePolicyAdmin() {
   };
 
   const formatIndianDate = (d) => (d ? dayjs(d).format("DD-MM-YYYY") : "-");
+  const formatTimeAMPM = (t) =>
+    t ? dayjs(`2020-01-01T${t}`).format("hh:mm A") : "-";
 
   const save = async () => {
     const attendancePolicy = {
@@ -197,8 +199,9 @@ export default function AttendancePolicyAdmin() {
             {rows.map((r) => (
               <TableRow key={r.id}>
                 <TableCell>{r.shiftType}</TableCell>
-                <TableCell>{r.startTime?.slice(0, 5)}</TableCell>
-                <TableCell>{r.endTime?.slice(0, 5)}</TableCell>
+                <TableCell>{formatTimeAMPM(r.startTime)}</TableCell>
+                <TableCell>{formatTimeAMPM(r.endTime)}</TableCell>
+
                 <TableCell>{r.breakMinute}</TableCell>
                 <TableCell>{r.graceLateMinute}</TableCell>
                 <TableCell>{r.graceHalfDayMinute}</TableCell>
