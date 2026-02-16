@@ -17,7 +17,7 @@ export const getRequestDataService = async () => {
           model: User,
           attributes: ["email", "role", "managerId"],
           where: {
-            managerId: { [Op.ne]: null },
+            [Op.or]: [{ managerId: { [Op.ne]: null } }, { role: "manager" }],
           },
           required: true,
         },

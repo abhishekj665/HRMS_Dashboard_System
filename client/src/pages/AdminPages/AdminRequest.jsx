@@ -13,7 +13,10 @@ import {
 import { useState, useEffect } from "react";
 import { getRequestData } from "../../services/AdminService/requestService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../../services/AdminService/requestService";
+import {
+  approveRequest,
+  rejectRequest,
+} from "../../services/AdminService/requestService";
 
 import { useSelector } from "react-redux";
 
@@ -33,10 +36,6 @@ const AdminRequest = () => {
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
-
-  
-
-  
 
   const role = user?.role;
 
@@ -78,6 +77,8 @@ const AdminRequest = () => {
 
     await rejectRequest(id, remark);
     toast.success("Request Rejected");
+
+    fetchRequestsData();
   };
 
   useEffect(() => {
