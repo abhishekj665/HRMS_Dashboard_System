@@ -1,31 +1,46 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 import {
+  Box,
+  Paper,
+  Typography,
   Button,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   TextField,
   MenuItem,
   Switch,
   FormControlLabel,
-  Typography,
-  Box,
-  Paper,
-  Chip,
+  Stack,
 } from "@mui/material";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { toast } from "react-toastify";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 import {
+  getAttendancePolicyList,
   registerAttendancePolicy,
   updateAttendancePolicy,
-  getAttendancePolicy,
+  deleteAttendancePolicy,
 } from "../../services/AttendanceService/attendanceService";
-
-import { toast } from "react-toastify";
 
 const weekendDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const initialForm = {
+const emptyForm = {
   shiftType: "SAMEDAY",
-  isDefault: true,
+  isDefault: false,
   startTime: "",
   endTime: "",
   breakMinute: "",
@@ -35,22 +50,22 @@ const initialForm = {
   graceAbsentMinute: "",
   graceLateMinute: "",
   weekends: [],
+  effectiveFrom: "",
+  effectiveTo: "",
   overtimeEnable: false,
   overtimeStartTime: "",
   overtimeMinutes: "",
 };
 
-export default function AttendancePolicyInline() {
-  const [form, setForm] = useState(initialForm);
-  const [original, setOriginal] = useState(initialForm);
-  const [mode, setMode] = useState("create");
-  const [id, setID] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+export default function AttendancePolicyAdmin() {
+  const [rows, setRows] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(emptyForm);
 
   const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
   const setTime = (k, v) => update(k, v ? v.format("HH:mm") : "");
-  const timeValue = (t) => (t ? dayjs(`2020-01-01T${t}`) : null);
+  const timeVal = (t) => (t ? dayjs(`2020-01-01T${t}`) : null);
 
   const toggleWeekend = (d) => {
     const s = new Set(form.weekends);
@@ -58,67 +73,48 @@ export default function AttendancePolicyInline() {
     update("weekends", [...s]);
   };
 
-  const loadPolicy = async () => {
-    const r = await getAttendancePolicy();
-
-    if (r?.success && r.data) {
-      const api = r.data;
-      const ot = api.OvertimePolicy || {};
-
-      const toHHMM = (t) => {
-        if (!t) return "";
-
-        if (typeof t === "string") return t.slice(0, 5);
-
-        if (t instanceof Date) return t.toTimeString().slice(0, 5);
-
-        return "";
-      };
-
-      const data = {
-        ...initialForm,
-
-        shiftType: api.shiftType,
-        isDefault: api.isDefault,
-        weekends: api.weekends || [],
-
-        startTime: toHHMM(api.startTime),
-        endTime: toHHMM(api.endTime),
-        breakMinute: api.breakMinute ?? "",
-
-        gracePunchInTime: toHHMM(api.gracePunchInTime),
-        gracePunchOutTime: toHHMM(api.gracePunchOutTime),
-
-        graceHalfDayMinute: api.graceHalfDayMinute,
-        graceAbsentMinute: api.graceAbsentMinute,
-        graceLateMinute: api.graceLateMinute,
-
-        overtimeEnable: !!ot.enable,
-        overtimeStartTime: toHHMM(ot.overtimeStartTime),
-        overtimeMinutes: ot.overtimeMinutes ?? "",
-      };
-
-      setForm(data);
-      setOriginal(data);
-      setMode("update");
-      setID(api.id);
-    } else {
-      setForm(initialForm);
-      setOriginal(initialForm);
-      setMode("create");
-    }
+  const load = async () => {
+    const r = await getAttendancePolicyList();
+    if (r?.success) setRows(r.data);
   };
 
   useEffect(() => {
-    loadPolicy();
+    load();
   }, []);
-  const readOnlyInputProps = {
-    style: { fontWeight: 600 },
+
+  const openCreate = () => {
+    setEditId(null);
+    setForm(emptyForm);
+    setOpen(true);
   };
 
-  const handleSave = async () => {
-    setSubmitting(true);
+  const openEdit = (row) => {
+    const ot = row.OvertimePolicy || {};
+    setEditId(row.id);
+    setForm({
+      shiftType: row.shiftType,
+      isDefault: row.isDefault,
+      startTime: row.startTime?.slice(0, 5) || "",
+      endTime: row.endTime?.slice(0, 5) || "",
+      breakMinute: row.breakMinute || "",
+      gracePunchInTime: row.gracePunchInTime?.slice(0, 5) || "",
+      gracePunchOutTime: row.gracePunchOutTime?.slice(0, 5) || "",
+      graceHalfDayMinute: row.graceHalfDayMinute || "",
+      graceAbsentMinute: row.graceAbsentMinute || "",
+      graceLateMinute: row.graceLateMinute || "",
+      weekends: row.weekends || [],
+      effectiveFrom: row.effectiveFrom || "",
+      effectiveTo: row.effectiveTo || "",
+      overtimeEnable: !!ot.enable,
+      overtimeStartTime: ot.overtimeStartTime?.slice(0, 5) || "",
+      overtimeMinutes: ot.overtimeMinutes || "",
+    });
+    setOpen(true);
+  };
 
+  const formatIndianDate = (d) => (d ? dayjs(d).format("DD-MM-YYYY") : "-");
+
+  const save = async () => {
     const attendancePolicy = {
       shiftType: form.shiftType,
       isDefault: form.isDefault,
@@ -131,6 +127,8 @@ export default function AttendancePolicyInline() {
       graceAbsentMinute: Number(form.graceAbsentMinute || 0),
       graceLateMinute: Number(form.graceLateMinute || 0),
       weekends: form.weekends,
+      effectiveFrom: form.effectiveFrom,
+      effectiveTo: form.effectiveTo || null,
     };
 
     const overtimePolicy = {
@@ -139,65 +137,126 @@ export default function AttendancePolicyInline() {
       overtimeMinutes: Number(form.overtimeMinutes || 0),
     };
 
-    let res;
-
-    if (mode === "update" && id) {
-      res = await updateAttendancePolicy(
-        { attendancePolicy, overtimePolicy },
-        id,
-      );
-    } else {
-      res = await registerAttendancePolicy({
-        attendancePolicy,
-        overtimePolicy,
-      });
-    }
+    const res = editId
+      ? await updateAttendancePolicy(
+          { attendancePolicy, overtimePolicy },
+          editId,
+        )
+      : await registerAttendancePolicy({ attendancePolicy, overtimePolicy });
 
     if (res?.success) {
       toast.success("Saved");
-      setEditing(false);
-      loadPolicy();
+      setOpen(false);
+      load();
+    } else toast.error(res?.message || "Failed");
+  };
+
+  const handleDelete = async (id) => {
+    const ok = window.confirm("Delete this policy?");
+    if (!ok) return;
+
+    const res = await deleteAttendancePolicy(id);
+
+    if (res?.success) {
+      toast.success("Policy deleted");
+      load();
     } else {
-      toast.error(res?.message || "Failed");
+      toast.error(res?.message || "Delete failed");
     }
-
-    setSubmitting(false);
   };
-
-  const handleCancel = () => {
-    setForm(original);
-    setEditing(false);
-  };
-
-  const section = (title, desc, children) => (
-    <Paper className="p-6 rounded-xl space-y-4">
-      <Typography fontWeight={600}>{title}</Typography>
-
-      {desc && (
-        <Typography variant="body2" color="gray" component="div">
-          {desc}
-        </Typography>
-      )}
-
-      {children}
-    </Paper>
-  );
 
   return (
-    <Box p={3} className="space-y-6">
-      <Typography variant="h5" style={{ marginBottom: "4px" }}>
-        Attendance Policy
-      </Typography>
+    <Box p={1} className="space-y-6">
+      <Stack direction="row" justifyContent="space-between">
+        <Typography variant="h5">Attendance Policies</Typography>
+        <Button variant="contained" onClick={openCreate}>
+          New Policy
+        </Button>
+      </Stack>
 
-      {section(
-        "Shift Configuration",
+      {/* TABLE */}
+      <Paper>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Shift</TableCell>
+              <TableCell>Start</TableCell>
+              <TableCell>End</TableCell>
+              <TableCell>Break (M)</TableCell>
+              <TableCell>Grace Late(M)</TableCell>
+              <TableCell>Grace Half(M)</TableCell>
+              <TableCell>Grace Absent(M)</TableCell>
+              <TableCell>From</TableCell>
+              <TableCell>To</TableCell>
+              <TableCell>Active</TableCell>
 
-        <Box className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.id}>
+                <TableCell>{r.shiftType}</TableCell>
+                <TableCell>{r.startTime?.slice(0, 5)}</TableCell>
+                <TableCell>{r.endTime?.slice(0, 5)}</TableCell>
+                <TableCell>{r.breakMinute}</TableCell>
+                <TableCell>{r.graceLateMinute}</TableCell>
+                <TableCell>{r.graceHalfDayMinute}</TableCell>
+                <TableCell>{r.graceAbsentMinute}</TableCell>
+                <TableCell>{formatIndianDate(r.effectiveFrom)}</TableCell>
+                <TableCell>{formatIndianDate(r.effectiveTo)}</TableCell>
+
+                <TableCell>
+                  <Chip
+                    label={r.isDefault ? "Yes" : "No"}
+                    size="small"
+                    color={r.isDefault ? "success" : "default"}
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Stack direction="row" gap={1}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => openEdit(r)}
+                    >
+                      <EditOutlinedIcon />
+                    </Button>
+
+                    {!r.isDefault && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleDelete(r.id)}
+                      >
+                        <DeleteOutlinedIcon />
+                      </Button>
+                    )}
+                  </Stack>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+
+      {/* DIALOG FORM */}
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>{editId ? "Edit Policy" : "Create Policy"}</DialogTitle>
+        <DialogContent className="space-y-5">
           <TextField
             select
             label="Shift Type"
+            fullWidth
             value={form.shiftType}
-            disabled={!editing}
+            style={{ marginTop: "5px" }}
             onChange={(e) => update("shiftType", e.target.value)}
           >
             <MenuItem value="SAMEDAY">Same Day</MenuItem>
@@ -208,148 +267,133 @@ export default function AttendancePolicyInline() {
             control={
               <Switch
                 checked={form.isDefault}
-                disabled={!editing}
                 onChange={(e) => update("isDefault", e.target.checked)}
               />
             }
-            label="Active Policy"
+            label="Default Policy"
           />
 
-          <TimePicker
-            label="Start Time"
-            value={timeValue(form.startTime)}
-            onChange={(v) => setTime("startTime", v)}
-            disabled={!editing}
-          />
-
-          <TimePicker
-            label="End Time"
-            value={timeValue(form.endTime)}
-            onChange={(v) => setTime("endTime", v)}
-            disabled={!editing}
-          />
+          <Stack direction="row" gap={3}>
+            <TimePicker
+              label="Start"
+              value={timeVal(form.startTime)}
+              onChange={(v) => setTime("startTime", v)}
+            />
+            <TimePicker
+              label="End"
+              value={timeVal(form.endTime)}
+              onChange={(v) => setTime("endTime", v)}
+            />
+          </Stack>
 
           <TextField
-            label="Break Duration (minutes)"
+            label="Break Minutes"
             type="number"
-            disabled={!editing}
+            fullWidth
+            style={{ marginBottom: "15px" }}
             value={form.breakMinute}
             onChange={(e) => update("breakMinute", e.target.value)}
-            inputProps={{ min: 0, max: 600 }}
-          />
-        </Box>,
-      )}
-
-      {section(
-        "Grace Rules",
-
-        <Box className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-4">
-          <TimePicker
-            label="Punch-In Grace"
-            value={timeValue(form.gracePunchInTime)}
-            onChange={(v) => setTime("gracePunchInTime", v)}
-            disabled={!editing}
           />
 
-          <TimePicker
-            label="Punch-Out Grace"
-            value={timeValue(form.gracePunchOutTime)}
-            onChange={(v) => setTime("gracePunchOutTime", v)}
-            disabled={!editing}
-          />
-
-          <TextField
-            label="Late Grace (min)"
-            type="number"
-            disabled={!editing}
-            value={form.graceLateMinute}
-            onChange={(e) => update("graceLateMinute", e.target.value)}
-          />
-
-          <TextField
-            label="Half Day Grace (min)"
-            type="number"
-            disabled={!editing}
-            value={form.graceHalfDayMinute}
-            onChange={(e) => update("graceHalfDayMinute", e.target.value)}
-          />
-
-          <TextField
-            label="Absent Grace (min)"
-            type="number"
-            disabled={!editing}
-            value={form.graceAbsentMinute}
-            onChange={(e) => update("graceAbsentMinute", e.target.value)}
-          />
-        </Box>,
-      )}
-
-      {section(
-        "Weekends",
-        "Non working days",
-        <Box className="flex gap-2 flex-wrap mt-4">
-          {weekendDays.map((d) => (
-            <Chip
-              key={d}
-              label={d}
-              clickable={editing}
-              onClick={() => editing && toggleWeekend(d)}
-              color={form.weekends.includes(d) ? "primary" : "default"}
+          <Stack direction="row" gap={3}>
+            <TimePicker
+              label="PunchIn Grace"
+              style={{ marginTop: "5px" }}
+              value={timeVal(form.gracePunchInTime)}
+              onChange={(v) => setTime("gracePunchInTime", v)}
             />
-          ))}
-        </Box>,
-      )}
+            <TimePicker
+              style={{ marginTop: "5px" }}
+              label="PunchOut Grace"
+              value={timeVal(form.gracePunchOutTime)}
+              onChange={(v) => setTime("gracePunchOutTime", v)}
+            />
+          </Stack>
 
-      {section(
-        "Overtime",
-        "Overtime limits",
-        <>
+          <Stack direction="row" gap={3}>
+            <TextField
+              label="Late Grace"
+              type="number"
+              value={form.graceLateMinute}
+              onChange={(e) => update("graceLateMinute", e.target.value)}
+            />
+            <TextField
+              label="Half Day Grace"
+              type="number"
+              value={form.graceHalfDayMinute}
+              onChange={(e) => update("graceHalfDayMinute", e.target.value)}
+            />
+            <TextField
+              label="Absent Grace"
+              type="number"
+              value={form.graceAbsentMinute}
+              onChange={(e) => update("graceAbsentMinute", e.target.value)}
+            />
+          </Stack>
+
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            {weekendDays.map((d) => (
+              <Chip
+                key={d}
+                label={d}
+                onClick={() => toggleWeekend(d)}
+                color={form.weekends.includes(d) ? "primary" : "default"}
+                clickable
+              />
+            ))}
+          </Stack>
+
+          <Stack direction="row" gap={3}>
+            <TextField
+              type="date"
+              label="Effective From"
+              InputLabelProps={{ shrink: true }}
+              value={form.effectiveFrom}
+              onChange={(e) => update("effectiveFrom", e.target.value)}
+            />
+            <TextField
+              type="date"
+              label="Effective To"
+              InputLabelProps={{ shrink: true }}
+              value={form.effectiveTo}
+              onChange={(e) => update("effectiveTo", e.target.value)}
+            />
+          </Stack>
+
           <FormControlLabel
             control={
               <Switch
                 checked={form.overtimeEnable}
-                disabled={!editing}
                 onChange={(e) => update("overtimeEnable", e.target.checked)}
               />
             }
             label="Enable Overtime"
           />
 
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <TimePicker
-              label="Overtime Starts After"
-              value={timeValue(form.overtimeStartTime)}
-              onChange={(v) => setTime("overtimeStartTime", v)}
-              disabled={!editing || !form.overtimeEnable}
-            />
+          {form.overtimeEnable && (
+            <Stack direction="row" gap={3}>
+              <TimePicker
+                label="OT Start"
+                value={timeVal(form.overtimeStartTime)}
+                onChange={(v) => setTime("overtimeStartTime", v)}
+              />
+              <TextField
+                label="OT Minutes"
+                type="number"
+                value={form.overtimeMinutes}
+                onChange={(e) => update("overtimeMinutes", e.target.value)}
+              />
+            </Stack>
+          )}
+        </DialogContent>
 
-            <TextField
-              label="Max Overtime Minutes"
-              type="number"
-              disabled={!editing || !form.overtimeEnable}
-              value={form.overtimeMinutes}
-              onChange={(e) => update("overtimeMinutes", e.target.value)}
-            />
-          </Box>
-        </>,
-      )}
-
-      {!editing ? (
-        <Button variant="contained" onClick={() => setEditing(true)}>
-          {mode === "update" ? "Edit Policy" : "Create Policy"}
-        </Button>
-      ) : (
-        <Box className="flex gap-3">
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            disabled={submitting}
-          >
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="contained" onClick={save}>
             Save
           </Button>
-          <Button onClick={handleCancel}>Cancel</Button>
-        </Box>
-      )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

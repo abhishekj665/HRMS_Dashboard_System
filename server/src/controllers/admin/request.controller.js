@@ -13,7 +13,7 @@ export const getRequestData = async (req, res, next) => {
         res,
         response.data,
         response.message,
-        STATUS.ACCEPTED
+        STATUS.ACCEPTED,
       );
     } else {
       return errorResponse(req, res.data, response.message, STATUS.BAD_REQUEST);
@@ -25,11 +25,9 @@ export const getRequestData = async (req, res, next) => {
 
 export const approveRequest = async (req, res, next) => {
   try {
-    const adminRole = req.user.role;
-
     const response = await requestServices.approveRequestService(
       req.params.id,
-      adminRole
+      req.user.id,
     );
 
     if (response.success) {
@@ -39,7 +37,7 @@ export const approveRequest = async (req, res, next) => {
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
-      return errorResponse(res,response.message, STATUS.BAD_REQUEST);
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {
     next(error);
@@ -52,7 +50,8 @@ export const rejectRequest = async (req, res, next) => {
 
     const response = await requestServices.rejectRequestService(
       req.params.id,
-      remark
+      remark,
+      req.user.id,
     );
 
     if (response.success) {

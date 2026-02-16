@@ -58,16 +58,21 @@ const AttendancePolicy = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
     },
-    policySnapshot: {
-      type: DataTypes.JSON,
-      allowNull: true,
+    
+    effectiveFrom: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+
+    effectiveTo: {
+      type: DataTypes.DATEONLY,
+      allowNull: true, // null = open ended
     },
   },
   {
     timestamps: true,
     tableName: "AttendancePolicy",
     paranoid: true,
-    
   },
 );
 

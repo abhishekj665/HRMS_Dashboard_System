@@ -46,6 +46,30 @@ export const getAttendancePolicies = async (req, res, next) => {
   }
 };
 
+
+export const getDefaultAttendancePolicy = async (req, res, next) => {
+  try {
+    const response = await attendancePolicyServices.getDefaultAttendancePolicy({
+      page: Number(req.query.page) || 1,
+      limit: Number(req.query.limit) || 10,
+      search: req.query.search || "",
+    });
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED,
+      );
+    } else {
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 // export const getAttendancePolicyById = async (req, res, next) => {
 //   try {
 //     const response = await attendancePolicyServices.getAttendancePolicyById(

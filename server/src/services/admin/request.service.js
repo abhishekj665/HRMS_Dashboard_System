@@ -21,6 +21,11 @@ export const getRequestDataService = async () => {
           model: Asset,
           attributes: ["id", "title", "price", "status", "availableQuantity"],
         },
+        {
+          model: User,
+          as: "reviewer",
+          attributes: ["email", "role"],
+        },
       ],
     });
 
@@ -34,7 +39,7 @@ export const getRequestDataService = async () => {
   }
 };
 
-export const rejectRequestService = async (id, remark) => {
+export const rejectRequestService = async (id, remark, adminId) => {
   const request = await AssetRequest.findByPk(id);
 
   if (!request || request.status !== "pending") {
@@ -43,7 +48,7 @@ export const rejectRequestService = async (id, remark) => {
 
   request.status = "rejected";
   request.adminRemark = remark;
-  request.reviewedBy = "admin";
+  request.reviewedBy = adminId;
   await request.save();
 
   return {
@@ -53,7 +58,7 @@ export const rejectRequestService = async (id, remark) => {
   };
 };
 
-export const approveRequestService = async (id, admin) => {
+export const approveRequestService = async (id, adminId) => {
   const t = await sequelize.transaction();
 
   try {
@@ -101,7 +106,8 @@ export const approveRequestService = async (id, admin) => {
     );
 
     request.status = "approved";
-    request.adminRemark = `Approved by ${admin}`;
+    request.adminRemark = `Approved by admin`;
+    request.reviewedBy = adminId;
     await request.save({ transaction: t });
 
     await t.commit();

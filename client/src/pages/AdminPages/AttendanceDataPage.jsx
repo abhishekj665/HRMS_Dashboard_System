@@ -330,7 +330,7 @@ export default function AttendanceTable() {
           {/* Tabs */}
           <Tabs value={tab} onChange={(e, v) => setTab(v)}>
             <Tab label="Attendance" />
-            <Tab label="Regularization" />
+            <Tab label="Regularization Requests" />
           </Tabs>
 
           {/* Filters */}

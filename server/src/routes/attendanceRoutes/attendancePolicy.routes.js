@@ -7,7 +7,8 @@ const Router = express.Router();
 Router.use(adminAuth);
 
 Router.post("/", attendancePolicyController.createAttendancePolicy);
-Router.get("/", attendancePolicyController.getAttendancePolicies);
+Router.get("/", attendancePolicyController.getDefaultAttendancePolicy);
+Router.get("/all", attendancePolicyController.getAttendancePolicies);
 Router.put("/:id", attendancePolicyController.updateAttendancePolicy);
 Router.delete("/:id", attendancePolicyController.deleteAttendancePolicy);
 

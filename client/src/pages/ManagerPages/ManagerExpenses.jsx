@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -154,7 +153,11 @@ const ManagerExpensesPage = () => {
                 </TableCell>
 
                 <TableCell>
-                  {exp?.reviewer?.role ? exp.reviewer.role : "-"}
+                  {exp?.reviewer
+                    ? exp.reviewer.id === user.id
+                      ? "You"
+                      : exp.reviewer.role
+                    : "-"}
                 </TableCell>
 
                 <TableCell align="center">

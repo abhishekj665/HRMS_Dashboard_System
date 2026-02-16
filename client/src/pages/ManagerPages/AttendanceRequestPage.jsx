@@ -173,19 +173,7 @@ export default function AttendanceData() {
     }
   };
 
-  const handleReject = async (row) => {
-    try {
-      const response = await rejectAttendance(row.id);
-      if (response?.success) {
-        toast.success(response.message);
-        fetchAttendanceData();
-      } else {
-        toast.error(response.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+  
 
   const handleBulkApprove = async () => {
     if (!selectedIds.length) return toast.error("Select rows first");

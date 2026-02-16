@@ -4,8 +4,6 @@ import {
   AttendanceLog,
   AttendanceRequest,
   User,
-} from "../../models/Associations.model.js";
-import {
   AttendancePolicy,
   OvertimePolicy,
 } from "../../models/Associations.model.js";
@@ -13,26 +11,35 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
+import { calculateWorkedSecondsFromLogs } from "../../utils/calaculateTime.utils.js";
+
+const getActivePolicy = async (date, transaction) => {
+  const d = date.toISOString().slice(0, 10);
+
+  return AttendancePolicy.findOne({
+    where: {
+      effectiveFrom: { [Op.lte]: d },
+      [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: d } }],
+    },
+    include: [{ model: OvertimePolicy }],
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
+};
 
 export const registerInService = async (userId, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
-
-  const latitute = data.lat;
-  const longitude = data.lng;
-
   try {
+    const now = new Date();
+    const { lat, lng } = data;
+
     const user = await User.findByPk(userId, {
-      include: [
-        {
-          model: AttendancePolicy,
-          include: [{ model: OvertimePolicy }],
-        },
-      ],
       transaction,
+      lock: transaction.LOCK.UPDATE,
     });
 
-    if (!user || !user.AttendancePolicy) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "Policy not assigned");
+    if (!user) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "User not found");
     }
 
     if (!user.managerId && user.role === "user") {
@@ -42,18 +49,20 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       );
     }
 
-    const policy = user.AttendancePolicy;
+    const policy = await getActivePolicy(now, transaction);
 
-    const now = new Date();
+    if (!policy) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "No active attendance policy for today",
+      );
+    }
 
     const dayName = now
       .toLocaleDateString("en-US", { weekday: "long" })
-      .trim()
       .toUpperCase();
 
-    const weekends = (policy.weekends || []).map((d) =>
-      String(d).trim().toUpperCase(),
-    );
+    const weekends = (policy.weekends || []).map((d) => d.toUpperCase());
 
     if (weekends.includes(dayName)) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Weekend not allowed");
@@ -61,35 +70,46 @@ export const registerInService = async (userId, { data }, ipAddress) => {
 
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
     let row = await Attendance.findOne({
-      where: {
-        userId,
-        punchInAt: { [Op.between]: [start, end] },
-      },
+      where: { userId, punchInAt: { [Op.between]: [start, end] } },
       transaction,
+      lock: transaction.LOCK.UPDATE,
     });
 
-    if (row && user.role != "admin") {
-      let requestData = await AttendanceRequest.findOne({
+    if (row) {
+      const req = await AttendanceRequest.findOne({
         where: { attendanceId: row.id },
         attributes: ["status"],
+        transaction,
+        lock: transaction.LOCK.UPDATE,
       });
 
-      if (requestData.status != "PENDING") {
-        throw new ExpressError(STATUS.BAD_REQUEST, "You can't punch in now");
+      if (req && req.status !== "PENDING") {
+        throw new ExpressError(
+          STATUS.BAD_REQUEST,
+          "Attendance request already processed for today",
+        );
       }
+    }
 
-      throw new ExpressError(STATUS.BAD_REQUEST, "Already punched in");
+    if (row) {
+      const lastLog = await AttendanceLog.findOne({
+        where: { attendanceId: row.id },
+        order: [["punchTime", "DESC"]],
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (lastLog && lastLog.punchType === "IN") {
+        throw new ExpressError(STATUS.BAD_REQUEST, "Already punched in");
+      }
     }
 
     const policyStart = new Date(now.toDateString() + " " + policy.startTime);
-
-    const lateMin = Math.floor((now - policyStart) / (1000 * 60));
-
+    const lateMin = Math.floor((now - policyStart) / 60000);
     const isLate = lateMin > (policy.graceLateMinute || 0);
 
     if (!row) {
@@ -104,73 +124,48 @@ export const registerInService = async (userId, { data }, ipAddress) => {
         { transaction },
       );
 
-      await AttendanceLog.create(
-        {
-          userId,
-          attendanceId: row.id,
-          punchType: "IN",
-          punchTimeUTC: now,
-          source: "WEB",
-          geoLongitude: longitude,
-          geoLatitude: latitute,
-          ipAddress: ipAddress,
-        },
-        { transaction },
-      );
+      let requestedTo = null;
 
-      if (user.role == "user") {
-        await AttendanceRequest.create(
-          {
-            attendanceId: row.id,
-            requestType: "REGULARIZATION",
-            requestedBy: userId,
-            requestedTo: user.managerId,
-            status: "PENDING",
-          },
-          { transaction },
-        );
-      } else if (user.role == "manager") {
+      if (user.role === "user") {
+        requestedTo = user.managerId;
+      } else if (user.role === "manager") {
         const admin = await User.findOne({
           where: { role: "admin" },
           attributes: ["id"],
+          transaction,
         });
+        requestedTo = admin?.id;
+      }
+
+      if (requestedTo) {
         await AttendanceRequest.create(
           {
             attendanceId: row.id,
             requestType: "REGULARIZATION",
             requestedBy: userId,
-            requestedTo: admin.id,
+            requestedTo,
             status: "PENDING",
           },
           { transaction },
         );
       }
-
-      await transaction.commit();
-
-      return {
-        success: true,
-        message: "Punch-in success",
-        data: row.punchInAt,
-      };
+    } else {
+      row.lastInAt = now;
+      row.punchOutAt = null;
+      if (isLate && !row.isLate) row.isLate = true;
+      await row.save({ transaction });
     }
-
-    row.lastInAt = now;
-    if (isLate) row.isLate = true;
-
-    await row.save({ transaction });
 
     await AttendanceLog.create(
       {
         userId,
-        attendanceId: row?.id || null,
+        attendanceId: row.id,
         punchType: "IN",
-        punchTimeUTC: now,
+        punchTime: now,
         source: "WEB",
-
-        geoLongitude: longitude,
-        geoLatitude: latitute,
-        ipAddress: ipAddress,
+        geoLatitude: lat,
+        geoLongitude: lng,
+        ipAddress,
       },
       { transaction },
     );
@@ -179,8 +174,8 @@ export const registerInService = async (userId, { data }, ipAddress) => {
 
     return {
       success: true,
-      message: "Punch-in Successfully",
-      data: row.punchInAt,
+      message: "Punch-in success",
+      data: { lastInAt: now },
     };
   } catch (e) {
     await transaction.rollback();
@@ -190,96 +185,60 @@ export const registerInService = async (userId, { data }, ipAddress) => {
 
 export const registerOutService = async (userId, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
-  const latitute = data.lat;
-  const longitude = data.lng;
   try {
-    const user = await User.findByPk(
-      userId,
-
-      {
-        include: [
-          {
-            model: AttendancePolicy,
-            include: [{ model: OvertimePolicy }],
-          },
-        ],
-        transaction,
-      },
-    );
-
-    if (!user || !user.AttendancePolicy) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "Policy not assigned");
-    }
-
-    if (!user.managerId && user.role === "user") {
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "You don't have an assigned manager so you can't punch out",
-      );
-    }
-
-    const policy = user.AttendancePolicy;
-    const otPolicy = policy.OvertimePolicy;
+    const now = new Date();
+    const { lat, lng } = data;
 
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: {
-        userId,
-        punchInAt: { [Op.between]: [start, end] },
-      },
+      where: { userId, punchInAt: { [Op.between]: [start, end] } },
       transaction,
+      lock: transaction.LOCK.UPDATE,
     });
 
-    if (!row || !row.lastInAt) {
+    if (!row) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "No attendance for today");
+    }
+
+    const lastLog = await AttendanceLog.findOne({
+      where: { attendanceId: row.id },
+      order: [["punchTime", "DESC"]],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!lastLog || lastLog.punchType !== "IN") {
       throw new ExpressError(STATUS.BAD_REQUEST, "No active punch-in");
     }
-
-    const now = new Date();
-
-    const sessionMinutes = Math.round((now - row.lastInAt) / (1000 * 60));
-
-    row.workedMinutes = (row.workedMinutes || 0) + sessionMinutes;
-    row.punchOutAt = now;
-    row.lastInAt = null;
-
-    const halfLimit = policy.graceHalfDayMinute || 240;
-
-    if (row.workedMinutes < halfLimit) {
-      row.isHalfDay = true;
-    } else {
-      row.isHalfDay = false;
-    }
-
-    const shiftEnd = new Date(now.toDateString() + " " + policy.endTime);
-
-    if (otPolicy?.enable && now > shiftEnd) {
-      const otMin = Math.round((now - shiftEnd) / (1000 * 60));
-
-      if (otMin >= (otPolicy.overtimeMinutes || 0)) {
-        row.overtimeMinutes = otMin;
-      }
-    }
-
-    await row.save({ transaction });
 
     await AttendanceLog.create(
       {
         userId,
         attendanceId: row.id,
         punchType: "OUT",
-        punchTimeUTC: now,
+        punchTime: now,
         source: "WEB",
-        geoLatitude: latitute,
-        geoLongitude: longitude,
-        ipAddress: ipAddress,
+        geoLatitude: lat,
+        geoLongitude: lng,
+        ipAddress,
       },
       { transaction },
     );
+
+    const totalSeconds = await calculateWorkedSecondsFromLogs(
+      userId,
+      row.id,
+      transaction,
+    );
+
+    row.workedMinutes = Math.floor(totalSeconds / 60);
+    row.punchOutAt = now;
+
+    await row.save({ transaction });
 
     await transaction.commit();
 
@@ -287,10 +246,8 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
       success: true,
       message: "Punch-out success",
       data: {
-        sessionMinutes,
+        totalSeconds,
         totalMinutes: row.workedMinutes,
-        overtimeMinutes: row.overtimeMinutes || 0,
-        isHalfDay: row.isHalfDay,
       },
     };
   } catch (e) {
@@ -303,20 +260,29 @@ export const getTodayAttendanceService = async (userId) => {
   try {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: {
-        userId,
-        punchInAt: { [Op.between]: [start, end] },
-      },
+      where: { userId, punchInAt: { [Op.between]: [start, end] } },
     });
+
+    if (!row) {
+      return { success: true, data: null };
+    }
+
+    const totalSeconds = await calculateWorkedSecondsFromLogs(
+      userId,
+      row.id,
+      null,
+    );
 
     return {
       success: true,
-      data: row,
+      data: {
+        ...row.toJSON(),
+        workedSeconds: totalSeconds,
+      },
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);

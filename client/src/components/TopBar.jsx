@@ -20,7 +20,8 @@ export default function Topbar({ open, setOpen }) {
 
   const [punch, setPunch] = useState(false);
   const [punchInTime, setPunchInTime] = useState(null);
-  const [baseMinutes, setBaseMinutes] = useState(0);
+
+  const [baseSeconds, setBaseSeconds] = useState(0);
 
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -33,17 +34,13 @@ export default function Topbar({ open, setOpen }) {
     if (!punchInTime) return;
 
     const now = Date.now();
+
     const sessionSeconds = Math.floor((now - punchInTime) / 1000);
+    const totalSeconds = baseSeconds + sessionSeconds;
 
-    const totalSeconds = baseMinutes * 60 + sessionSeconds;
-
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-
-    setHours(hrs);
-    setMinutes(mins);
-    setSeconds(secs);
+    setHours(Math.floor(totalSeconds / 3600));
+    setMinutes(Math.floor((totalSeconds % 3600) / 60));
+    setSeconds(totalSeconds % 60);
   };
 
   const dispatch = useDispatch();
@@ -89,15 +86,31 @@ export default function Topbar({ open, setOpen }) {
     const res = await getTodayAttendance();
 
     if (res.success && res.data) {
-      setBaseMinutes(res.data.workedMinutes || 0);
+      const { workedSeconds, lastInAt, punchOutAt } = res.data;
+      setBaseSeconds(workedSeconds || 0);
 
-      if (res.data.lastInAt) {
-        setPunch(true);
-        setPunchInTime(new Date(res.data.lastInAt).getTime());
+      const active = lastInAt && punchOutAt === null;
+
+      setPunch(active);
+
+      if (active) {
+        const lastInMs = new Date(lastInAt).getTime();
+        setPunchInTime(lastInMs);
+
+        const now = Date.now();
+        const sessionSeconds = Math.floor((now - lastInMs) / 1000);
+        const totalSeconds = (workedSeconds || 0) + sessionSeconds;
+
+        setHours(Math.floor(totalSeconds / 3600));
+        setMinutes(Math.floor((totalSeconds % 3600) / 60));
+        setSeconds(totalSeconds % 60);
       } else {
-        setPunch(false);
         setPunchInTime(null);
       }
+    } else {
+      setPunch(false);
+      setPunchInTime(null);
+      setBaseSeconds(0);
     }
   };
 
@@ -133,9 +146,12 @@ export default function Topbar({ open, setOpen }) {
   useEffect(() => {
     if (!punchInTime) return;
 
+    setTimer();
     const interval = setInterval(setTimer, 1000);
     return () => clearInterval(interval);
-  }, [punchInTime, baseMinutes]);
+  }, [punchInTime, baseSeconds]);
+
+  const pad = (n) => String(n).padStart(2, "0");
 
   return (
     <div className="h-16 shadow flex items-center justify-between px-2">
@@ -152,7 +168,7 @@ export default function Topbar({ open, setOpen }) {
             {punch ? "Punch Out" : "Punch In"}
             <Switch checked={punch} onChange={handlePunch} />
             <span style={{ marginLeft: "5px" }}>
-              {punch ? `${hours}h : ${minutes}m : ${seconds}s` : ""}
+              {punch ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : ""}
             </span>
           </div>
         }

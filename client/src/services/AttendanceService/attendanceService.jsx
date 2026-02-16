@@ -93,3 +93,31 @@ export const getAttendancePolicy = async (data) => {
     };
   }
 };
+
+export const getAttendancePolicyList = async (data) => {
+  try {
+    let response = await API.get("/attendance-policy/all", {
+      data: data,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const deleteAttendancePolicy = async (id) => {
+  try {
+    let response = await API.delete(`/attendance-policy/${id}`);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
