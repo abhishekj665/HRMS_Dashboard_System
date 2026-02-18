@@ -191,7 +191,7 @@ export default function ManagerAttendancePage() {
   }, [rows]);
 
   return (
-    <Box className="p-2 bg-white">
+    <Box className="p-3 bg-white">
       <h1 className="text-xl font-bold mb-8 text-gray-800">
         <div className="text-2xl font-medium flex italic tracking-tight">
           <p>Attendance Data</p>

@@ -119,7 +119,7 @@ const ManagerUserPage = () => {
   }, [page]);
 
   return (
-    <div className="p-2 max-w-full mx-auto mt-10">
+    <div className="p-3 max-w-full mx-auto mt-10">
       <Dialog
         open={openCreateUser}
         onClose={() => setOpenCreateUser(false)}
