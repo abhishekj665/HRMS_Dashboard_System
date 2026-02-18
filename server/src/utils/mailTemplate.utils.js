@@ -1,7 +1,6 @@
 import { env } from "../config/env.js";
 
 export const expenseMailToManagerTemplate = (data) => {
-  console.log(data);
   const {
     managerName,
     userName,

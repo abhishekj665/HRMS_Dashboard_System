@@ -478,7 +478,7 @@ export default function AttendanceTable() {
                     {tab === 0 && (
                       <TableCell>
                         {row.reviewedByEmail !== "admin"
-                          ? row?.reviewedByEmail?.toUpperCase()
+                          ? row?.reviewedByEmail
                           : "YOU"}
                       </TableCell>
                     )}

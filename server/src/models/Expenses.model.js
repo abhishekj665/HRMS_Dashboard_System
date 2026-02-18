@@ -55,6 +55,11 @@ const Expense = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    approvedAmount : {
+      type : DataTypes.DECIMAL(10,2),
+      allowNull : true,
+      defaultValue : 0
+    }
   },
   {
     tableName: "expenses",

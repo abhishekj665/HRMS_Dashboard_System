@@ -9,6 +9,7 @@ import { managerRouter } from "./routes/managerRoutes/manager.routes.js";
 import { attendanceRouter } from "./routes/attendanceRoutes/attendance.routes.js";
 import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePolicy.routes.js";
 
+
 import cors from "cors";
 import path from "path";
 import { env } from "./config/env.js";

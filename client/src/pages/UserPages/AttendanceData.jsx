@@ -295,7 +295,7 @@ export default function UserAttendanceData() {
                         size="small"
                       />
                     </TableCell>
-                    <TableCell>{r.reviewedByEmail.toUpperCase()}</TableCell>
+                    <TableCell>{r.reviewedByEmail}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

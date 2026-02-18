@@ -5,6 +5,8 @@ import { requestRouter } from "./request.route.js";
 import { userRouter } from "./user.route.js";
 import { attendanceRouter } from "./attendance.route.js";
 import { assetRouter } from "./asset.route.js";
+import { LMSRouter } from "./leave.route.js";
+
 
 const Router = express.Router();
 
@@ -13,6 +15,10 @@ Router.use(expenseRouter);
 Router.use(requestRouter);
 Router.use(userRouter);
 Router.use(attendanceRouter);
-Router.use(assetRouter)
+Router.use(assetRouter);
+Router.use(assetRouter);
+Router.use(LMSRouter);
+    
+
 
 export const managerRouter = Router;

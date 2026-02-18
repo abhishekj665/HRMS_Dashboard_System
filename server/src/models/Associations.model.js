@@ -11,6 +11,12 @@ import AttendancePolicy from "./AttendancePolicy.model.js";
 import OvertimePolicy from "./OvertimePolicy.js";
 import AttendanceRequest from "./AttendanceRequest.model.js";
 import AttendanceLog from "./AttendanceLog.model.js";
+import LeaveRequest from "./LeaveRequest.model.js";
+import LeaveBalance from "./LeaveBalance.model.js";
+import LeaveType from "./LeaveType.model.js";
+import LeaveAuditLog from "./LeaveAuditLog.model.js";
+import LeavePolicy from "./LeavePolicy.model.js";
+import LeavePolicyRule from "./LeavePolicyRule.model.js";
 
 // USER ↔ BASIC SECURITY
 
@@ -188,6 +194,141 @@ OvertimePolicy.belongsTo(AttendancePolicy, {
   foreignKey: "attendancePolicyId",
 });
 
+// Leave Management Associations -
+
+// Requester
+
+User.hasMany(LeaveRequest, {
+  foreignKey: "userId",
+  as: "leaveRequests",
+  onDelete: "CASCADE",
+});
+
+LeaveRequest.belongsTo(User, {
+  foreignKey: "userId",
+  as: "employee",
+});
+
+// approver -
+
+User.hasMany(LeaveRequest, {
+  foreignKey: "reviewedBy",
+  as: "reviewer",
+});
+
+LeaveRequest.belongsTo(User, {
+  foreignKey: "reviewedBy",
+  as: "reviewer",
+});
+
+// User --> Leave Balance
+
+User.hasMany(LeaveBalance, {
+  foreignKey: "userId",
+  as: "leaveBalances",
+});
+
+LeaveBalance.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+
+// LeaveType --> Leave Balance
+
+LeaveType.hasMany(LeaveBalance, {
+  foreignKey: "leaveTypeId",
+  onDelete: "CASCADE",
+});
+
+LeaveBalance.belongsTo(LeaveType, {
+  foreignKey: "leaveTypeId",
+});
+
+// Leave Type --> Leave Request
+
+LeaveType.hasMany(LeaveRequest, {
+  foreignKey: "leaveTypeId",
+});
+
+LeaveRequest.belongsTo(LeaveType, {
+  foreignKey: "leaveTypeId",
+});
+
+// Audit Log
+
+LeaveRequest.hasMany(LeaveAuditLog, {
+  foreignKey: "leaveRequestId",
+  as: "auditLogs",
+  onDelete: "CASCADE",
+});
+
+LeaveAuditLog.belongsTo(LeaveRequest, {
+  foreignKey: "leaveRequestId",
+  as: "leaveRequest",
+});
+
+User.hasMany(LeaveAuditLog, {
+  foreignKey: "reviewedBy",
+  as: "leaveActions",
+});
+
+LeaveAuditLog.belongsTo(User, {
+  foreignKey: "reviewedBy",
+  as: "reviewer",
+});
+
+
+// Policy → Rules
+LeavePolicy.hasMany(LeavePolicyRule, {
+  foreignKey: "policyId",
+  as: "rules",
+  onDelete: "CASCADE",
+});
+
+LeavePolicyRule.belongsTo(LeavePolicy, {
+  foreignKey: "policyId",
+  as: "policy",
+});
+
+// LeaveType → PolicyRule
+LeaveType.hasMany(LeavePolicyRule, {
+  foreignKey: "leaveTypeId",
+  as: "policyRules",
+});
+
+LeavePolicyRule.belongsTo(LeaveType, {
+  foreignKey: "leaveTypeId",
+  as: "leaveType",
+});
+
+
+// User ---> LeavePOlicy
+
+LeavePolicy.hasMany(User, {
+  foreignKey: "leavePolicyId",
+  as: "users",
+});
+
+User.belongsTo(LeavePolicy, {
+  foreignKey: "leavePolicyId",
+  as: "leavePolicy",
+});
+
+// LeavePolicy --> Leave Balance
+
+LeavePolicy.hasMany(LeaveBalance, {
+  foreignKey: "policyId",
+  as: "balances",
+});
+
+LeaveBalance.belongsTo(LeavePolicy, {
+  foreignKey: "policyId",
+  as: "policy",
+});
+
+
+
 export {
   User,
   OTP,
@@ -202,4 +343,10 @@ export {
   OvertimePolicy,
   AttendanceLog,
   AttendanceRequest,
+  LeaveAuditLog,
+  LeaveBalance,
+  LeaveRequest,
+  LeaveType,
+  LeavePolicy,
+  LeavePolicyRule,
 };

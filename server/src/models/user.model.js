@@ -69,6 +69,10 @@ const User = sequelize.define(
       type: DataTypes.UUID,
       allowNull: true,
     },
+    leavePolicyId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

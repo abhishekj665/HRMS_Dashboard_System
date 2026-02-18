@@ -405,7 +405,7 @@ export default function AttendanceData() {
 
                     <TableCell>
                       <Chip
-                        label={row.email.split("@")[0].toUpperCase()}
+                        label={row.email.split("@")[0]}
                         size="small"
                       />
                     </TableCell>
