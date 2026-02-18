@@ -192,7 +192,7 @@ export default function UserAttendanceData() {
   }, [rows]);
 
   return (
-    <Box className=" bg-white">
+    <Box className="p-2 bg-white">
       <Card className="rounded-2xl shadow-sm mb-6">
         <CardContent>
           <Box className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
