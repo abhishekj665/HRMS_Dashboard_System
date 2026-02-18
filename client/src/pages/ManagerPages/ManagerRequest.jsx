@@ -158,7 +158,7 @@ const ManagerRequest = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="">
       <div className="flex justify-between items-center mb-15">
         <h1 className="text-xl font-semibold">Asset Requests</h1>
 

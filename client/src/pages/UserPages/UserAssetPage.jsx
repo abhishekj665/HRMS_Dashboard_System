@@ -126,7 +126,7 @@ export default function UserAssetPage() {
   }, []);
 
   return (
-    <div className="max-w-full mx-auto mt-10 px-6">
+    <div className="max-w-full mx-auto mt-10">
       <h1 className="text-2xl font-semibold mb-6 text-gray-800">
         Asset Requests
       </h1>

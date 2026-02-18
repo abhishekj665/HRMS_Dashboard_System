@@ -116,7 +116,7 @@ const ManagerExpensesPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="">
       <h1 className="text-2xl font-semibold mb-4">Expense Requests</h1>
 
       <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>

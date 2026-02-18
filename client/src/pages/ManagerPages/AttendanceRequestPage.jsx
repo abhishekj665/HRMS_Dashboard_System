@@ -213,7 +213,7 @@ export default function AttendanceData() {
   }, [tab, rows]);
 
   return (
-    <Box className="p-6 bg-white">
+    <Box className=" bg-white">
       <Box className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold mb-8 text-gray-800">
           <div className="text-2xl font-medium flex italic tracking-tight">
