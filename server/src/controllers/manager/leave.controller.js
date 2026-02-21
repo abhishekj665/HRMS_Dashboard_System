@@ -1,6 +1,5 @@
-import * as leaveService from "../../services/lms/leaveRequest.service.js";
-import * as leaveBalanceService from "../../services/lms/leaveBalance.service.js";
-import * as leaveRequestService from "../../services/manager/leaveRequest.service.js";
+import * as leaveService from "../../services/LMS/leaveRequest.service.js";
+import * as leaveBalanceService from "../../services/LMS/leaveBalance.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 

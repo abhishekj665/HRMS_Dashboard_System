@@ -1,4 +1,4 @@
-import * as lmsLeaveTypeService from "../../services/lms/leaveType.service.js";
+import * as lmsLeaveTypeService from "../../services/LMS/leaveType.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 

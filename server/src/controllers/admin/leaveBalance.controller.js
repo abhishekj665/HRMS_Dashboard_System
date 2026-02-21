@@ -1,4 +1,4 @@
-import * as leaveBalanceService from "../../services/lms/leaveBalance.service.js";
+import * as leaveBalanceService from "../../services/LMS/leaveBalance.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 
