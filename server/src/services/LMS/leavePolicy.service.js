@@ -9,7 +9,7 @@ import { sequelize } from "../../config/db.js";
 import {
   assignLeaveBalance,
   assignLeaveBalanceBulk,
-} from "../lms/leaveBalance.service.js";
+} from "../LMS/leaveBalance.service.js";
 import { User } from "../../models/Associations.model.js";
 
 export const registerLeavePolicy = async (data, adminId) => {
