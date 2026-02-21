@@ -271,13 +271,13 @@ const LeaveManagement = () => {
           </Box>
         ) : (
           <Box
-  sx={{
-    backgroundColor: "#fff",
-    borderRadius: 3,
-    boxShadow: "0px 4px 20px rgba(0,0,0,0.08)",
-    p: 3,
-  }}
->
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: 3,
+              boxShadow: "0px 4px 20px rgba(0,0,0,0.08)",
+              p: 3,
+            }}
+          >
             {leaveRequests.map((leave) => (
               <Box
                 key={leave.id}
@@ -289,6 +289,7 @@ const LeaveManagement = () => {
                   display: "flex",
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: { xs: "flex-start", sm: "center" },
+                  justifyContent: { sm: "space-between" },
                   gap: 1,
                   py: 2,
                   borderBottom: "1px solid #eee",
@@ -319,12 +320,7 @@ const LeaveManagement = () => {
                       borderRadius: 20,
                       fontSize: "12px",
                       fontWeight: 600,
-                      backgroundColor:
-                        leave.status === "APPROVED"
-                          ? "#e6f4ea"
-                          : leave.status === "REJECTED"
-                            ? "#fdecea"
-                            : "#fff4e5",
+
                       color:
                         leave.status === "APPROVED"
                           ? "#2e7d32"

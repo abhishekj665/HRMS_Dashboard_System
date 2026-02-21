@@ -304,6 +304,7 @@ const ManagerLeaveManagement = () => {
                   display: "flex",
                   flexDirection: { xs: "column", sm: "row" },
                   alignItems: { xs: "flex-start", sm: "center" },
+                  justifyContent: { sm: "space-between" },
                   gap: 1,
                   py: 2,
                   borderBottom: "1px solid #eee",
@@ -334,12 +335,6 @@ const ManagerLeaveManagement = () => {
                       borderRadius: 20,
                       fontSize: "12px",
                       fontWeight: 600,
-                      backgroundColor:
-                        leave.status === "APPROVED"
-                          ? "#e6f4ea"
-                          : leave.status === "REJECTED"
-                            ? "#fdecea"
-                            : "#fff4e5",
                       color:
                         leave.status === "APPROVED"
                           ? "#2e7d32"
@@ -381,10 +376,12 @@ const ManagerLeaveManagement = () => {
         <DialogContent sx={{ pt: 1 }}>
           <Box
             sx={{
-              backgroundColor: "#fff",
-              borderRadius: 3,
-              boxShadow: "0px 4px 20px rgba(0,0,0,0.08)",
-              p: 3,
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr",
+              },
+              gap: 3,
             }}
           >
             <Box>
@@ -576,7 +573,7 @@ const ManagerLeaveManagement = () => {
               {selectedLeave.remark && (
                 <Box mb={2}>
                   <Typography variant="body2" color="text.secondary">
-                    Manager Remark
+                    Remark
                   </Typography>
                   <Typography>{selectedLeave.remark}</Typography>
                 </Box>

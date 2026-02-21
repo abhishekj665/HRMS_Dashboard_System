@@ -599,3 +599,206 @@ Automated message from Asset System. Please do not reply.
 </body>
 </html>`;
 };
+
+export function escapeHtml(value) {
+  const str = String(value ?? "");
+
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export function getLeaveRequestCreatedTemplate({
+  managerName,
+  employeeName,
+  leaveType,
+  startDate,
+  endDate,
+  daysRequested,
+  reason,
+  actionUrl = env.client_url,
+}) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" style="background:#ffffff;border-radius:8px;padding:30px;">
+            
+            <tr>
+              <td style="font-size:20px;font-weight:bold;color:#1f2937;">
+                New Leave Request Submitted
+              </td>
+            </tr>
+
+            <tr><td height="20"></td></tr>
+
+            <tr>
+              <td style="font-size:14px;color:#4b5563;">
+                Hello ${escapeHtml(managerName)},
+              </td>
+            </tr>
+
+            <tr><td height="10"></td></tr>
+
+            <tr>
+              <td style="background:#f9fafb;padding:15px;border-radius:6px;">
+                <p><strong>Employee:</strong> ${escapeHtml(employeeName)}</p>
+                <p><strong>Leave Type:</strong> ${escapeHtml(leaveType)}</p>
+                <p><strong>From:</strong> ${escapeHtml(startDate)}</p>
+                <p><strong>To:</strong> ${escapeHtml(endDate)}</p>
+                <p><strong>Total Days:</strong> ${escapeHtml(daysRequested)}</p>
+                <p><strong>Reason:</strong> ${escapeHtml(reason)}</p>
+              </td>
+            </tr>
+
+            <tr><td height="20"></td></tr>
+
+            <tr>
+              <td align="center">
+                <a href="${escapeHtml(actionUrl)}"
+                   style="background:#2563eb;color:#ffffff;padding:10px 20px;text-decoration:none;border-radius:4px;">
+                   Review Request
+                </a>
+              </td>
+            </tr>
+
+            <tr><td height="30"></td></tr>
+
+            <tr>
+              <td style="font-size:12px;color:#9ca3af;">
+                This is an automated message. Please do not reply.
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+}
+
+export function getLeaveApprovedTemplate({
+  employeeName,
+  leaveType,
+  startDate,
+  endDate,
+  daysRequested,
+}) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+            <tr>
+              <td style="font-size:20px;font-weight:bold;color:#16a34a;">
+                Leave Request Approved
+              </td>
+            </tr>
+
+            <tr><td height="20"></td></tr>
+
+            <tr>
+              <td style="font-size:14px;color:#4b5563;">
+                Hello ${escapeHtml(employeeName)},
+              </td>
+            </tr>
+
+            <tr><td height="10"></td></tr>
+
+            <tr>
+              <td style="background:#f0fdf4;padding:15px;border-radius:6px;">
+                <p><strong>Leave Type:</strong> ${escapeHtml(leaveType)}</p>
+                <p><strong>From:</strong> ${escapeHtml(startDate)}</p>
+                <p><strong>To:</strong> ${escapeHtml(endDate)}</p>
+                <p><strong>Total Days:</strong> ${escapeHtml(daysRequested)}</p>
+              </td>
+            </tr>
+
+            <tr><td height="30"></td></tr>
+
+            <tr>
+              <td style="font-size:12px;color:#9ca3af;">
+                Wishing you a pleasant time off.
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+}
+
+export function getLeaveRejectedTemplate({
+  employeeName,
+  leaveType,
+  startDate,
+  endDate,
+  daysRequested,
+  remark,
+}) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+            <tr>
+              <td style="font-size:20px;font-weight:bold;color:#dc2626;">
+                Leave Request Rejected
+              </td>
+            </tr>
+
+            <tr><td height="20"></td></tr>
+
+            <tr>
+              <td style="font-size:14px;color:#4b5563;">
+                Hello ${escapeHtml(employeeName)},
+              </td>
+            </tr>
+
+            <tr><td height="10"></td></tr>
+
+            <tr>
+              <td style="background:#fef2f2;padding:15px;border-radius:6px;">
+                <p><strong>Leave Type:</strong> ${escapeHtml(leaveType)}</p>
+                <p><strong>From:</strong> ${escapeHtml(startDate)}</p>
+                <p><strong>To:</strong> ${escapeHtml(endDate)}</p>
+                <p><strong>Total Days:</strong> ${escapeHtml(daysRequested)}</p>
+                <p><strong>Manager Remark:</strong> ${escapeHtml(remark)}</p>
+              </td>
+            </tr>
+
+            <tr><td height="30"></td></tr>
+
+            <tr>
+              <td style="font-size:12px;color:#9ca3af;">
+                Please contact your manager for clarification.
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+}

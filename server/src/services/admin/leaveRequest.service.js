@@ -8,6 +8,11 @@ import {
   User,
 } from "../../models/Associations.model.js";
 import { sequelize } from "../../config/db.js";
+import { sendMail } from "../../config/otpService.js";
+import {
+  getLeaveApprovedTemplate,
+  getLeaveRejectedTemplate,
+} from "../../utils/mailTemplate.utils.js";
 
 export const approveLeaveRequest = async (id, adminId) => {
   const transaction = await sequelize.transaction();
@@ -29,6 +34,11 @@ export const approveLeaveRequest = async (id, adminId) => {
               required: false,
             },
           ],
+        },
+        {
+          model: LeaveType,
+          as: "LeaveType",
+          required: true,
         },
       ],
     });
@@ -81,6 +91,26 @@ export const approveLeaveRequest = async (id, adminId) => {
       { transaction },
     );
 
+    const admin = await User.findOne({
+      where: { role: "admin" },
+      attributes: ["email"],
+      raw: true,
+    });
+
+    const html = getLeaveApprovedTemplate({
+      managerName: admin?.email?.split("@")[0],
+      employeeName:
+        leaveData.employee?.first_name ||
+        leaveData.employee?.email.split("@")[0],
+      leaveType: leaveData.LeaveType.name,
+      startDate: leaveData.startDate,
+      endDate: leaveData.endDate,
+      daysRequested: leaveData.daysRequested,
+      reason: leaveData.reason,
+    });
+
+    sendMail(leaveData.employee.email, "Leave Request Approved", html);
+
     await transaction.commit();
 
     return {
@@ -96,9 +126,8 @@ export const approveLeaveRequest = async (id, adminId) => {
 };
 
 export const rejectLeaveRequest = async (id, remark, adminId) => {
+  const transaction = await sequelize.transaction();
   try {
-    const transaction = await sequelize.transaction();
-
     const leaveData = await LeaveRequest.findOne({
       where: { id },
       include: [
@@ -107,6 +136,11 @@ export const rejectLeaveRequest = async (id, remark, adminId) => {
           model: User,
           where: { role: "manager" },
           as: "employee",
+          required: true,
+        },
+        {
+          model: LeaveType,
+          as: "LeaveType",
           required: true,
         },
       ],
@@ -143,6 +177,26 @@ export const rejectLeaveRequest = async (id, remark, adminId) => {
       },
       { transaction },
     );
+
+    const admin = await User.findOne({
+      where: { role: "admin" },
+      attributes: ["email"],
+      raw: true,
+    });
+
+    const html = getLeaveRejectedTemplate({
+      managerName: admin?.email?.split("@")[0],
+      employeeName:
+        leaveData.employee?.first_name ||
+        leaveData.employee?.email.split("@")[0],
+      leaveType: leaveData.LeaveType.name,
+      startDate: leaveData.startDate,
+      endDate: leaveData.endDate,
+      daysRequested: leaveData.daysRequested,
+      reason: remark,
+    });
+
+    sendMail(leaveData.employee.email, "Leave Request Rejected", html);
 
     await transaction.commit();
 

@@ -181,7 +181,7 @@ export default function ManagerLeaveDashboard() {
   }, [page, tab, statusFilter, dataFilter]);
 
   return (
-    <Box p={3}>
+    <Box p={1}>
       <Tabs
         value={tab}
         onChange={(e, v) => setTab(v)}
@@ -332,7 +332,7 @@ export default function ManagerLeaveDashboard() {
                     />
                   )}
 
-                  <Typography sx={{ width: "5%", fontWeight: 600 }}>
+                  <Typography sx={{ width: "5%",marginRight: "10px", fontWeight: 600 }}>
                     {(page - 1) * 10 + index + 1}
                   </Typography>
 

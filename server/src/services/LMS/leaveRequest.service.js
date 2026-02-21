@@ -12,6 +12,11 @@ import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
 import { calculateLeaveDays } from "../../utils/calulateLeaveDays.utils.js";
 import { Op } from "sequelize";
+import {
+  getLeaveRejectedTemplate,
+  getLeaveRequestCreatedTemplate,
+} from "../../utils/mailTemplate.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const registerLeaveRequest = async (data, userId) => {
   const transaction = await sequelize.transaction();
@@ -29,6 +34,7 @@ export const registerLeaveRequest = async (data, userId) => {
 
     const user = await User.findByPk(userId, {
       include: [
+        { model: User, as: "manager", attributes: ["first_name", "email"] },
         {
           model: LeavePolicy,
           as: "leavePolicy",
@@ -40,7 +46,7 @@ export const registerLeaveRequest = async (data, userId) => {
                 {
                   model: LeaveType,
                   as: "leaveType",
-                  attributes: ["isActive"],
+                  attributes: ["isActive", "name", "code"],
                 },
               ],
             },
@@ -127,6 +133,32 @@ export const registerLeaveRequest = async (data, userId) => {
       },
       { transaction },
     );
+
+    let admin = null;
+
+    if (user.role === "manager") {
+      admin = await User.findOne({
+        where: { role: "admin" },
+        attributes: ["email"],
+        raw: true,
+      });
+    }
+
+
+    const html = getLeaveRequestCreatedTemplate({
+      managerName:
+        user?.manager?.email?.split("@")[0] || admin?.email?.split("@")[0],
+      employeeName: user?.first_name || user?.email?.split("@")[0],
+      leaveType: user.leavePolicy.rules[0].leaveType.name,
+      startDate: leaveData.startDate,
+      endDate: leaveData.endDate,
+      daysRequested: leaveData.daysRequested,
+      reason: leaveData.reason,
+    });
+
+    if (admin) {
+      sendMail(admin.email, "New Leave Request", html);
+    } else sendMail(user.manager.email, "New Leave Request", html);
 
     await transaction.commit();
 
