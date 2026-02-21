@@ -8,7 +8,7 @@ import { accountRouter } from "./routes/accountRoutes/account.routes.js";
 import { managerRouter } from "./routes/managerRoutes/manager.routes.js";
 import { attendanceRouter } from "./routes/attendanceRoutes/attendance.routes.js";
 import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePolicy.routes.js";
-import { LMSRouter } from "./routes/LMS/LMS.route.js";
+import { LMSRouter } from "./routes/lms/lms.route.js";
 
 import cors from "cors";
 import path from "path";
