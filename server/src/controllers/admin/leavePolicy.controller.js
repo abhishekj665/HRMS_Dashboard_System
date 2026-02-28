@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
-import * as leavePolicyService from "../../services/lms/leavePolicy.service.js";
+import * as leavePolicyService from "../../services/LMS/leavePolicy.service.js";
 import STATUS from "../../constants/Status.js";
 
 export const registerLeavePolicy = async (req, res, next) => {
