@@ -19,6 +19,14 @@ body,
   height: 100%;
 }
 
+html,
+body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+}
+#root {
+  overflow-x: hidden;
+}
 .prod-loader-card {
   background: transparent;
   padding: 0;

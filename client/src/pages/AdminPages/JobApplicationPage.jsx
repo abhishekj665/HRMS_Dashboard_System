@@ -372,7 +372,13 @@ function ApplicationDetailDrawer({ open, onClose, application }) {
         anchor="right"
         open={open}
         onClose={onClose}
-        PaperProps={{ sx: { width: "65%", p: 4 } }}
+        PaperProps={{
+          sx: {
+            width: { xs: "100%", sm: 500, md: "40%" },
+            maxWidth: "80%",
+            p: 3,
+          },
+        }}
       >
         <Typography>Loading application details...</Typography>
       </Drawer>
