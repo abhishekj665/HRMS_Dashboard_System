@@ -8,8 +8,12 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
-import { Op } from "sequelize";
-import { jobApplicationReceivedEmailTemplate } from "../../utils/mailTemplate.utils.js";
+import { Op, where } from "sequelize";
+import {
+  generateRejectedEmail,
+  generateShortlistedEmail,
+  jobApplicationReceivedEmailTemplate,
+} from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
 
 export const registerApplication = async (slug, data) => {
@@ -58,8 +62,8 @@ export const registerApplication = async (slug, data) => {
 
     if (
       !jobPosting ||
-      jobPosting.expiresAt < new Date() ||
-      jobPosting.isActive === false
+      jobPosting.isActive === false ||
+      (jobPosting.expiresAt && jobPosting.expiresAt < new Date())
     ) {
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
     }
@@ -214,6 +218,11 @@ export const getApplicationById = async (id) => {
           as: "candidate",
         },
         {
+          model: HiringStage,
+          as: "currentStage",
+          attributes: ["id", "name", "stageOrder"],
+        },
+        {
           model: JobPosting,
           as: "jobPosting",
           include: [
@@ -250,6 +259,175 @@ export const getApplicationById = async (id) => {
       message: "Application fetched successfully",
     };
   } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const shortlistApplication = async (id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const application = await Application.findOne({
+      where: { id: id },
+      include: [
+        {
+          model: HiringStage,
+          as: "currentStage",
+          attributes: ["id", "name", "stageOrder"],
+        },
+        {
+          model: Candidate,
+          as: "candidate",
+          attributes: ["id", "firstName", "lastName", "email"],
+        },
+        {
+          model: JobPosting,
+          as: "jobPosting",
+          attributes: ["id", "title", "slug"],
+        },
+      ],
+    });
+
+    if (!application || application.currentStage.name != "Applied") {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Can not shortlist this application",
+      );
+    }
+
+    const nextStage = await HiringStage.findOne({
+      where: {
+        jobPostingId: application.jobPostingId,
+        stageOrder: application.currentStage.stageOrder + 1,
+      },
+    });
+
+    if (!nextStage) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Next hiring stage not configured",
+      );
+    }
+
+    await application.update({ currentStageId: nextStage.id }, { transaction });
+
+    await transaction.commit();
+
+    const html = generateShortlistedEmail({
+      candidateName:
+        application?.candidate?.email?.split("@")[0] ||
+        application?.candidate?.firstName,
+      jobTitle: application?.jobPosting?.title,
+      companyName: "Orvane Digitals",
+    });
+
+    sendMail(
+      application.candidate.email,
+      "Application Shortlisted - Orvane Digitals",
+      html,
+    );
+
+    return {
+      success: true,
+      message: "Application shortlisted successfully",
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const rejectApplication = async (id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const application = await Application.findOne({
+      where: {
+        id: id,
+        status: {
+          [Op.notIn]: ["REJECTED", "WITHDRAWN", "HIRED", "OFFERED"],
+        },
+      },
+      include: [
+        {
+          model: HiringStage,
+          as: "currentStage",
+          attributes: ["id", "name", "stageOrder"],
+        },
+        {
+          model: JobPosting,
+          as: "jobPosting",
+          attributes: ["id", "title", "slug"],
+          include: [
+            {
+              model: HiringStage,
+              as: "stages",
+            },
+          ],
+        },
+        {
+          model: Candidate,
+          as: "candidate",
+          attributes: ["id", "firstName", "lastName", "email"],
+        },
+      ],
+    });
+    if (!application) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Application not found or already rejected",
+      );
+    }
+
+    const currentStage = application.currentStage;
+
+    if (
+      currentStage.isOfferStage ||
+      currentStage.isRejectStage ||
+      currentStage.isFinal
+    ) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Current application stage cannot be rejected",
+      );
+    }
+
+    const rejectStage = application.jobPosting.stages.find(
+      (stage) => stage.isRejectStage === true,
+    );
+
+    if (!rejectStage) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "Reject stage not configured");
+    }
+
+    await application.update(
+      {
+        currentStageId: rejectStage.id,
+        status: "REJECTED",
+      },
+      { transaction },
+    );
+
+    await transaction.commit();
+
+    const html = generateRejectedEmail({
+      candidateName:
+        application?.candidate?.email?.split("@")[0] ||
+        application?.candidate?.firstName,
+      jobTitle: application?.jobPosting?.title,
+      companyName: "Orvane Digitals",
+    });
+
+    sendMail(
+      application.candidate.email,
+      "Application Rejected - Orvane Digitals",
+      html,
+    );
+
+    return {
+      success: true,
+      message: "Application rejected successfully",
+    };
+  } catch (error) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

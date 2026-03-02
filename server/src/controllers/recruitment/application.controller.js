@@ -65,3 +65,31 @@ export const getApplicationById = async (req, res, next) => {
     next(error);
   }
 };
+
+export const shortlistApplication = async (req, res, next) => {
+  try {
+    const response = await ApplicationService.shortlistApplication(
+      req.params.id,
+    );
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectApplication = async (req, res, next) => {
+  try {
+    const response = await ApplicationService.rejectApplication(req.params.id);
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) {
+    next(error);
+  }
+};

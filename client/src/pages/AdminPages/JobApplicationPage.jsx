@@ -17,6 +17,7 @@ import {
   IconButton,
   Tooltip,
   Avatar,
+  duration,
 } from "@mui/material";
 
 import { TablePagination } from "@mui/material";
@@ -62,10 +63,21 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
+import {
+  shortlistApplication,
+  rejectApplication,
+} from "../../services/CareersService/appllicationService";
+import { useNavigate } from "react-router-dom";
+
 import { getApplications } from "../../services/CareersService/appllicationService";
 import { getAllJobPosts } from "../../services/CareersService/jobPostService";
 import { getApplicationById } from "../../services/CareersService/appllicationService";
 import { toast } from "react-toastify";
+
+import {
+  getInterviewers,
+  assignInterview,
+} from "../../services/CareersService/interviewService";
 
 export default function AdminApplicationsPage() {
   const [rows, setRows] = useState([]);
@@ -84,6 +96,8 @@ export default function AdminApplicationsPage() {
 
   const [selectedApplication, setSelectedApplication] = useState(undefined);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchApplications = async () => {
     try {
@@ -136,8 +150,6 @@ export default function AdminApplicationsPage() {
 
       const response = await getApplicationById(id);
 
-      console.log(response.data);
-
       if (!response?.data) {
         toast.error("Invalid application data");
         return;
@@ -163,7 +175,7 @@ export default function AdminApplicationsPage() {
     };
 
     fetchJobs();
-  }, []);
+  }, [selectedApplication]);
 
   const columns = [
     {
@@ -358,13 +370,101 @@ export default function AdminApplicationsPage() {
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
         application={selectedApplication}
+        setSelectedApplication={setSelectedApplication}
+        refreshList={fetchApplications}
       />
     </Container>
   );
 }
 
-function ApplicationDetailDrawer({ open, onClose, application }) {
+function ApplicationDetailDrawer({
+  open,
+  onClose,
+  application,
+  setSelectedApplication,
+  refreshList,
+}) {
   const [tab, setTab] = useState(0);
+  const [interviewers, setInterviewers] = useState([]);
+  const [selectedInterviewer, setSelectedInterviewer] = useState(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (tab === 2) {
+      const fetchInterviewers = async () => {
+        try {
+          const res = await getInterviewers();
+          if (res?.success) {
+            setInterviewers(res.data);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+
+      fetchInterviewers();
+    }
+  }, [tab]);
+
+  const handleShortlist = async () => {
+    try {
+      const res = await shortlistApplication(application.id);
+
+      if (res?.success) {
+        setSelectedApplication((prev) => ({
+          ...prev,
+          currentStage: {
+            ...prev.currentStage,
+            name: "Shortlisted",
+          },
+        }));
+        setTab(2);
+        refreshList();
+        toast.success(res.message || "Application shortlisted successfully");
+      } else {
+        toast.error(res?.message || "Failed to shortlist application");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while shortlisting");
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      const res = await rejectApplication(application.id);
+
+      if (res?.success) {
+        setSelectedApplication((prev) => ({
+          ...prev,
+          status: "REJECTED",
+          currentStage: {
+            ...prev.currentStage,
+            name: "Rejected",
+          },
+        }));
+        refreshList();
+        onClose();
+
+        toast.success("Application rejected successfully");
+      } else {
+        toast.error("Failed to reject application");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while rejecting");
+    }
+  };
+
+  const currentStage = application?.currentStage?.name?.toUpperCase() || "";
+  const status = application?.status?.toUpperCase() || "";
+
+  const isRejectedStage = currentStage === "REJECTED";
+  const isShortlisted = currentStage === "SHORTLISTED";
+  const isApplied = currentStage === "APPLIED";
+  const isInterview = currentStage === "INTERVIEW";
+  const isFinalStatus = status === "OFFERED" || status === "HIRED";
 
   if (!application) {
     return (
@@ -594,6 +694,89 @@ function ApplicationDetailDrawer({ open, onClose, application }) {
                   </Button>
                 )}
               </Stack>
+              <Divider sx={{ my: 3 }} />
+
+              <Divider sx={{ my: 3 }} />
+
+              <Stack direction="row" spacing={2}>
+                {isFinalStatus && <Chip label={status} color="default" />}
+
+                {!isFinalStatus && isRejectedStage && (
+                  <Chip label="Rejected" color="error" icon={<Cancel />} />
+                )}
+
+                {!isFinalStatus && isShortlisted && (
+                  <>
+                    <Chip
+                      label="Shortlisted"
+                      color="success"
+                      icon={<CheckCircle />}
+                    />
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<Cancel />}
+                      onClick={handleReject}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        px: 3,
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+
+                {!isFinalStatus && isApplied && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      startIcon={<CheckCircle />}
+                      onClick={handleShortlist}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        px: 3,
+                      }}
+                    >
+                      Shortlist
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<Cancel />}
+                      onClick={handleReject}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        px: 3,
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                )}
+
+                {!isFinalStatus && isInterview && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<Cancel />}
+                    onClick={handleReject}
+                    sx={{
+                      borderRadius: "999px",
+                      textTransform: "none",
+                      px: 3,
+                    }}
+                  >
+                    Reject
+                  </Button>
+                )}
+              </Stack>
             </Card>
 
             {/* Resume Preview */}
@@ -623,47 +806,129 @@ function ApplicationDetailDrawer({ open, onClose, application }) {
         )}
 
         {/* TAB 3 — INTERVIEW */}
-        {tab === 2 && <InterviewTab application={application} />}
+        {tab === 2 && (
+          <InterviewTab
+            application={application}
+            interviewers={interviewers}
+            refreshList={refreshList}
+            onClose={onClose}
+          />
+        )}
       </Stack>
     </Drawer>
   );
 }
 
-function InterviewTab({ application }) {
+function InterviewTab({ application, interviewers, refreshList, onClose }) {
   const [form, setForm] = useState({
     date: "",
-    mode: "REMOTE",
-    interviewer: "",
-    url: "",
+    time: "",
+    mode: "ONLINE",
+    interviewerId: null,
+    meetingUrl: "",
     location: "",
+    duration: 60,
   });
+
+  const handleSave = async () => {
+    if (!form.date || !form.time || !form.interviewerId) {
+      toast.error("Please select date, time and interviewer");
+      return;
+    }
+
+    const scheduledAt = dayjs(
+      `${form.date} ${form.time}`,
+      "YYYY-MM-DD HH:mm",
+    ).toISOString();
+
+    const data = {
+      applicationId: application.id,
+      interviewerId: form.interviewerId,
+      scheduledAt,
+      mode: form.mode,
+      meetingUrl: form.meetingUrl,
+      location: form.location,
+      duration: form.duration,
+    };
+
+    try {
+      const response = await assignInterview(data);
+      if (response.success) {
+        toast.success("Interview scheduled successfully");
+        setForm({
+          date: "",
+          time: "",
+          mode: "ONLINE",
+          interviewerId: null,
+          meetingUrl: "",
+          location: "",
+          duration: 60,
+        });
+        refreshList();
+        onClose();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <Card variant="outlined" sx={{ p: 3 }}>
       <Typography variant="h6">Schedule Interview</Typography>
 
       <Stack spacing={3} mt={2}>
-        <TextField
-          type="datetime-local"
-          label="Interview Date & Time"
-          fullWidth
-          value={form.date}
-          onChange={(e) => setForm({ ...form, date: e.target.value })}
+        {/* Interviewer Dropdown */}
+        <Autocomplete
+          options={interviewers}
+          getOptionLabel={(option) => `${option?.email?.split("@")[0]}`}
+          onChange={(event, value) =>
+            setForm({
+              ...form,
+              interviewerId: value?.id || null,
+            })
+          }
+          renderInput={(params) => (
+            <TextField {...params} label="Select Interviewer" fullWidth />
+          )}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
         />
 
+        {/* Date */}
+        <TextField
+          type="date"
+          label="Interview Date"
+          InputLabelProps={{ shrink: true }}
+          value={form.date}
+          onChange={(e) => setForm({ ...form, date: e.target.value })}
+          fullWidth
+        />
+
+        {/* Time */}
+        <TextField
+          type="time"
+          label="Interview Time"
+          InputLabelProps={{ shrink: true }}
+          value={form.time}
+          onChange={(e) => setForm({ ...form, time: e.target.value })}
+          fullWidth
+        />
+
+        {/* Mode */}
         <Select
           value={form.mode}
           onChange={(e) => setForm({ ...form, mode: e.target.value })}
         >
-          <MenuItem value="REMOTE">Remote</MenuItem>
+          <MenuItem value="ONLINE">Online</MenuItem>
           <MenuItem value="OFFLINE">Offline</MenuItem>
         </Select>
 
-        {form.mode === "REMOTE" && (
+        {form.mode === "ONLINE" && (
           <TextField
             label="Meeting URL"
-            value={form.url}
-            onChange={(e) => setForm({ ...form, url: e.target.value })}
+            value={form.meetingUrl}
+            onChange={(e) => setForm({ ...form, meetingUrl: e.target.value })}
           />
         )}
 
@@ -675,13 +940,26 @@ function InterviewTab({ application }) {
           />
         )}
 
-        <TextField
-          label="Interviewer Name"
-          value={form.interviewer}
-          onChange={(e) => setForm({ ...form, interviewer: e.target.value })}
-        />
+        <Select
+          value={form.duration}
+          onChange={(e) =>
+            setForm({ ...form, duration: Number(e.target.value) })
+          }
+          fullWidth
+        >
+          <MenuItem value={30}>30 Minutes</MenuItem>
+          <MenuItem value={45}>45 Minutes</MenuItem>
+          <MenuItem value={60}>60 Minutes</MenuItem>
+          <MenuItem value={90}>90 Minutes</MenuItem>
+          <MenuItem value={120}>120 Minutes</MenuItem>
+        </Select>
 
-        <Button style={{ width: "18vh" }} variant="contained">
+        <Button
+          variant="contained"
+          onClick={() => handleSave()}
+          disabled={!form.date || !form.time || !form.interviewerId}
+          sx={{ width: 200 }}
+        >
           Save Interview
         </Button>
       </Stack>

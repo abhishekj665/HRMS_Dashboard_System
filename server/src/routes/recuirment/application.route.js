@@ -12,5 +12,7 @@ Router.post(
 
 Router.get("/application/all", ApplicationController.getApplications);
 Router.get("/application/:id", ApplicationController.getApplicationById);
+Router.patch("/application/shortlist/:id", ApplicationController.shortlistApplication);
+Router.patch("/application/reject/:id", ApplicationController.rejectApplication);
 
 export const ApplicationRouter = Router;

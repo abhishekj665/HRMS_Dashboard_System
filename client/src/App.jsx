@@ -45,6 +45,7 @@ import ManagerRequisitionPage from "./pages/ManagerPages/JobRequistionPage";
 import AdminRequisitionPage from "./pages/AdminPages/AdminRequistionPage";
 import AdminJobPostsPage from "./pages/AdminPages/AdminJobPostsPage";
 import AdminJobApplicationsPage from "./pages/AdminPages/JobApplicationPage";
+import ManagerInterviewsPage from "./pages/ManagerPages/interviewPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -101,6 +102,7 @@ function App() {
               path="leave/management"
               element={<ManagerLeaveManagement />}
             />
+            <Route path="interviews" element={<ManagerInterviewsPage />} />
           </Route>
 
           <Route path="/careers" element={<CareersPage />}></Route>

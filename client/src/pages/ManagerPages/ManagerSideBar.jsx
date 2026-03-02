@@ -8,6 +8,7 @@ import {
   CalendarMonth,
   WorkHistory,
 } from "@mui/icons-material";
+import { EventAvailable } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
 
@@ -141,6 +142,14 @@ export default function ManagerSidebar({ open, setOpen }) {
               className={linkClass}
             >
               <WorkHistory fontSize="small" /> Job Requisition
+            </NavLink>
+
+            <NavLink
+              to="/manager/dashboard/interviews"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <EventAvailable fontSize="small" /> Job Interviews
             </NavLink>
           </div>
         </div>

@@ -1,11 +1,8 @@
 import { API } from "../AuthService/authService";
 
-export const registerJobApplication = async (slug, data) => {
+export const getInterviewers = async () => {
   try {
-    const response = await API.post(
-      `/recuirment/application/apply/${slug}`,
-      data,
-    );
+    const response = await API.get("/recuirment/interview/interviewers");
 
     return response.data;
   } catch (error) {
@@ -20,9 +17,26 @@ export const registerJobApplication = async (slug, data) => {
   }
 };
 
-export const getApplications = async (query) => {
+export const assignInterview = async (data) => {
   try {
-    const response = await API.get("/recuirment/application/all", {
+    const response = await API.post("/recuirment/interview/assign", data);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const getManagerInterviews = async (query) => {
+  try {
+    const response = await API.get("/recuirment/interview/all", {
       params: query,
     });
 
@@ -39,10 +53,10 @@ export const getApplications = async (query) => {
   }
 };
 
-export const getApplicationById = async (id) => {
+export const confirmInterview = async (id) => {
   try {
-    const response = await API.get(`/recuirment/application/${id}`);
-
+    const response = await API.patch(`/recuirment/interview/confirm/${id}`);
+    console.log(response);
     return response.data;
   } catch (error) {
     return {
@@ -56,36 +70,6 @@ export const getApplicationById = async (id) => {
   }
 };
 
-export const shortlistApplication = async (id) => {
-  try {
-    const response = await API.patch(`/recuirment/application/shortlist/${id}`);
+export const declineInterview = async (id) => {};
 
-    return response.data;
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Something went wrong",
-      status: error.response?.status || 500,
-    };
-  }
-};
-
-export const rejectApplication = async (id) => {
-  try {
-    const response = await API.patch(`/recuirment/application/reject/${id}`);
-
-    return response.data;
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Something went wrong",
-      status: error.response?.status || 500,
-    };
-  }
-};
+export const requestReschedule = async (id) => {};

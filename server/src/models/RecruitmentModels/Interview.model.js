@@ -21,12 +21,12 @@ const Interview = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    interviewDate: {
+    scheduledAt: {
       type: DataTypes.DATE,
       allowNull: false,
     },
-    interviewTime: {
-      type: DataTypes.TIME,
+    duration: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     roundName: {
@@ -37,7 +37,7 @@ const Interview = sequelize.define(
       type: DataTypes.ENUM("ONLINE", "OFFLINE"),
       allowNull: false,
     },
-    meetingLInk: {
+    meetingUrl: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -51,9 +51,12 @@ const Interview = sequelize.define(
         "COMPLETED",
         "CANCELLED",
         "RESCHEDULED",
+        "PENDING_CONFIRMATION",
+        "CONFIRMED",
+        "DECLINED",
       ),
       allowNull: false,
-      defaultValue: "SCHEDULED",
+      defaultValue: "PENDING_CONFIRMATION",
     },
     rescheduledBy: {
       type: DataTypes.UUID,

@@ -1245,3 +1245,708 @@ export const jobApplicationReceivedEmailTemplate = (data) => {
 </body>
 </html>`;
 };
+
+export function generateShortlistedEmail({
+  candidateName,
+  jobTitle,
+  companyName,
+  interviewNextStep = "Interview Round",
+  portalLink = env.client_url,
+  supportEmail = "support@hrms.com",
+  companyLogoUrl = "chrome://favicon2/?size=24&scaleFactor=1x&showFallbackMonogram=&pageUrl=http%3A%2F%2Flocalhost%3A5173%2Flogin",
+  careersPageLink = env.client_url,
+}) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Application Shortlisted</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f2f4f7; font-family:Arial, Helvetica, sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden;">
+
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="background:#1a73e8; padding:30px;">
+              <img src="${companyLogoUrl}" alt="${companyName}" width="140" style="display:block; margin-bottom:15px;" />
+              <h1 style="color:#ffffff; margin:0; font-size:22px;">
+                Application Shortlisted
+              </h1>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:40px; color:#333333; font-size:15px; line-height:1.7;">
+
+              <p style="margin-top:0;">
+                Dear <strong>${candidateName}</strong>,
+              </p>
+
+              <p>
+                We are pleased to inform you that your application for the position of 
+                <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has successfully progressed to the next stage of our recruitment process.
+              </p>
+
+              <p>
+                After a detailed review of your profile and qualifications, our hiring panel found your experience aligned with our current requirements. We would now like to move forward with the <strong>${interviewNextStep}</strong>.
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${portalLink}" 
+                       style="background-color:#1a73e8; color:#ffffff; padding:14px 28px; 
+                              text-decoration:none; border-radius:6px; display:inline-block; 
+                              font-weight:bold;">
+                      View Application Status
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p>
+                Our team will contact you shortly with scheduling details and additional instructions. 
+                Please ensure your contact information remains up to date.
+              </p>
+
+              <p>
+                We appreciate the effort and time you invested in your application and look forward to continuing the conversation.
+              </p>
+
+              <p style="margin-top:30px;">
+                Kind regards,<br>
+                <strong>${companyName} Recruitment Team</strong>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#f8f9fb; padding:30px; font-size:12px; color:#777777; text-align:center;">
+              <p style="margin:0 0 10px 0;">
+                © ${new Date().getFullYear()} ${companyName}. All rights reserved.
+              </p>
+
+              <p style="margin:0 0 10px 0;">
+                For assistance, contact 
+                <a href="mailto:${supportEmail}" style="color:#1a73e8; text-decoration:none;">
+                  ${supportEmail}
+                </a>
+              </p>
+
+              <p style="margin:0;">
+                Explore more opportunities at 
+                <a href="${careersPageLink}" style="color:#1a73e8; text-decoration:none;">
+                  Careers Page
+                </a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+  `;
+}
+
+export function generateRejectedEmail({
+  candidateName,
+  jobTitle,
+  companyName,
+  supportEmail = "support@hrms.com",
+  companyLogoUrl = "chrome://favicon2/?size=24&scaleFactor=1x&showFallbackMonogram=&pageUrl=http%3A%2F%2Flocalhost%3A5173%2Flogin",
+  careersPageLink = env.client_url,
+}) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Application Update</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f2f4f7; font-family:Arial, Helvetica, sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden;">
+
+          <!-- HEADER -->
+          <tr>
+            <td align="center" style="background:#d93025; padding:30px;">
+              <img src="${companyLogoUrl}" alt="${companyName}" width="140" style="display:block; margin-bottom:15px;" />
+              <h1 style="color:#ffffff; margin:0; font-size:22px;">
+                Application Update
+              </h1>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:40px; color:#333333; font-size:15px; line-height:1.7;">
+
+              <p style="margin-top:0;">
+                Dear <strong>${candidateName}</strong>,
+              </p>
+
+              <p>
+                Thank you for your interest in the <strong>${jobTitle}</strong> role at <strong>${companyName}</strong>.
+              </p>
+
+              <p>
+                After careful evaluation of all applications received, we regret to inform you that we will not be progressing your application further at this stage.
+              </p>
+
+              <p>
+                This decision was not easy due to the high quality of candidates we reviewed. While your experience is commendable, we have selected profiles that more closely match the specific needs of this position.
+              </p>
+
+              <p>
+                We sincerely appreciate your effort and encourage you to apply for future opportunities that align with your expertise.
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${careersPageLink}" 
+                       style="background-color:#d93025; color:#ffffff; padding:14px 28px; 
+                              text-decoration:none; border-radius:6px; display:inline-block; 
+                              font-weight:bold;">
+                      View Open Positions
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p>
+                We wish you continued success in your professional journey.
+              </p>
+
+              <p style="margin-top:30px;">
+                Sincerely,<br>
+                <strong>${companyName} Recruitment Team</strong>
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#f8f9fb; padding:30px; font-size:12px; color:#777777; text-align:center;">
+              <p style="margin:0 0 10px 0;">
+                © ${new Date().getFullYear()} ${companyName}. All rights reserved.
+              </p>
+
+              <p style="margin:0;">
+                For inquiries, contact 
+                <a href="mailto:${supportEmail}" style="color:#d93025; text-decoration:none;">
+                  ${supportEmail}
+                </a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+  `;
+}
+
+export function generateInterviewScheduledEmail(data) {
+  const {
+    candidateName,
+    jobTitle,
+    companyName,
+    interviewDate,
+    interviewTime,
+    interviewerName,
+    mode,
+    meetingLink,
+    location,
+    supportEmail = "support@hrms.com",
+  } = data;
+
+  const locationBlock =
+    mode === "Online"
+      ? `
+        <tr>
+          <td style="padding: 8px 0;">
+            <strong>Meeting Link:</strong><br/>
+            <a href="${meetingLink}" style="color:#2563eb; text-decoration:none;">
+              ${meetingLink}
+            </a>
+          </td>
+        </tr>
+      `
+      : `
+        <tr>
+          <td style="padding: 8px 0;">
+            <strong>Location:</strong><br/>
+            ${location}
+          </td>
+        </tr>
+      `;
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interview Scheduled</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <!-- Main Container -->
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
+
+            <!-- Header -->
+            <tr>
+              <td style="background-color:#111827; padding:20px 30px; color:#ffffff;">
+                <h2 style="margin:0;">${companyName}</h2>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:30px; color:#374151; font-size:15px; line-height:1.6;">
+
+                <p style="margin-top:0;">
+                  Dear <strong>${candidateName}</strong>,
+                </p>
+
+                <p>
+                  Thank you for your interest in the <strong>${jobTitle}</strong> position at ${companyName}. 
+                  We are pleased to inform you that your profile has been shortlisted for the next stage of our selection process.
+                </p>
+
+                <p>
+                  Your interview has been scheduled with the following details:
+                </p>
+
+                <!-- Interview Details Box -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:20px;">
+                  <tr>
+                    <td style="padding: 8px 0;">
+                      <strong>Date:</strong><br/>
+                      ${interviewDate}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;">
+                      <strong>Time:</strong><br/>
+                      ${interviewTime}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;">
+                      <strong>Mode:</strong><br/>
+                      ${mode}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0;">
+                      <strong>Interviewer:</strong><br/>
+                      ${interviewerName}
+                    </td>
+                  </tr>
+
+                  ${locationBlock}
+
+                </table>
+
+                <p style="margin-top:25px;">
+                  Please ensure you are available at the scheduled time. If you foresee any challenges or need clarification, feel free to reach out to us.
+                </p>
+
+                <p>
+                  We look forward to speaking with you and learning more about your experience.
+                </p>
+
+                <p style="margin-top:30px;">
+                  Best regards,<br/>
+                  <strong>Talent Acquisition Team</strong><br/>
+                  ${companyName}<br/>
+                  <a href="mailto:${supportEmail}" style="color:#2563eb; text-decoration:none;">
+                    ${supportEmail}
+                  </a>
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color:#f3f4f6; padding:20px 30px; font-size:12px; color:#6b7280; text-align:center;">
+                This is an automated message. Please do not reply directly to this email.
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+}
+
+
+export function generateInterviewAssignmentEmail(data) {
+  const {
+    interviewerName,
+    candidateName,
+    jobTitle,
+    companyName,
+    interviewDate,
+    interviewTime,
+    duration,
+    roundName,
+    mode,
+    meetingLink,
+    location,
+    acceptUrl,
+    declineUrl,
+    rescheduleUrl,
+  } = data;
+
+  const locationBlock =
+    mode === "Online"
+      ? `
+        <tr>
+          <td style="padding:8px 0;">
+            <strong>Meeting Link:</strong><br/>
+            <a href="${meetingLink}" style="color:#2563eb; text-decoration:none;">
+              ${meetingLink}
+            </a>
+          </td>
+        </tr>
+      `
+      : `
+        <tr>
+          <td style="padding:8px 0;">
+            <strong>Location:</strong><br/>
+            ${location}
+          </td>
+        </tr>
+      `;
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0; background:#f4f6f8;">
+      <tr>
+        <td align="center">
+
+          <table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+
+            <!-- Header -->
+            <tr>
+              <td style="background:#111827; padding:20px 30px; color:#ffffff;">
+                <h2 style="margin:0;">Interview Assignment</h2>
+                <p style="margin:5px 0 0 0; font-size:13px;">
+                  ${companyName}
+                </p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:30px; color:#374151; font-size:15px; line-height:1.6;">
+
+                <p style="margin-top:0;">
+                  Dear <strong>${interviewerName}</strong>,
+                </p>
+
+                <p>
+                  You have been assigned to conduct a <strong>${roundName}</strong> interview 
+                  for the position of <strong>${jobTitle}</strong>.
+                </p>
+
+                <p>
+                  Please review the interview details below and confirm your availability.
+                </p>
+
+                <!-- Interview Details -->
+                <table width="100%" cellpadding="0" cellspacing="0" 
+                  style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:20px; margin-top:15px;">
+                  
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <strong>Candidate:</strong><br/>
+                      ${candidateName}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <strong>Date:</strong><br/>
+                      ${interviewDate}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <strong>Time:</strong><br/>
+                      ${interviewTime}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <strong>Duration:</strong><br/>
+                      ${duration} Minutes
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <strong>Mode:</strong><br/>
+                      ${mode}
+                    </td>
+                  </tr>
+
+                  ${locationBlock}
+
+                </table>
+
+                <!-- Action Buttons -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
+                  <tr>
+                    <td align="center">
+
+                      <a href="${acceptUrl}" 
+                        style="display:inline-block; padding:12px 20px; margin-right:10px; 
+                               background:#16a34a; color:#ffffff; text-decoration:none; 
+                               border-radius:6px; font-weight:bold;">
+                        Accept
+                      </a>
+
+                      <a href="${declineUrl}" 
+                        style="display:inline-block; padding:12px 20px; margin-right:10px; 
+                               background:#dc2626; color:#ffffff; text-decoration:none; 
+                               border-radius:6px; font-weight:bold;">
+                        Decline
+                      </a>
+
+                      <a href="${rescheduleUrl}" 
+                        style="display:inline-block; padding:12px 20px; 
+                               background:#f59e0b; color:#ffffff; text-decoration:none; 
+                               border-radius:6px; font-weight:bold;">
+                        Request Reschedule
+                      </a>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin-top:30px;">
+                  If no action is taken, the interview will remain pending confirmation.
+                </p>
+
+                <p>
+                  Thank you for your support in the hiring process.
+                </p>
+
+                <p style="margin-top:30px;">
+                  Regards,<br/>
+                  <strong>Talent Acquisition Team</strong><br/>
+                  ${companyName}
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f3f4f6; padding:15px; text-align:center; font-size:12px; color:#6b7280;">
+                This is an automated notification. Please do not reply directly to this email.
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+}
+
+
+export function generateCandidateInterviewEmail(data) {
+  const {
+    candidateName,
+    jobTitle,
+    companyName,
+    interviewDate,
+    interviewTime,
+    duration,
+    roundName,
+    mode,
+    meetingLink,
+    location,
+    supportEmail,
+  } = data;
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interview Scheduled</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+    
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:30px 0;">
+      <tr>
+        <td align="center">
+          
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+            
+            <!-- Header -->
+            <tr>
+              <td style="background-color:#1f2937;padding:24px;text-align:center;">
+                <h1 style="color:#ffffff;margin:0;font-size:20px;">
+                  ${companyName}
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:32px;">
+                
+                <h2 style="margin-top:0;color:#111827;">
+                  Interview Scheduled 🎯
+                </h2>
+
+                <p style="color:#374151;font-size:14px;line-height:1.6;">
+                  Dear ${candidateName},
+                </p>
+
+                <p style="color:#374151;font-size:14px;line-height:1.6;">
+                  We are pleased to inform you that your interview for the position of 
+                  <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been scheduled.
+                </p>
+
+                <!-- Interview Details Card -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border:1px solid #e5e7eb;border-radius:6px;">
+                  <tr>
+                    <td style="padding:16px;background:#f9fafb;">
+                      
+                      <table width="100%" cellpadding="6" cellspacing="0" style="font-size:14px;color:#374151;">
+                        <tr>
+                          <td><strong>Interview Round:</strong></td>
+                          <td>${roundName}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Date:</strong></td>
+                          <td>${interviewDate}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Time:</strong></td>
+                          <td>${interviewTime}</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Duration:</strong></td>
+                          <td>${duration} minutes</td>
+                        </tr>
+                        <tr>
+                          <td><strong>Mode:</strong></td>
+                          <td>${mode === "ONLINE" ? "Online" : "Offline"}</td>
+                        </tr>
+                        ${
+                          mode === "ONLINE"
+                            ? `
+                        <tr>
+                          <td><strong>Meeting Link:</strong></td>
+                          <td>
+                            <a href="${meetingLink}" style="color:#2563eb;text-decoration:none;">
+                              Join Interview
+                            </a>
+                          </td>
+                        </tr>`
+                            : `
+                        <tr>
+                          <td><strong>Location:</strong></td>
+                          <td>${location}</td>
+                        </tr>`
+                        }
+                      </table>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin-top:24px;color:#374151;font-size:14px;line-height:1.6;">
+                  Please ensure that you are available at least 10 minutes prior to the scheduled time.
+                  If this is an online interview, kindly verify your internet connection and device setup in advance.
+                </p>
+
+                <p style="color:#374151;font-size:14px;line-height:1.6;">
+                  If you need to reschedule or have any questions, please reach out to us at 
+                  <a href="mailto:${supportEmail}" style="color:#2563eb;text-decoration:none;">
+                    ${supportEmail}
+                  </a>.
+                </p>
+
+                <p style="margin-top:30px;color:#374151;font-size:14px;">
+                  We look forward to speaking with you.
+                </p>
+
+                <p style="margin-top:16px;color:#374151;font-size:14px;">
+                  Best regards,<br/>
+                  <strong>${companyName} Talent Acquisition Team</strong>
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f9fafb;padding:20px;text-align:center;font-size:12px;color:#6b7280;">
+                © ${new Date().getFullYear()} ${companyName}. All rights reserved.
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+}
