@@ -39,15 +39,17 @@ export default function UserExpensePage() {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const [accountForm, setAccountForm] = useState({
-    email: "",
-    pin: "",
-  });
-
   const [formData, setFormData] = useState({
     amount: "",
     expenseDate: "",
     bill: null,
+    pin: "",
+  });
+
+  const user = useSelector((state) => state.auth.user);
+
+  const [accountForm, setAccountForm] = useState({
+    email: user?.email,
     pin: "",
   });
 
@@ -163,7 +165,7 @@ export default function UserExpensePage() {
         <div className="mt-10 p-6">
           <h2 className="text-xl font-semibold mb-4">Your Expenses</h2>
 
-          <TableContainer  component={Paper}>
+          <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -325,9 +327,7 @@ export default function UserExpensePage() {
                 name="email"
                 fullWidth
                 value={accountForm.email}
-                onChange={(e) =>
-                  setAccountForm({ ...accountForm, email: e.target.value })
-                }
+                disabled
               />
 
               <TextField

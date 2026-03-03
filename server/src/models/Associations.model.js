@@ -27,6 +27,7 @@ import Interview from "./RecruitmentModels/Interview.model.js";
 import InterviewFeedback from "./RecruitmentModels/InterviewFeedback.model.js";
 import Referral from "./RecruitmentModels/Referral.model.js";
 import JobRequisition from "./RecruitmentModels/JobRequisition.model.js";
+import InterviewAuditLog from "./RecruitmentModels/InterviewAuditLog.model.js";
 
 // USER ↔ BASIC SECURITY
 
@@ -533,6 +534,7 @@ User.hasMany(ApplicationStageLog, {
 ApplicationStageLog.belongsTo(User, {
   foreignKey: "changedBy",
   as: "changedByUser",
+  onDelete: "SET NULL",
 });
 
 // Interview → interviewerId
@@ -595,6 +597,17 @@ Offer.belongsTo(User, {
   as: "approvedByUser",
 });
 
+// Interview - InterviewLogs
+
+Interview.hasMany(InterviewAuditLog, {
+  foreignKey: "interviewId",
+  as: "auditLogs",
+});
+
+InterviewAuditLog.belongsTo(Interview, {
+  foreignKey: "interviewId",
+});
+
 export {
   User,
   OTP,
@@ -625,4 +638,5 @@ export {
   InterviewFeedback,
   Referral,
   JobRequisition,
+  InterviewAuditLog
 };

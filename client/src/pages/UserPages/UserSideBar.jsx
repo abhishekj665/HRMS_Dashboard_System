@@ -1,74 +1,109 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import {
+  PendingActionsRounded,
+  CurrencyExchange,
+  AccessTime,
+  CalendarMonth,
+} from "@mui/icons-material";
+import { useEffect } from "react";
 
 export default function UserSidebar({ open, setOpen }) {
-  const { user } = useSelector((state) => state.auth);
-
+  const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
 
-  if (!user) {
-    setTimeout(() => {
-      navigate("/login");
+  useEffect(() => {
+    if (!user) {
       toast.error("Please login to access this page");
-    }, 800);
-
-    return;
-  }
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 p-2 rounded-md transition 
-     ${isActive ? " text-black" : "text-gray-600 hover:text-black"}`;
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all
+     ${
+       isActive
+         ? "bg-blue-50 text-blue-600 font-medium"
+         : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+     }`;
 
   return (
     <aside
       className={`
-        fixed md:static top-0 left-0 z-50 h-full w-64 shadow-md
-        flex flex-col p-5 transition-transform duration-300
+        fixed md:static top-0 left-0 z-50
+        h-screen w-64 bg-white border-r
+        flex flex-col
+        transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0
-        bg-white
       `}
     >
-      <h1 className="text-lg font-medium mb-8 text-gray-800 italic tracking-tight">
-        {user?.role ? "USER DASHBOARD" : ""}
-      </h1>
+      {/* HEADER */}
+      <div className="px-5 py-4">
+        <h1 className="text-lg font-semibold text-gray-800">
+          {user?.role?.toUpperCase()} PANEL
+        </h1>
+      </div>
 
-      <nav className="flex flex-col gap-2">
-        <NavLink
-          to="/home/asset"
-          onClick={() => setOpen(false)}
-          className={linkClass}
-        >
-          <PendingActionsRoundedIcon /> Assets
-        </NavLink>
-        <NavLink
-          to="/home/expense"
-          onClick={() => setOpen(false)}
-          className={linkClass}
-        >
-          <CurrencyExchangeIcon /> Expense
-        </NavLink>
-        <NavLink
-          to="/home/attendance"
-          onClick={() => setOpen(false)}
-          className={linkClass}
-        >
-          <AccessTimeIcon /> Attendance
-        </NavLink>
-        <NavLink
-          to="/home/leave-management"
-          onClick={() => setOpen(false)}
-          className={linkClass}
-        >
-          <CalendarMonthIcon/> Leave Management
-        </NavLink>
-      </nav>
+      {/* CONTENT */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
+        {/* ASSETS */}
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Assets
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/home/asset"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <PendingActionsRounded fontSize="small" /> Assets
+            </NavLink>
+          </div>
+        </div>
+
+        {/* FINANCE */}
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Finance
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/home/expense"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <CurrencyExchange fontSize="small" /> Expense
+            </NavLink>
+          </div>
+        </div>
+
+        {/* ATTENDANCE & LEAVE */}
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Attendance & Leave
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/home/attendance"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <AccessTime fontSize="small" /> Attendance
+            </NavLink>
+
+            <NavLink
+              to="/home/leave-management"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <CalendarMonth fontSize="small" /> Leave Management
+            </NavLink>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }

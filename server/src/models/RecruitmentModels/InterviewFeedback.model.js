@@ -14,6 +14,10 @@ const InterviewFeedback = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    isSubmitted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     submittedBy: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -30,27 +34,23 @@ const InterviewFeedback = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    overallScore: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     recommendation: {
       type: DataTypes.ENUM("HIRE", "HOLD", "REJECT"),
-      allowNull : false,
-      defaultValue : "HOLD"
+      allowNull: false,
+      defaultValue: "HOLD",
     },
-    strength : {
-        type : DataTypes.TEXT,
-        allowNull : true
+    strength: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
-    weakness : {
-        type : DataTypes.TEXT,
-        allowNull : true
+    weakness: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
-    remark : {
-        type : DataTypes.TEXT,
-        allowNull : true
-    }
+    remark: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

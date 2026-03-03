@@ -116,10 +116,8 @@ export default function CareersPage() {
               className="cursor-pointer border-b pb-8 hover:border-black transition"
             >
               <div className="flex items-start gap-4">
-                {/* Left Arrow */}
                 <span className="text-blue-600 text-xl mt-1">→</span>
 
-                {/* Job Content */}
                 <div>
                   <Typography className="text-sm text-gray-500 mb-2">
                     {job?.requisition?.location} •{" "}

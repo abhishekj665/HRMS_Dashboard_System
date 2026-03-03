@@ -57,6 +57,7 @@ export const getApplicationById = async (id) => {
 };
 
 export const shortlistApplication = async (id) => {
+  
   try {
     const response = await API.patch(`/recuirment/application/shortlist/${id}`);
 

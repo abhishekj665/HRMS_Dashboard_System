@@ -212,7 +212,7 @@ export const approveJobRequisition = async (id, userId) => {
       requisitionId: jobRequisition.id,
     });
 
-    console.log("Admin Email:", jobRequisition.creator.email);
+    
 
     sendMail(jobRequisition.creator.email, "Job requisition approved", html);
 

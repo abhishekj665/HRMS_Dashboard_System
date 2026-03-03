@@ -52,7 +52,6 @@ const Interview = sequelize.define(
         "CANCELLED",
         "RESCHEDULED",
         "PENDING_CONFIRMATION",
-        "CONFIRMED",
         "DECLINED",
       ),
       allowNull: false,

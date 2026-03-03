@@ -310,7 +310,6 @@ export default function AdminLeaveDashboard() {
               }}
             >
               <CardContent sx={{ p: 0 }}>
-                {/* SUMMARY ROW */}
                 <Box
                   onClick={() => handleExpand(leave.id)}
                   sx={{

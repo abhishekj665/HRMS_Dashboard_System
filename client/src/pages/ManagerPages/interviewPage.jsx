@@ -63,6 +63,10 @@ export default function ManagerInterviewsPage() {
   const [actionDialog, setActionDialog] = useState(null);
   const [remark, setRemark] = useState("");
 
+  const [proposedDate, setProposedDate] = useState("");
+  const [proposedTime, setProposedTime] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   const isInvalidDateRange =
     fromDate && toDate && dayjs(toDate).isBefore(dayjs(fromDate));
 
@@ -104,29 +108,56 @@ export default function ManagerInterviewsPage() {
     try {
       if (actionDialog.type === "CONFIRM") {
         const response = await confirmInterview(actionDialog.id);
-        console.log(response);
+
         if (response.success) {
-          toast.success("Interview confirmed");
+          toast.success(response.message);
           fetchInterviews();
         } else {
-          toast.error("Interview confirmation failed");
+          toast.error(response.message);
         }
       }
 
       if (actionDialog.type === "DECLINE") {
         if (!remark) return toast.error("Remark is required");
-        await declineInterview(actionDialog.id, { remark });
-        toast.success("Interview declined");
+        const response = await declineInterview(actionDialog.id, remark);
+        if (response.success) {
+          toast.success(response.message);
+          fetchInterviews();
+        } else {
+          toast.error(response.message);
+        }
       }
 
       if (actionDialog.type === "RESCHEDULE") {
         if (!remark) return toast.error("Remark is required");
-        await requestReschedule(actionDialog.id, { remark });
-        toast.success("Reschedule request sent");
+        if (!proposedDate || !proposedTime)
+          return toast.error("Please select proposed date and time");
+
+        setSubmitting(true);
+
+        const proposedScheduledAt = dayjs(
+          `${proposedDate} ${proposedTime}`,
+          "YYYY-MM-DD HH:mm",
+        ).toISOString();
+
+        const response = await requestReschedule(actionDialog.id, {
+          remark,
+          proposedScheduledAt,
+        });
+
+        if (response.success) {
+          toast.success(response.message);
+          fetchInterviews();
+        } else {
+          toast.error(response.message);
+        }
       }
 
+      setSubmitting(false);
       setActionDialog(null);
       setRemark("");
+      setProposedDate("");
+      setProposedTime("");
       fetchInterviews();
     } catch (err) {
       toast.error(err.message);
@@ -241,7 +272,6 @@ export default function ManagerInterviewsPage() {
                   startIcon={<RestartAlt />}
                   onClick={() => {
                     setStatusFilter("");
-                    setSearch("");
                     setFromDate("");
                     setToDate("");
                   }}
@@ -356,11 +386,10 @@ export default function ManagerInterviewsPage() {
                           </Stack>
                         )}
 
-                        {/* Confirmed → Show Join Icon */}
                         {row.status === "CONFIRMED" &&
                           row.mode === "ONLINE" &&
                           row.meetingUrl && (
-                            <Tooltip title="Join Meeting">
+                            <Tooltip title="Join Interview">
                               <label>Join Interview</label>
                               <IconButton
                                 color="primary"
@@ -419,7 +448,13 @@ export default function ManagerInterviewsPage() {
         </DialogTitle>
 
         <DialogContent>
-          {actionDialog?.type !== "CONFIRM" && (
+          {actionDialog?.type === "CONFIRM" && (
+            <Typography sx={{ mt: 1 }}>
+              Are you sure you want to confirm this interview?
+            </Typography>
+          )}
+
+          {actionDialog?.type === "DECLINE" && (
             <TextField
               fullWidth
               multiline
@@ -428,20 +463,53 @@ export default function ManagerInterviewsPage() {
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
               sx={{ mt: 1 }}
+              required
             />
           )}
 
-          {actionDialog?.type === "CONFIRM" && (
-            <Typography sx={{ mt: 1 }}>
-              Are you sure you want to confirm this interview?
-            </Typography>
+          {actionDialog?.type === "RESCHEDULE" && (
+            <Stack spacing={2} mt={1}>
+              <TextField
+                type="date"
+                label="Proposed Date"
+                InputLabelProps={{ shrink: true }}
+                value={proposedDate}
+                onChange={(e) => setProposedDate(e.target.value)}
+                fullWidth
+                required
+              />
+
+              <TextField
+                type="time"
+                label="Proposed Time"
+                InputLabelProps={{ shrink: true }}
+                value={proposedTime}
+                onChange={(e) => setProposedTime(e.target.value)}
+                fullWidth
+                required
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Remark"
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                required
+              />
+            </Stack>
           )}
         </DialogContent>
 
         <DialogActions>
           <Button onClick={() => setActionDialog(null)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAction}>
-            Submit
+          <Button
+            variant="contained"
+            onClick={handleAction}
+            disabled={submitting}
+          >
+            {submitting ? "Submitting..." : "Submit"}
           </Button>
         </DialogActions>
       </Dialog>

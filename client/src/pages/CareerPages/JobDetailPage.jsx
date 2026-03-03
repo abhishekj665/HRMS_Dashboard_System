@@ -200,24 +200,20 @@ export default function JobDetailPage() {
                 </div>
               </div>
 
-              {/* MOBILE VERSION */}
               <div className="md:hidden space-y-6">
                 {job?.stages?.map((stage, index) => (
                   <div
                     key={stage.id}
                     className="flex items-start gap-4 relative"
                   >
-                    {/* Vertical Line */}
                     {index !== job.stages.length - 1 && (
                       <div className="absolute left-3 top-6 w-0.5 h-full " />
                     )}
 
-                    {/* Dot */}
                     <div className="w-6 h-6 rounded-full  text-gray-600 flex items-center justify-center text-xs font-bold z-10">
                       {stage.stageOrder}
                     </div>
 
-                    {/* Text */}
                     <Typography className="text-gray-700 text-sm">
                       {stage.name}
                     </Typography>

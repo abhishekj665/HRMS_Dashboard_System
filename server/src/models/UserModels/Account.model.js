@@ -19,8 +19,6 @@ const Account = sequelize.define(
     accountNumber: {
       type: DataTypes.BIGINT,
       allowNull: false,
-      autoIncrement: true,
-      unique: true,
     },
 
     email: {

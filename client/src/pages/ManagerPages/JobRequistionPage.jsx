@@ -36,7 +36,7 @@ import Fab from "@mui/material/Fab";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 
 import { useTheme, useMediaQuery } from "@mui/material";
 
@@ -224,7 +224,7 @@ export default function ManagerRequisitionPage() {
         <Typography>Role</Typography>
         <Typography>Location</Typography>
         <Typography>Status</Typography>
-        <Box /> {/* Arrow placeholder */}
+        <Box />{" "}
       </Box>
 
       <Box mt={3}>
@@ -257,7 +257,6 @@ export default function ManagerRequisitionPage() {
               }}
             >
               <CardContent color={"#555"} sx={{ p: 0 }}>
-                {/* SUMMARY */}
                 <Box
                   onClick={() =>
                     setExpandedId(expandedId === req.id ? null : req.id)
@@ -277,7 +276,6 @@ export default function ManagerRequisitionPage() {
                   {/* Role */}
                   <Typography fontWeight={500}>{req.title}</Typography>
 
-                  {/* Location (desktop only) */}
                   <Typography
                     sx={{ display: { xs: "none", md: "block" } }}
                     color="text.secondary"
@@ -285,7 +283,6 @@ export default function ManagerRequisitionPage() {
                     {req.location}
                   </Typography>
 
-                  {/* Status (desktop only) */}
                   <Box sx={{ display: { xs: "none", md: "flex" } }}>
                     <Chip
                       label={req.status}
@@ -388,7 +385,6 @@ export default function ManagerRequisitionPage() {
                       )}
                     </Box>
 
-                    {/* DESCRIPTION SECTION */}
                     <Box mt={4}>
                       <Typography fontWeight={600} mb={1}>
                         Job Description

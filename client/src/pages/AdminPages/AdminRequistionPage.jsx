@@ -147,7 +147,7 @@ export default function AdminRequisitionPage() {
         <Typography>Location</Typography>
         <Typography>Status</Typography>
         <Typography>Created By</Typography>
-        <Box /> {/* Arrow column spacer */}
+        <Box /> 
       </Box>
 
       {requisitions.map((req, index) => (
@@ -182,7 +182,6 @@ export default function AdminRequisitionPage() {
 
               <Typography fontWeight={500}>{req.title}</Typography>
 
-              {/* Location - desktop only */}
               <Typography
                 sx={{ display: { xs: "none", md: "block" } }}
                 color="text.secondary"
@@ -190,7 +189,6 @@ export default function AdminRequisitionPage() {
                 {req.location}
               </Typography>
 
-              {/* Status - desktop only */}
               <Box sx={{ display: { xs: "none", md: "flex" } }}>
                 <Chip
                   label={req.status}
@@ -199,7 +197,6 @@ export default function AdminRequisitionPage() {
                 />
               </Box>
 
-              {/* Created By - desktop only */}
               <Typography
                 sx={{ display: { xs: "none", md: "block" } }}
                 color="text.secondary"
@@ -218,7 +215,6 @@ export default function AdminRequisitionPage() {
 
             {/* COLLAPSE SECTION */}
             <Collapse in={expandedId === req.id}>
-              {/* Mobile Info Row */}
               <Box
                 sx={{
                   display: { xs: "flex", md: "none" },

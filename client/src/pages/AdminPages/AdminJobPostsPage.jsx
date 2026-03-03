@@ -119,7 +119,6 @@ export default function AdminJobPostsPage() {
       {jobPosts.map((job, index) => (
         <Card key={job.id} sx={{ mb: 2 }}>
           <CardContent sx={{ p: 0 }}>
-            {/* SUMMARY */}
             <Box
               onClick={() =>
                 setExpandedId(expandedId === job.id ? null : job.id)
@@ -225,7 +224,6 @@ export default function AdminJobPostsPage() {
                   />
                 </Box>
 
-                {/* JD */}
                 <Box mt={4}>
                   <Typography fontWeight={600} mb={1}>
                     Job Description (JD)

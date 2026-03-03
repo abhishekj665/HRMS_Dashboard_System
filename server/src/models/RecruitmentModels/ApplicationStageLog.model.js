@@ -29,6 +29,11 @@ const ApplicationStageLog = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    changedByType: {
+      type: DataTypes.ENUM("CANDIDATE", "INTERVIEWER", "ADMIN", "SYSTEM"),
+      allowNull: false,
+      defaultValue: "SYSTEM",
+    },
     remark: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -42,6 +47,14 @@ const ApplicationStageLog = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
+    },
+    oldStatus: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    newStatus: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   { timestamps: true, tableName: "ApplicationStageLog", paranoid: true },

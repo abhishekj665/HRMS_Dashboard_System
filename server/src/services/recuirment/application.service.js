@@ -1,5 +1,6 @@
 import {
   Application,
+  ApplicationStageLog,
   Candidate,
   HiringStage,
   JobPosting,
@@ -8,13 +9,14 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
-import { Op, where } from "sequelize";
+import { Op } from "sequelize";
 import {
   generateRejectedEmail,
   generateShortlistedEmail,
   jobApplicationReceivedEmailTemplate,
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import app from "../../app.js";
 
 export const registerApplication = async (slug, data) => {
   const transaction = await sequelize.transaction();
@@ -23,6 +25,10 @@ export const registerApplication = async (slug, data) => {
       where: { email: data.email },
       transaction,
     });
+
+    data.contact = Number(data.contact);
+    data.totalExperience = Number(data.totalExperience);
+    data.expectedCTC = Number(data.expectedCTC);
 
     if (!candidate) {
       candidate = await Candidate.create(
@@ -41,10 +47,6 @@ export const registerApplication = async (slug, data) => {
       );
     }
 
-    data.contact = Number(data.contact);
-    data.totalExperience = Number(data.totalExperience);
-    data.expectedCTC = Number(data.expectedCTC);
-
     Object.keys(data).forEach((key) => {
       if (data[key] !== undefined && data[key] !== null) {
         candidate.set(key, data[key]);
@@ -52,7 +54,7 @@ export const registerApplication = async (slug, data) => {
     });
 
     if (candidate.changed()) {
-      await candidate.save();
+      await candidate.save({ transaction });
     }
 
     const jobPosting = await JobPosting.findOne({
@@ -190,7 +192,7 @@ export const getApplications = async (query) => {
       ],
       offset,
       limit: pageSize,
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
       distinct: true,
     });
 
@@ -263,7 +265,7 @@ export const getApplicationById = async (id) => {
   }
 };
 
-export const shortlistApplication = async (id) => {
+export const shortlistApplication = async (id, userId) => {
   const transaction = await sequelize.transaction();
   try {
     const application = await Application.findOne({
@@ -310,6 +312,19 @@ export const shortlistApplication = async (id) => {
 
     await application.update({ currentStageId: nextStage.id }, { transaction });
 
+    await ApplicationStageLog.create(
+      {
+        applicationId: application.id,
+        fromStageId: application.currentStage.id,
+        toStageId: nextStage.id,
+        changedBy: userId,
+        changedByType: "ADMIN",
+        oldStatus: "Applied",
+        newStatus: nextStage.name,
+      },
+      { transaction },
+    );
+
     await transaction.commit();
 
     const html = generateShortlistedEmail({
@@ -336,7 +351,7 @@ export const shortlistApplication = async (id) => {
   }
 };
 
-export const rejectApplication = async (id) => {
+export const rejectApplication = async (id, userId) => {
   const transaction = await sequelize.transaction();
   try {
     const application = await Application.findOne({
@@ -402,6 +417,19 @@ export const rejectApplication = async (id) => {
       {
         currentStageId: rejectStage.id,
         status: "REJECTED",
+      },
+      { transaction },
+    );
+
+    await ApplicationStageLog.create(
+      {
+        applicationId: application.id,
+        fromStageId: currentStage.id,
+        toStageId: rejectStage.id,
+        changedBy: userId,
+        chandegedByType: "ADMIN",
+        oldStatus: currentStage.name,
+        newStatus: rejectStage.name,
       },
       { transaction },
     );

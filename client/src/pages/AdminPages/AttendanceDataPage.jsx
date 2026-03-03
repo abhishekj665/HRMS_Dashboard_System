@@ -336,7 +336,6 @@ export default function AttendanceTable() {
             <Tab label="Regularization Requests" />
           </Tabs>
 
-          {/* Filters */}
           <Box className="flex gap-4 justify-end my-4">
             <FormControl size="small" className="min-w-40">
               <InputLabel>Status</InputLabel>

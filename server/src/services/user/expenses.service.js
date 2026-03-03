@@ -75,10 +75,22 @@ export const newExpensesService = async (data, user) => {
       transaction,
     });
 
-    if (!userData?.managerId) {
-      throw new Error("Manager not assigned");
+    const expenseDateObj = new Date(expenseDate);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    expenseDateObj.setHours(0, 0, 0, 0);
+
+    if (expenseDateObj > today) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Expense date cannot be in the future",
+      );
     }
 
+    if (expenseDate < new Date())
+      throw new ExpressError(STATUS.BAD_REQUEST, "Invalid Expense Date");
     const expense = await Expenses.create(
       {
         userId: user.id,

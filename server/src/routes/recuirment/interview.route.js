@@ -33,5 +33,19 @@ Router.patch(
   managerAuth,
   InterviewController.confirmInterview,
 );
+Router.patch(
+  "/interview/decline/:id",
+  managerAuth,
+  InterviewController.declineAssignedInterview,
+);
+
+Router.get("/interview/active/:id",userAuth, allowRoles("manager", "admin"), InterviewController.getActiveInterview)
+
+Router.patch(
+  "/interview/reschedule/:id",
+  userAuth, allowRoles("manager", "admin"),
+  InterviewController.rescheduleInterview,
+);
+
 
 export const InterviewRouter = Router;

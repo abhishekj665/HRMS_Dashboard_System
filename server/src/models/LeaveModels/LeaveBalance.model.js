@@ -47,12 +47,7 @@ const LeaveBalance = sequelize.define(
     timestamps: true,
     tableName: "LeaveBalance",
     paranoid: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ["userId", "leaveTypeId", "year"],
-      },
-    ],
+    
   },
 );
 

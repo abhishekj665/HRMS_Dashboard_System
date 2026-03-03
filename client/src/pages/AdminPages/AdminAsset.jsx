@@ -262,7 +262,6 @@ const AdminAsset = () => {
               onChange={handleChange}
             />
 
-            {/* Footer */}
             <div className="flex justify-end gap-3 mt-6">
               <Button
                 variant="outlined"

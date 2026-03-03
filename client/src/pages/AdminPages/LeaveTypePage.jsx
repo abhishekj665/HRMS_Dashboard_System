@@ -169,7 +169,6 @@ const LeaveTypePage = () => {
         </CardContent>
       </Card>
 
-      {/* ---------------- Dialog ---------------- */}
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
         <DialogTitle>Register Leave Type</DialogTitle>

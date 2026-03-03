@@ -1617,7 +1617,6 @@ export function generateInterviewScheduledEmail(data) {
   `;
 }
 
-
 export function generateInterviewAssignmentEmail(data) {
   const {
     interviewerName,
@@ -1803,7 +1802,6 @@ export function generateInterviewAssignmentEmail(data) {
   `;
 }
 
-
 export function generateCandidateInterviewEmail(data) {
   const {
     candidateName,
@@ -1816,7 +1814,7 @@ export function generateCandidateInterviewEmail(data) {
     mode,
     meetingLink,
     location,
-    supportEmail,
+    supportEmail = "support@hrms.com",
   } = data;
 
   return `
@@ -1946,6 +1944,81 @@ export function generateCandidateInterviewEmail(data) {
       </tr>
     </table>
 
+  </body>
+  </html>
+  `;
+}
+
+export function getAdminInterviewDeclinedTemplate({
+  adminName,
+  candidateName,
+  jobTitle,
+  interviewDate,
+  interviewTime,
+  interviewerName,
+  reason,
+  rescheduleLink,
+}) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interview Declined</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:30px;">
+            
+            <tr>
+              <td>
+                <h2 style="color:#d32f2f;margin-bottom:10px;">
+                  Interview Declined
+                </h2>
+                <p style="color:#333;font-size:14px;">
+                  Hello ${adminName},
+                </p>
+                <p style="color:#333;font-size:14px;">
+                  The interview scheduled for <strong>${candidateName}</strong> 
+                  (Position: ${jobTitle}) on 
+                  <strong>${interviewDate}</strong> at 
+                  <strong>${interviewTime}</strong> has been declined by 
+                  <strong>${interviewerName}</strong>.
+                </p>
+
+                ${
+                  reason
+                    ? `<p style="color:#555;font-size:14px;">
+                        <strong>Reason:</strong> ${reason}
+                       </p>`
+                    : ""
+                }
+
+                <p style="color:#333;font-size:14px;">
+                  Please reschedule the interview at your earliest convenience.
+                </p>
+
+                <div style="margin:20px 0;text-align:center;">
+                  <a href="${rescheduleLink}" 
+                     style="background:#1976d2;color:#ffffff;
+                     padding:12px 20px;text-decoration:none;
+                     border-radius:4px;font-size:14px;">
+                    Reschedule Interview
+                  </a>
+                </div>
+
+                <p style="font-size:12px;color:#888;">
+                  This is an automated notification. Please do not reply.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
   </html>
   `;

@@ -77,6 +77,7 @@ import { toast } from "react-toastify";
 import {
   getInterviewers,
   assignInterview,
+  getActiveInterview,
 } from "../../services/CareersService/interviewService";
 
 export default function AdminApplicationsPage() {
@@ -466,6 +467,12 @@ function ApplicationDetailDrawer({
   const isInterview = currentStage === "INTERVIEW";
   const isFinalStatus = status === "OFFERED" || status === "HIRED";
 
+  useEffect(() => {
+    if (open) {
+      setTab(0);
+    }
+  }, [open, application?.id]);
+
   if (!application) {
     return (
       <Drawer
@@ -830,6 +837,36 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
     duration: 60,
   });
 
+  const [activeInterview, setActiveInterview] = useState(null);
+  const [checkingInterview, setCheckingInterview] = useState(true);
+
+  const ACTIVE_STATUSES = ["SCHEDULED", "ASSIGNED", "ACCEPTED", "RESCHEDULED"];
+
+  const isDeclined = activeInterview?.status === "DECLINED";
+
+  useEffect(() => {
+    const checkActiveInterview = async () => {
+      try {
+        setCheckingInterview(true);
+
+        const res = await getActiveInterview(application.id);
+
+        if (res?.success && res.data) {
+          setActiveInterview(res.data);
+        } else {
+          setActiveInterview(null);
+        }
+      } catch (err) {
+        console.error(err);
+        setActiveInterview(null);
+      } finally {
+        setCheckingInterview(false);
+      }
+    };
+
+    checkActiveInterview();
+  }, [application.id]);
+
   const handleSave = async () => {
     if (!form.date || !form.time || !form.interviewerId) {
       toast.error("Please select date, time and interviewer");
@@ -855,31 +892,90 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
       const response = await assignInterview(data);
       if (response.success) {
         toast.success("Interview scheduled successfully");
-        setForm({
-          date: "",
-          time: "",
-          mode: "ONLINE",
-          interviewerId: null,
-          meetingUrl: "",
-          location: "",
-          duration: 60,
-        });
         refreshList();
         onClose();
       } else {
         toast.error(response.message);
+        onClose();
       }
     } catch (error) {
       toast.error(error.message);
     }
   };
 
+  if (checkingInterview) {
+    return <Typography>Checking interview status...</Typography>;
+  }
+
+  const isActive =
+    activeInterview && ACTIVE_STATUSES.includes(activeInterview.status);
+
+  if (isActive) {
+    return (
+      <Card variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="h6">Interview Already Scheduled</Typography>
+
+        <Stack spacing={2} mt={2}>
+          <DetailRow label="Round" value={activeInterview.roundName} />
+          <DetailRow
+            label="Interviewer"
+            value={activeInterview.interviewer?.email}
+          />
+          <DetailRow
+            label="Scheduled At"
+            value={dayjs(activeInterview.scheduledAt).format(
+              "DD MMM YYYY hh:mm A",
+            )}
+          />
+          <DetailRow
+            label="Duration"
+            value={`${activeInterview.duration} minutes`}
+          />
+          <DetailRow label="Mode" value={activeInterview.mode} />
+
+          {activeInterview.mode === "ONLINE" && (
+            <DetailRow label="Meeting URL" value={activeInterview.meetingUrl} />
+          )}
+
+          <Chip label={activeInterview.status} color="success" />
+        </Stack>
+      </Card>
+    );
+  }
+
+  if (isDeclined) {
+    return (
+      <Card variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="h6" color="error">
+          Previous Interview Declined
+        </Typography>
+
+        <Stack spacing={2} mt={2}>
+          <DetailRow
+            label="Interviewer"
+            value={activeInterview.interviewer?.email}
+          />
+          <DetailRow
+            label="Scheduled At"
+            value={dayjs(activeInterview.scheduledAt).format(
+              "DD MMM YYYY hh:mm A",
+            )}
+          />
+          <Chip label="DECLINED" color="error" />
+
+          <Button variant="contained" onClick={() => setActiveInterview(null)}>
+            Schedule Again
+          </Button>
+        </Stack>
+      </Card>
+    );
+  }
+
   return (
     <Card variant="outlined" sx={{ p: 3 }}>
       <Typography variant="h6">Schedule Interview</Typography>
 
       <Stack spacing={3} mt={2}>
-        {/* Interviewer Dropdown */}
         <Autocomplete
           options={interviewers}
           getOptionLabel={(option) => `${option?.email?.split("@")[0]}`}
@@ -895,7 +991,6 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
           isOptionEqualToValue={(option, value) => option.id === value.id}
         />
 
-        {/* Date */}
         <TextField
           type="date"
           label="Interview Date"
@@ -905,7 +1000,6 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
           fullWidth
         />
 
-        {/* Time */}
         <TextField
           type="time"
           label="Interview Time"
@@ -915,7 +1009,6 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
           fullWidth
         />
 
-        {/* Mode */}
         <Select
           value={form.mode}
           onChange={(e) => setForm({ ...form, mode: e.target.value })}
@@ -943,7 +1036,10 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
         <Select
           value={form.duration}
           onChange={(e) =>
-            setForm({ ...form, duration: Number(e.target.value) })
+            setForm({
+              ...form,
+              duration: Number(e.target.value),
+            })
           }
           fullWidth
         >
@@ -956,7 +1052,7 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
 
         <Button
           variant="contained"
-          onClick={() => handleSave()}
+          onClick={handleSave}
           disabled={!form.date || !form.time || !form.interviewerId}
           sx={{ width: 200 }}
         >
@@ -970,7 +1066,7 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
 function DetailRow({ icon, label, value }) {
   return (
     <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-      <Box color="text.secondary">{icon}</Box>
+      {icon && <Box color="text.secondary">{icon}</Box>}
       <Box>
         <Typography variant="caption" color="text.secondary">
           {label}

@@ -25,7 +25,6 @@ const Candidate = sequelize.define(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     contact: {
       type: DataTypes.BIGINT,

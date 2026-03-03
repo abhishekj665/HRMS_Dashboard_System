@@ -5,6 +5,8 @@ import fs from "fs";
 
 export const registerApplication = async (req, res, next) => {
   try {
+
+    
     let resumeUrl = null;
 
     if (req.file) {
@@ -18,6 +20,7 @@ export const registerApplication = async (req, res, next) => {
       }
     }
     req.body.resumeUrl = resumeUrl;
+
 
     const response = await ApplicationService.registerApplication(
       req.params.slug,
@@ -67,9 +70,12 @@ export const getApplicationById = async (req, res, next) => {
 };
 
 export const shortlistApplication = async (req, res, next) => {
+  
+
   try {
     const response = await ApplicationService.shortlistApplication(
       req.params.id,
+      req.user.id,
     );
     if (response.success) {
       return successResponse(res, response.data, response.message);
@@ -83,7 +89,10 @@ export const shortlistApplication = async (req, res, next) => {
 
 export const rejectApplication = async (req, res, next) => {
   try {
-    const response = await ApplicationService.rejectApplication(req.params.id);
+    const response = await ApplicationService.rejectApplication(
+      req.params.id,
+      req.user.id,
+    );
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {

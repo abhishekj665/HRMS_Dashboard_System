@@ -30,8 +30,15 @@ export const registerAccountService = async (data, user) => {
     }
     let hashPin = await generateHash(String(pin), 10);
 
+    const lastAccount = await Account.findOne({
+      order: [["createdAt", "DESC"]],
+    });
+
+    const accountNumber = lastAccount ? lastAccount.accountNumber + 1 : 1;
+
     let account = await Account.create({
       userId: user.id,
+      accountNumber: accountNumber,
       pin: hashPin,
       email: email,
     });
@@ -58,7 +65,7 @@ export const updateAccountService = async (data, user) => {
       },
       {
         where: { userId: user.id },
-      }
+      },
     );
 
     let accountInfo = await Account.findOne({ where: { userId: user.id } });
