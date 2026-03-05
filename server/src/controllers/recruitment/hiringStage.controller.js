@@ -1,11 +1,10 @@
-import * as OfferService from "../../services/recruitment/offer.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
+import * as hiringStageService from "../../services/recruitment/hiringStage.service.js";
 
-export const createOffer = async (req, res, next) => {
+export const moveToNextStage = async (req, res, next) => {
   try {
-    const response = await OfferService.createOffer(
-      req.params.id,
-      req.body,
+    const response = await hiringStageService.moveToNextStage(
+      req.params.applicationId,
       req.user.id,
     );
     if (response.success) {

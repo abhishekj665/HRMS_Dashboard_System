@@ -191,13 +191,26 @@ export const createInterviewFeedback = async (interviewId, data, userId) => {
     if (recommendation === "HOLD") {
       await Application.update(
         {
-          newStatus: "ON_HOLD",
-          remark:
-            remark || "Application put on hold based on interview feedback",
-          fromStageId: interview.application.currentStageId,
-          toStageId: interview.application.currentStageId,
+          status: "ON_HOLD",
+          score: technicalScore + communicationScore + problemSolvingScore,
+          rating: Math.round(
+            (technicalScore + communicationScore + problemSolvingScore) / 3,
+          ),
         },
         { where: { id: interview.applicationId }, transaction },
+      );
+
+      await ApplicationStageLog.create(
+        {
+          applicationId: interview.applicationId,
+          newStatus: "ON_HOLD",
+          remark: remark || "Application put on hold for admin review",
+          fromStageId: interview.application.currentStageId,
+          toStageId: interview.application.currentStageId,
+          changedBy: submittedBy,
+          changedByType: "INTERVIEWER",
+        },
+        { transaction },
       );
     }
     const nextStage = await HiringStage.findOne({

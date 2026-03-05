@@ -1,4 +1,4 @@
-import { application } from "express";
+
 import { sequelize } from "../../config/db.js";
 import { DataTypes } from "sequelize";
 

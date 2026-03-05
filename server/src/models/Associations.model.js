@@ -409,7 +409,7 @@ Interview.belongsTo(Application, {
 
 // Interview ↔ InterviewFeedback
 
-Interview.hasMany(InterviewFeedback, {
+Interview.hasOne(InterviewFeedback, {
   foreignKey: "interviewId",
   as: "feedbacks",
 });

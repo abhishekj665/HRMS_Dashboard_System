@@ -36,6 +36,7 @@ const Application = sequelize.define(
         "ACTIVE",
         "REJECTED",
         "OFFERED",
+        "ON_HOLD",
         "HIRED",
         "WITHDRAWN",
       ),

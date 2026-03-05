@@ -2233,3 +2233,244 @@ Kind regards,<br/>
 </html>
 `;
 };
+
+export const offerLetterTemplate = ({ application, offer }) => {
+  const candidate = application.candidate;
+  const job = application.jobPosting;
+
+  const candidateName =
+    `${candidate.firstName || ""} ${candidate.lastName || ""}`.trim() ||
+    candidate.email.split("@")[0];
+
+  return `
+  <html>
+  <head>
+  <style>
+
+  body{
+    font-family: Arial, Helvetica, sans-serif;
+    padding:40px;
+    line-height:1.7;
+    color:#333;
+  }
+
+  h1{
+    text-align:center;
+    letter-spacing:2px;
+    margin-bottom:40px;
+  }
+
+  .ref{
+    margin-bottom:20px;
+  }
+
+  .section{
+    margin-top:30px;
+  }
+
+  .section-title{
+    font-weight:bold;
+    font-size:18px;
+    margin-bottom:10px;
+  }
+
+  ul{
+    margin-left:20px;
+  }
+
+  .signature{
+    margin-top:60px;
+  }
+
+  </style>
+  </head>
+
+  <body>
+
+  <h1>OFFER LETTER</h1>
+
+  <div class="ref">
+  <p><strong>Ref No:</strong> ORV/HR/${Math.floor(Math.random()*10000)}</p>
+  <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+  </div>
+
+  <p>
+  <strong>To,</strong><br/>
+  ${candidateName}
+  </p>
+
+  <p>Dear ${candidateName},</p>
+
+  <p>
+  We are pleased to offer you the position of <strong>${job.title}</strong> at 
+  <strong>Orvane Digitals</strong>. This letter outlines the terms, responsibilities,
+  confidentiality clauses, and conditions related to your employment with the company.
+  </p>
+
+  <div class="section">
+
+  <div class="section-title">1. Position Details</div>
+
+  <p><strong>Position:</strong> ${job.title}</p>
+  <p><strong>Joining Date:</strong> ${new Date(offer.joiningDate).toDateString()}</p>
+  <p><strong>Offered CTC:</strong> ₹${offer.offeredCTC}</p>
+
+  </div>
+
+  <div class="section">
+
+  <div class="section-title">2. Employment Responsibilities</div>
+
+  <ul>
+  <li>Design, develop, and maintain software applications.</li>
+  <li>Collaborate with internal development and product teams.</li>
+  <li>Follow company coding standards and engineering best practices.</li>
+  <li>Complete assigned work responsibly and within deadlines.</li>
+  </ul>
+
+  </div>
+
+  <div class="section">
+
+  <div class="section-title">3. Confidentiality & Non-Disclosure</div>
+
+  <p>
+  During your employment, you must maintain strict confidentiality regarding
+  all company information including:
+  </p>
+
+  <ul>
+  <li>Client data and company documentation</li>
+  <li>Internal software, code repositories, and tools</li>
+  <li>Business strategies and operational processes</li>
+  <li>Employee or vendor information</li>
+  </ul>
+
+  <p>
+  Any misuse or disclosure of confidential information may result in disciplinary
+  action or termination of employment.
+  </p>
+
+  </div>
+
+  <div class="section">
+
+  <div class="section-title">4. Code of Conduct</div>
+
+  <ul>
+  <li>You agree to follow all company policies and guidelines.</li>
+  <li>Maintain professionalism and ethical conduct.</li>
+  <li>Avoid any fraudulent or unethical behavior.</li>
+  <li>Ensure assigned responsibilities are completed efficiently.</li>
+  </ul>
+
+  </div>
+
+  <div class="section">
+
+  <div class="section-title">5. Termination Clause</div>
+
+  <p>
+  The company reserves the right to terminate employment without prior notice
+  in case of policy violations, misconduct, breach of confidentiality, or
+  unsatisfactory performance.
+  </p>
+
+  </div>
+
+  <div class="section">
+
+  <div class="section-title">6. Acceptance of Offer</div>
+
+  <p>
+  Please sign below to indicate your acceptance of this offer and the terms
+  mentioned in this letter.
+  </p>
+
+  </div>
+
+  <div class="signature">
+
+  <p>
+  Candidate Signature: ______________________
+  </p>
+
+  <p>
+  Date: ______________________
+  </p>
+
+  <br/>
+
+  <p>
+  <strong>Authorized Signatory</strong><br/>
+  Orvane Digitals
+  </p>
+
+  </div>
+
+  </body>
+  </html>
+  `;
+};
+
+export const offerEmailTemplate = ({
+  candidateName,
+  jobTitle,
+  companyName,
+  joiningDate,
+}) => {
+  return `
+  <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333;">
+
+    <p>Dear ${candidateName},</p>
+
+    <p>
+      <strong>Congratulations!</strong>🎉
+    </p>
+
+    <p>
+      We are pleased to inform you that you have been selected for the position of 
+      <strong>${jobTitle}</strong> at <strong>${companyName}</strong>.
+    </p>
+
+    <p>
+      Your skills, experience, and enthusiasm during the recruitment process impressed 
+      our team, and we are confident that you will be a valuable addition to our organization.
+    </p>
+
+    <p>
+      Please find your <strong>Offer Letter attached</strong> with this email. The document 
+      contains details regarding your role, compensation, and other important terms of employment.
+    </p>
+
+    <p>
+      Kindly review the offer letter carefully. To confirm your acceptance, please sign 
+      the document and share the signed copy with us at the earliest.
+    </p>
+
+    ${
+      joiningDate
+        ? `<p>Your tentative joining date is <strong>${joiningDate}</strong>.</p>`
+        : ""
+    }
+
+    <p>
+      If you have any questions regarding the offer or the onboarding process, feel free 
+      to contact our HR team.
+    </p>
+
+    <p>
+      We look forward to welcoming you to the team and working together to achieve great things.
+    </p>
+
+    <br/>
+
+    <p>
+      Best Regards,<br/>
+      <strong>HR Team</strong><br/>
+      ${companyName}
+    </p>
+
+  </div>
+  `;
+};

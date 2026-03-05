@@ -3,8 +3,10 @@ import {
   ApplicationStageLog,
   Candidate,
   HiringStage,
+  Interview,
   JobPosting,
   JobRequisition,
+  InterviewFeedback,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
@@ -245,6 +247,16 @@ export const getApplicationById = async (id) => {
                 "location",
                 "headCount",
               ],
+            },
+          ],
+        },
+        {
+          model: Interview,
+          as: "interviews",
+          include: [
+            {
+              model: InterviewFeedback,
+              as: "feedbacks",
             },
           ],
         },

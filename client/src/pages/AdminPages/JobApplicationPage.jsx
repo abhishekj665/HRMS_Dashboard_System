@@ -78,10 +78,20 @@ import { toast } from "react-toastify";
 import { Alert } from "@mui/material";
 
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+
+import {
   getInterviewers,
   assignInterview,
   getActiveInterview,
 } from "../../services/CareersService/interviewService";
+
+import { moveToNextStage } from "../../services/CareersService/stageService";
 
 export default function AdminApplicationsPage() {
   const [rows, setRows] = useState([]);
@@ -392,6 +402,21 @@ function ApplicationDetailDrawer({
   const [interviewers, setInterviewers] = useState([]);
   const [selectedInterviewer, setSelectedInterviewer] = useState(null);
 
+  const [selectedManager, setSelectedManager] = useState(null);
+  const [managers, setManagers] = useState([]);
+
+  const [resumeOpen, setResumeOpen] = useState(false);
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [offerForm, setOfferForm] = useState({
+    offeredCTC: "",
+    bonus: "",
+    joiningDate: "",
+    remarks: "",
+  });
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -435,27 +460,6 @@ function ApplicationDetailDrawer({
     }
   };
 
-  const [selectedManager, setSelectedManager] = useState(null);
-  const [managers, setManagers] = useState([]);
-
-  const handleGenerateOffer = async () => {
-    try {
-      const res = await generateOffer(application.id, {
-        managerId: selectedManager,
-      });
-
-      if (res.success) {
-        toast.success("Offer generated successfully");
-        refreshList();
-        onClose();
-      } else {
-        toast.error(res.message);
-      }
-    } catch (err) {
-      toast.error(err.message);
-    }
-  };
-
   const handleReject = async () => {
     try {
       const res = await rejectApplication(application.id);
@@ -482,6 +486,57 @@ function ApplicationDetailDrawer({
     }
   };
 
+  const handleMoveNextStage = async () => {
+    try {
+      const response = await moveToNextStage(application.id);
+
+      if (response.success) {
+        toast.success("Candidate moved to next stage");
+
+        setSelectedApplication((prev) => ({
+          ...prev,
+          status: "ACTIVE",
+        }));
+
+        refreshList();
+        onClose();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (err) {
+      toast.error("Failed to move candidate");
+    }
+  };
+
+  const handleGenerateOffer = async () => {
+    try {
+      if (!offerForm.offeredCTC || !offerForm.joiningDate) {
+        toast.error("Please fill required fields");
+        return;
+      }
+
+      const payload = {
+        offeredCTC: offerForm.offeredCTC,
+        bonus: offerForm.bonus,
+        joiningDate: offerForm.joiningDate,
+        remarks: offerForm.remarks,
+      };
+
+      const res = await generateOffer(application.id, payload);
+
+      if (res.success) {
+        toast.success("Offer generated successfully");
+        refreshList();
+        onClose();
+        fetchApplicationDetails();
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   const currentStage = application?.currentStage?.name?.toUpperCase() || "";
   const status = application?.status?.toUpperCase() || "";
 
@@ -497,11 +552,13 @@ function ApplicationDetailDrawer({
   const isSelected = currentStage === "SELECTED";
   const isOffered = status === "OFFERED";
   const isHired = status === "HIRED";
+  const isOnHold = status === "ON_HOLD";
+
+  const INTERVIEW_STAGES = ["SHORTLISTED", "TECHNICAL ROUND", "HR ROUND"];
 
   const canScheduleInterview =
-    currentStage === "SHORTLISTED" ||
-    currentStage === "TECHNICAL ROUND" ||
-    currentStage === "HR ROUND";
+    INTERVIEW_STAGES.includes(currentStage) &&
+    !["ON_HOLD", "REJECTED", "OFFERED", "HIRED"].includes(status);
 
   useEffect(() => {
     if (open) {
@@ -519,6 +576,12 @@ function ApplicationDetailDrawer({
 
     fetchManagers();
   }, [open]);
+
+  useEffect(() => {
+    if (isOnHold && tab === 2) {
+      setTab(1);
+    }
+  }, [isOnHold]);
 
   if (!application) {
     return (
@@ -542,6 +605,16 @@ function ApplicationDetailDrawer({
   const candidate = application?.candidate || {};
   const job = application?.jobPosting || {};
   const req = job.requisition || {};
+
+  const latestInterview = application?.interviews?.[0] || null;
+  const feedback = latestInterview?.feedbacks || null;
+
+  const technicalScore = feedback?.technicalScore || 0;
+  const communicationScore = feedback?.communicationScore || 0;
+  const problemSolvingScore = feedback?.problemSolvingScore || 0;
+  const remark = feedback?.remark || "No remarks provided";
+
+  const totalScore = technicalScore + communicationScore + problemSolvingScore;
 
   return (
     <Drawer
@@ -610,7 +683,10 @@ function ApplicationDetailDrawer({
         {/* Tabs */}
         <Tabs
           value={tab}
-          onChange={(e, v) => setTab(v)}
+          onChange={(e, v) => {
+            if (v === 2 && !canScheduleInterview) return;
+            setTab(v);
+          }}
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
@@ -797,6 +873,40 @@ function ApplicationDetailDrawer({
               </Stack>
               <Divider sx={{ my: 3 }} />
 
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 2,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 2,
+                }}
+              >
+                <Typography fontWeight={500}>Resume</Typography>
+
+                {candidate.resumeUrl ? (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<Visibility />}
+                    onClick={() => setResumeOpen(true)}
+                    sx={{
+                      borderRadius: "999px",
+                      textTransform: "none",
+                    }}
+                  >
+                    View Resume
+                  </Button>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Not Uploaded
+                  </Typography>
+                )}
+              </Box>
               <Divider sx={{ my: 3 }} />
 
               <Stack direction="row" spacing={2}>
@@ -902,24 +1012,53 @@ function ApplicationDetailDrawer({
                       generating the offer.
                     </Typography>
 
-                    <Autocomplete
-                      options={managers}
-                      getOptionLabel={(option) => option?.email || ""}
-                      onChange={(e, value) =>
-                        setSelectedManager(value?.id || null)
+                    <TextField
+                      label="Offered CTC"
+                      type="number"
+                      value={offerForm.offeredCTC}
+                      onChange={(e) =>
+                        setOfferForm({
+                          ...offerForm,
+                          offeredCTC: e.target.value,
+                        })
                       }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Assign Reporting Manager"
-                        />
-                      )}
+                    />
+
+                    <TextField
+                      label="Bonus"
+                      type="number"
+                      value={offerForm.bonus}
+                      onChange={(e) =>
+                        setOfferForm({ ...offerForm, bonus: e.target.value })
+                      }
+                    />
+
+                    <TextField
+                      label="Joining Date"
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      value={offerForm.joiningDate}
+                      onChange={(e) =>
+                        setOfferForm({
+                          ...offerForm,
+                          joiningDate: e.target.value,
+                        })
+                      }
+                    />
+
+                    <TextField
+                      label="Remarks"
+                      multiline
+                      rows={3}
+                      value={offerForm.remarks}
+                      onChange={(e) =>
+                        setOfferForm({ ...offerForm, remarks: e.target.value })
+                      }
                     />
 
                     <Button
                       variant="contained"
                       startIcon={<CheckCircle />}
-                      disabled={!selectedManager}
                       onClick={handleGenerateOffer}
                       sx={{
                         borderRadius: "999px",
@@ -980,29 +1119,118 @@ function ApplicationDetailDrawer({
               )}
             </Card>
 
-            {/* Resume Preview */}
-            {/* <Card variant="outlined" sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Resume Preview
-              </Typography>
+            {isOnHold && feedback && (
+              <Card
+                variant="outlined"
+                sx={{
+                  mt: 3,
+                  p: 3,
+                  borderRadius: 3,
+                  border: "1px dashed #faad14",
+                  background: "#fffbe6",
+                }}
+              >
+                <Stack spacing={3}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Schedule color="warning" />
+                    <Typography variant="h6">Application On Hold</Typography>
+                  </Stack>
 
-              {candidate.resumeUrl ? (
-                <Box
-                  component="iframe"
-                  src={candidate.resumeUrl}
-                  sx={{
-                    width: "100%",
-                    height: 500,
-                    borderRadius: 2,
-                    border: "1px solid #e0e0e0",
-                  }}
-                />
-              ) : (
-                <Typography color="text.secondary">
-                  Resume not uploaded
-                </Typography>
-              )}
-            </Card> */}
+                  <Typography variant="body2" color="text.secondary">
+                    This candidate has been marked as <b>On Hold</b> after
+                    interview evaluation. Please review the feedback and decide
+                    the next action.
+                  </Typography>
+
+                  {/* SCORE SECTION */}
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={4}>
+                      <Chip
+                        icon={<WorkHistory />}
+                        label={`Technical: ${technicalScore || 0}`}
+                        color="info"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <Chip
+                        icon={<Language />}
+                        label={`Communication: ${communicationScore || 0}`}
+                        color="primary"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4}>
+                      <Chip
+                        icon={<CheckCircle />}
+                        label={`Problem Solving: ${problemSolvingScore || 0}`}
+                        color="success"
+                      />
+                      <Chip
+                        icon={<CheckCircle />}
+                        label={`Total Score: ${totalScore}`}
+                        color="warning"
+                      />
+                    </Grid>
+                  </Grid>
+
+                  {/* REMARKS */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      background: "#fafafa",
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    <Typography variant="caption" color="text.secondary">
+                      Interview Remarks
+                    </Typography>
+
+                    <Typography variant="body2">
+                      {remark || "No remarks provided"}
+                    </Typography>
+                  </Box>
+
+                  {/* ACTION BUTTONS */}
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    justifyContent="flex-start"
+                  >
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<CheckCircle />}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        px: 4,
+                      }}
+                      onClick={() => handleMoveNextStage()}
+                    >
+                      Move To Next Stage
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<Cancel />}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        px: 4,
+                      }}
+                      onClick={handleReject}
+                    >
+                      Reject Candidate
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Card>
+            )}
+
+            {/* Resume Preview */}
           </Stack>
         )}
 
@@ -1016,6 +1244,32 @@ function ApplicationDetailDrawer({
           />
         )}
       </Stack>
+      <Dialog
+        open={resumeOpen}
+        onClose={() => setResumeOpen(false)}
+        fullScreen={fullScreen}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>Candidate Resume</DialogTitle>
+
+        <DialogContent
+          sx={{
+            p: 0,
+            height: "80vh",
+          }}
+        >
+          <iframe
+            src={candidate.resumeUrl}
+            title="Resume"
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Drawer>
   );
 }

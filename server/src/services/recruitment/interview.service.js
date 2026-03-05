@@ -7,6 +7,7 @@ import {
   Candidate,
   InterviewAuditLog,
   ApplicationStageLog,
+  InterviewFeedback,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
