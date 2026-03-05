@@ -293,6 +293,7 @@ export default function AdminApplicationsPage() {
             >
               <MenuItem value="">All Status</MenuItem>
               <MenuItem value="ACTIVE">Active</MenuItem>
+              <MenuItem value="ON_HOLD">On Hold</MenuItem>
               <MenuItem value="OFFERED">Offered</MenuItem>
               <MenuItem value="HIRED">Hired</MenuItem>
               <MenuItem value="REJECTED">Rejected</MenuItem>
