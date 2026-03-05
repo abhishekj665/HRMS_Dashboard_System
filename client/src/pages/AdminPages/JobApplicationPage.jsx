@@ -529,7 +529,6 @@ function ApplicationDetailDrawer({
         toast.success("Offer generated successfully");
         refreshList();
         onClose();
-        fetchApplicationDetails();
       } else {
         toast.error(res.message);
       }
