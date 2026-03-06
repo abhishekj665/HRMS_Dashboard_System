@@ -541,7 +541,7 @@ function ApplicationDetailDrawer({
   const status = application?.status?.toUpperCase() || "";
 
   const showOfferGeneration =
-    currentStage === "SELECTED" && status !== "OFFERED";
+    currentStage === "SELECTED" && !["OFFERED", "HIRED"].includes(status);
 
   const isRejected = status === "REJECTED";
   const isShortlisted = currentStage === "SHORTLISTED";
@@ -673,10 +673,14 @@ function ApplicationDetailDrawer({
               color={currentStage === "SELECTED" ? "primary" : "default"}
             />
 
-            <Chip
-              label="Offer"
-              color={status === "OFFERED" ? "success" : "default"}
-            />
+            {status === "HIRED" ? (
+              <Chip label="Hired" color="success" />
+            ) : (
+              <Chip
+                label="Offer"
+                color={status === "OFFERED" ? "success" : "default"}
+              />
+            )}
           </Stack>
         </Stack>
 
@@ -1136,7 +1140,11 @@ function ApplicationDetailDrawer({
                       initiated and the employee account has been created.
                     </Typography>
 
-                    <Stack direction="row" spacing={2} flexWrap="wrap">
+                    <Stack
+                      direction={{ xs: "column", md: "row" }}
+                      spacing={2}
+                      flexWrap="wrap"
+                    >
                       <Chip
                         icon={<WorkHistory />}
                         label="Employee Created"
@@ -1153,9 +1161,13 @@ function ApplicationDetailDrawer({
 
                       <Chip
                         icon={<Schedule />}
-                        label={`Joining Date: ${dayjs(
-                          application.offer?.joiningDate,
-                        ).format("DD MMM YYYY")}`}
+                        label={`Joining Date: ${
+                          application.offer?.joiningDate
+                            ? dayjs(application.offer.joiningDate).format(
+                                "DD MMM YYYY",
+                              )
+                            : "Not Available"
+                        }`}
                         color="primary"
                       />
                     </Stack>
