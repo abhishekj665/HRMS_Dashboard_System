@@ -1190,7 +1190,7 @@ function ApplicationDetailDrawer({
                 </Alert>
               )}
             </Card>
-            {isHired && !isManagerAssigned && (
+            {/* {isHired && !isManagerAssigned && (
               <Card
                 variant="outlined"
                 sx={{
@@ -1267,7 +1267,7 @@ function ApplicationDetailDrawer({
                   </Button>
                 </Stack>
               </Card>
-            )}
+            )} */}
 
             {isOnHold && feedback && (
               <Card
