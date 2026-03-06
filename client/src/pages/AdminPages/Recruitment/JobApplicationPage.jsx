@@ -92,6 +92,7 @@ import {
 } from "../../../services/JobRecruitmentService/interviewService";
 
 import { moveToNextStage } from "../../../services/JobRecruitmentService/stageService";
+import { assignManager } from "../../../services/AdminService/managerService";
 
 export default function AdminApplicationsPage() {
   const [rows, setRows] = useState([]);
