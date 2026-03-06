@@ -1148,7 +1148,7 @@ function ApplicationDetailDrawer({
                     >
                       <Chip
                         icon={<WorkHistory />}
-                        label="Employee Created"
+                        label="Employee"
                         color="success"
                       />
 
@@ -1167,7 +1167,7 @@ function ApplicationDetailDrawer({
                             ? dayjs(application.offer.joiningDate).format(
                                 "DD MMM YYYY",
                               )
-                            : "Not Available"
+                            : "-"
                         }`}
                         color="primary"
                       />
