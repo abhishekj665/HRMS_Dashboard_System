@@ -1,6 +1,6 @@
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
-import { User , AttendancePolicy} from "../../models/Associations.model.js";
+import { User, AttendancePolicy } from "../../models/Associations.model.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { sequelize } from "../../config/db.js";
 
@@ -42,7 +42,7 @@ export const registerManagerService = async (data) => {
       contact: data.contact || 0,
       password: hashedPassword,
       role: "manager",
-      attendancePolicyId : attendancePolicy.id
+      attendancePolicyId: attendancePolicy.id,
     });
 
     return {
@@ -99,20 +99,24 @@ export const assignWorkersToManagerService = async ({
 };
 
 export const getManagersWithUsersService = async () => {
-  const managers = await User.findAll({
-    where: { role: "manager" },
-    attributes: ["id", "email", "first_name", "last_name"],
-    include: [
-      {
-        model: User,
-        as: "workers",
-        attributes: ["id", "email", "first_name", "last_name"],
-      },
-    ],
-  });
+  try {
+    const managers = await User.findAll({
+      where: { role: "manager" },
+      attributes: ["id", "email", "first_name", "last_name"],
+      include: [
+        {
+          model: User,
+          as: "workers",
+          attributes: ["id", "email", "first_name", "last_name"],
+        },
+      ],
+    });
 
-  return {
-    success: true,
-    data: managers,
-  };
+    return {
+      success: true,
+      data: managers,
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
 };

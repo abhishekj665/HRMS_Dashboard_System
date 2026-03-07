@@ -2,7 +2,7 @@ import axios from "axios";
 import { loadingRef } from "../../loadingContext";
 
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL: "http://localhost:3000",
   withCredentials: true,
 });
 

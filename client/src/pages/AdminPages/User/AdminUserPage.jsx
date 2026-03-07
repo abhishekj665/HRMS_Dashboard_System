@@ -240,7 +240,6 @@ const AdminUserPage = () => {
                 <TableCell>
                   <Chip
                     label={u.role}
-                    color={roleColor(u.role)}
                     size="small"
                     sx={{ textTransform: "capitalize", fontWeight: 600 }}
                   />
