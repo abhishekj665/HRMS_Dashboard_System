@@ -3,21 +3,14 @@ import {
   Container,
   Typography,
   Button,
-  Paper,
   TextField,
-  Grid,
   MenuItem,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Box,
+  Chip
 } from "@mui/material";
 
 import { Stack, InputAdornment, Divider } from "@mui/material";
@@ -30,6 +23,7 @@ import FlagIcon from "@mui/icons-material/Flag";
 import DescriptionIcon from "@mui/icons-material/Description";
 import TableContainer from "@mui/material/TableContainer";
 import { Card, CardContent, Collapse } from "@mui/material";
+import GroupIcon from "@mui/icons-material/Group";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import AddIcon from "@mui/icons-material/Add";
 import Fab from "@mui/material/Fab";
@@ -560,26 +554,45 @@ export default function ManagerRequisitionPage() {
                 />
               </Stack>
 
-              <TextField
-                select
-                label="Priority"
-                name="priority"
-                fullWidth
-                required
-                value={form.priority || ""}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <FlagIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-              >
-                <MenuItem value="HIGH">High</MenuItem>
-                <MenuItem value="MEDIUM">Medium</MenuItem>
-                <MenuItem value="LOW">Low</MenuItem>
-              </TextField>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+                <TextField
+                  label="No. of posts"
+                  name="headCount"
+                  type="number"
+                  value={form.headCount || ""}
+                  fullWidth
+                  required
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <GroupIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <TextField
+                  select
+                  label="Priority"
+                  name="priority"
+                  fullWidth
+                  required
+                  value={form.priority || ""}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FlagIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                >
+                  <MenuItem value="HIGH">High</MenuItem>
+                  <MenuItem value="MEDIUM">Medium</MenuItem>
+                  <MenuItem value="LOW">Low</MenuItem>
+                </TextField>
+              </Stack>
             </Stack>
 
             <Divider />

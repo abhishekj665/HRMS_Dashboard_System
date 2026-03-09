@@ -7,6 +7,7 @@ import {
   JobPosting,
   Candidate,
   User,
+  JobRequisition,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import { sequelize } from "../../config/db.js";
@@ -175,6 +176,13 @@ export const validateOfferToken = async (token) => {
             {
               model: JobPosting,
               as: "jobPosting",
+              include: [
+                {
+                  model: JobRequisition,
+                  as: "jobRequisition",
+                  attributes: ["id", "title", "headCount", "departmentId"],
+                },
+              ],
             },
             {
               model: Candidate,
@@ -230,18 +238,26 @@ export const validateOfferToken = async (token) => {
       { transaction },
     );
 
-    const password = "Welcome@123";
-    const hashPassword = await generateHash(password);
+    const jobRequisition = offer.application.jobPosting.jobRequisition;
 
-    const newUser = await User.create(
+    await jobRequisition.update(
       {
-        email: offer.application.candidate.email,
-        password: hashPassword,
-        role: "user",
-        isVerified: true,
+        headCount: jobRequisition.headCount - 1,
       },
       { transaction },
     );
+
+    const jobPosting = offer.application.jobPosting;
+
+    await jobPosting.update(
+      {
+        isActive: true,
+      },
+      { transaction },
+    );
+
+    const password = "Welcome@123";
+    const hashPassword = await generateHash(password);
 
     await ApplicationStageLog.create(
       {
@@ -256,6 +272,43 @@ export const validateOfferToken = async (token) => {
       },
       { transaction },
     );
+
+    const existingUser = await User.findOne({
+      where: { email: offer.application.candidate.email },
+      transaction,
+    });
+
+    if (existingUser) {
+      await existingUser.update(
+        {
+          role: "user",
+          isVerified: true,
+        },
+        { transaction },
+      );
+
+      await transaction.commit();
+
+      return {
+        success: true,
+        message: "Offer accepted successfully",
+        data: {
+          email: offer.application.candidate.email,
+          password: "Existing user, please use your credentials",
+        },
+      };
+    }
+
+    const newUser = await User.create(
+      {
+        email: offer.application.candidate.email,
+        password: hashPassword,
+        role: "user",
+        isVerified: true,
+      },
+      { transaction },
+    );
+
     await transaction.commit();
 
     return {

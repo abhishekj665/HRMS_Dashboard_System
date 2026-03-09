@@ -384,7 +384,7 @@ export const confirmInterview = async (id) => {
       where: {
         applicationId: interview.applicationId,
         roundName: interview.roundName,
-        status: "SCHEDULED",
+        status: { [Op.in]: ["SCHEDULED", "RESCHEDULED", "COMPLETED"] },
         id: { [Op.ne]: interview.id },
       },
       transaction,
