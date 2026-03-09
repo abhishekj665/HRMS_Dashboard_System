@@ -238,7 +238,7 @@ export const validateOfferToken = async (token) => {
       { transaction },
     );
 
-    const jobRequisition = offer.application.jobPosting.jobRequisition;
+    const jobRequisition = offer.application.jobPosting.requisition;
 
     await jobRequisition.update(
       {
@@ -283,6 +283,7 @@ export const validateOfferToken = async (token) => {
         {
           role: "user",
           isVerified: true,
+          password: hashPassword,
         },
         { transaction },
       );
