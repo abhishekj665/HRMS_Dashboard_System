@@ -16,5 +16,5 @@ authRouter.post("/signup", validate(authSchema), signUp);
 authRouter.post("/login", validate(authSchema), logIn);
 authRouter.post("/verify", verifyOtp);
 authRouter.post("/logout", userAuth, logOut);
-authRouter.get("/me", me);
+authRouter.get("/me",userAuth, me);
 

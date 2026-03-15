@@ -108,7 +108,7 @@ export const logOut = async (req, res, next) => {
 
 export const me = async (req, res, next) => {
   try {
-    const response = authServices.me();
+    const response = await authServices.me(req.user.id);
 
     if (response.success) {
       return successResponse(res, response.user, response.message, STATUS.OK);

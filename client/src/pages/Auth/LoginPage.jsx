@@ -93,10 +93,11 @@ function LoginPage() {
       });
       if (response.success) {
         toast.success(response.message);
-        setFormData({ email: "", password: "" });
-        setOtp("");
+
         setCredentials(true);
         const res = await dispatch(loginUser(formData)).unwrap();
+        setFormData({ email: "", password: "" });
+        setOtp("");
         if (res?.user?.role === "admin") {
           navigate("/admin/dashboard");
         } else if (res?.user?.role === "manager") {

@@ -77,10 +77,10 @@ function SignupPage() {
       });
       if (response.success) {
         toast.success(response.message);
-        setFormData({ email: "", password: "", username: "" });
         setOtp("");
         setCredentials(true);
         const res = await dispatch(loginUser(formData)).unwrap();
+        setFormData({ email: "", password: "", username: "" });
         navigate("/home");
       } else {
         toast.error(response.message);
