@@ -54,6 +54,7 @@ import {
 } from "@mui/material";
 
 import { getInterviewers } from "../../../services/JobRecruitmentService/interviewService";
+import { getActiveInterview } from "../../../services/JobRecruitmentService/interviewService";
 
 import { moveToNextStage } from "../../../services/JobRecruitmentService/stageService";
 
@@ -249,6 +250,13 @@ export default function ApplicationDetailDrawer({
       setTab(1);
     }
   }, [isOnHold]);
+
+  console.log("application", application);
+  console.log("interviews", application?.interviews);
+  console.log("latestInterview", application?.interviews?.[0]);
+  console.log("feedback", application?.interviews?.[0]?.feedbacks);
+  console.log("status", status);
+  console.log("isOnHold", isOnHold);
 
   if (!application) {
     return (
@@ -935,7 +943,7 @@ export default function ApplicationDetailDrawer({
               </Card>
             )} */}
 
-            {isOnHold && feedback && (
+            {isOnHold && (
               <Card
                 variant="outlined"
                 sx={{

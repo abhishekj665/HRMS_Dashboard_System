@@ -261,6 +261,8 @@ export const getApplicationById = async (id) => {
           ],
         },
       ],
+
+      order: [[{ model: Interview, as: "interviews" }, "scheduledAt", "DESC"]],
     });
 
     if (!application) {
