@@ -9,7 +9,7 @@ import ExpressError from "../utils/Error.utils.js";
 import { nanoid } from "nanoid";
 import { LeavePolicy } from "../models/Associations.model.js";
 
-import jwtSign from "../utils/jwt.utils.js";
+import jwtSign, { jwtAccessSign } from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
 import { findOtpData } from "../config/otpService.js";
 
@@ -106,6 +106,7 @@ export const logInService = async ({ email, password }) => {
   }
 
   const token = jwtSign(user.id, user.role);
+  const refreshToken = jwtAccessSign(user.id, user.role);
 
   user.login_At = new Date();
   user.isVerified = true;
@@ -120,6 +121,7 @@ export const logInService = async ({ email, password }) => {
       isVerified: user.isVerified,
     },
     token,
+    refreshToken,
     message: "Login successful",
   };
 };
@@ -220,4 +222,18 @@ export const me = async (userId) => {
       },
     };
   } catch {}
+};
+
+export const getAccessToken = async (refreshToken) => {
+  try {
+    const accessToken = jwtAccessSign(refreshToken.id, refreshToken.role);
+
+    return {
+      success: true,
+      accessToken,
+      message: "Access token generated successfully",
+    };
+  } catch (error) {
+    throw new AppError(400, error.message);
+  }
 };

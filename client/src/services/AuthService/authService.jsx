@@ -22,6 +22,45 @@ API.interceptors.response.use(
   },
 );
 
+API.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const originalRequest = error.config;
+
+    const isAuthRoute =
+      originalRequest.url.includes("/auth/login") ||
+      originalRequest.url.includes("/auth/signup") ||
+      originalRequest.url.includes("/auth/verify") ||
+      originalRequest.url.includes("/auth/access_token");
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        await API.post(
+          "/auth/access_token",
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+
+        return API(originalRequest);
+      } catch (err) {
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 export const login = async (userData) => {
   const response = await API.post("/auth/login", userData);
 

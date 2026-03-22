@@ -51,3 +51,15 @@ export const managerAuth = (req, res, next) => {
     return res.status(403).json({ message: error.message });
   }
 };
+
+export const refreshAuth = (req, res, next) => {
+  try {
+    const token = req.cookies.accessToken;
+    if (!token) return res.status(401).json({ message: "User not verified" });
+    const decode = jwt.verify(token, env.jwt_password);
+    req.user = decode;
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: error.message });
+  }
+};

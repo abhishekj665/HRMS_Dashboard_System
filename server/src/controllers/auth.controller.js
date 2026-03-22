@@ -1,6 +1,6 @@
 import * as authServices from "../services/auth.service.js";
 import { successResponse, errorResponse } from "../utils/response.utils.js";
-import { setCookie } from "../services/cookie.service.js";
+import { setAccessTokenCookie, setCookie } from "../services/cookie.service.js";
 import STATUS from "../constants/Status.js";
 import AppError from "../utils/Error.utils.js";
 import { UserIP } from "../models/Associations.model.js";
@@ -58,6 +58,7 @@ export const logIn = async (req, res, next) => {
     }
 
     setCookie(res, "token", result.token);
+    setCookie(res, "accessToken", result.refreshToken);
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
@@ -72,8 +73,6 @@ export const logIn = async (req, res, next) => {
       isp: ipData?.isp || ipData?.organization || null,
       userId: result.user.id,
     });
-
-    
 
     return successResponse(res, result, result.message, STATUS.OK);
   } catch (error) {
@@ -112,6 +111,32 @@ export const me = async (req, res, next) => {
 
     if (response.success) {
       return successResponse(res, response.user, response.message, STATUS.OK);
+    } else {
+      return errorResponse(res, response.message, STATUS.UNAUTHORIZED);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAccessToken = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies.token;
+    if (!refreshToken) {
+      return errorResponse(res, "Refresh token not found", STATUS.UNAUTHORIZED);
+    }
+
+    const response = await authServices.getAccessToken(refreshToken);
+
+    setCookie(res, "accessToken", response.accessToken);
+
+    if (response.success) {
+      return successResponse(
+        res,
+        { accessToken: response.accessToken },
+        response.message,
+        STATUS.OK,
+      );
     } else {
       return errorResponse(res, response.message, STATUS.UNAUTHORIZED);
     }

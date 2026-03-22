@@ -20,3 +20,15 @@ export const clearCookie = (res, name) => {
     path: "/",
   });
 };
+
+export const setAccessTokenCookie = (res, name, value) => {
+  const isProd = process.env.NODE_ENV === "production";
+
+  res.cookie(name, value, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 15 * 60 * 1000,
+    path: "/",
+  });
+};

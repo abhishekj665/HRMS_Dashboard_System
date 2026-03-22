@@ -1,5 +1,5 @@
 import express from "express";
-import { adminAuth } from "../../middlewares/auth.middleware.js";
+import { adminAuth, refreshAuth } from "../../middlewares/auth.middleware.js";
 import { assetRouter } from "./asset.route.js";
 import { requestRouter } from "./request.route.js";
 import { attendanceRouter } from "./attendance.route.js";
@@ -11,6 +11,7 @@ import { leaveRequestRouter } from "./leaveRequest.route.js";
 const Router = express.Router();
 
 Router.use(adminAuth);
+Router.use(refreshAuth);
 Router.use(assetRouter);
 Router.use(requestRouter);
 Router.use(attendanceRouter);
@@ -18,7 +19,6 @@ Router.use(expenseRouter);
 Router.use(managerRouter);
 Router.use(userRouter);
 Router.use(leaveRequestRouter);
-
 
 Router.get("", (req, res) => {
   res.status(404).json({ message: "Admin route not found" });

@@ -1,6 +1,6 @@
 import * as attendanceController from "../../controllers/attendance/attendance.controller.js";
 
-import { userAuth } from "../../middlewares/auth.middleware.js";
+import { refreshAuth, userAuth } from "../../middlewares/auth.middleware.js";
 import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 import express from "express";
@@ -8,6 +8,8 @@ import express from "express";
 const Router = express.Router();
 
 Router.use(userAuth);
+
+Router.use(refreshAuth);
 
 Router.route("/summary").get(
   allowRoles("manager", "user", "admin"),
