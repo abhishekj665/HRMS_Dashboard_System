@@ -13,6 +13,25 @@ This repository is focused on practical, production-style HR workflows:
 - recruitment pipelines from requisition to offer
 - realtime request updates using Socket.IO
 
+## Default Credentials
+
+For testing purposes, the following default user accounts are available:
+
+### Admin
+
+- Email: `admin@orvane.com`
+- Password: `Admin@123`
+
+### Manager
+
+- Email: `manager@orvane.com`
+- Password: `Manager@123`
+
+### Employee
+
+- Email: `employee@orvane.com`
+- Password: `Employee@123`
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
@@ -496,29 +515,8 @@ cd client
 npm run dev
 ```
 
-### Default Local URLs
 
-- frontend: `http://localhost:5173`
-- backend: `http://localhost:5000`
 
-## Default Credentials
-
-For testing purposes, the following default user accounts are available:
-
-### Admin
-
-- Email: `admin@orvane.com`
-- Password: `Admin@123`
-
-### Manager
-
-- Email: `manager@orvane.com`
-- Password: `Manager@123`
-
-### Employee
-
-- Email: `employee@orvane.com`
-- Password: `Employee@123`
 
 ## Available Scripts
 
