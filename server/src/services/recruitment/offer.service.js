@@ -267,7 +267,7 @@ export const validateOfferToken = async (token) => {
     if (existingUser) {
       await existingUser.update(
         {
-          role: "user",
+          role: "employee",
           isVerified: true,
           password: hashPassword,
         },
@@ -293,7 +293,7 @@ export const validateOfferToken = async (token) => {
       {
         email: offer.application.candidate.email,
         password: hashPassword,
-        role: "user",
+        role: "employee",
         isVerified: true,
       },
       { transaction },

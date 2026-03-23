@@ -1,12 +1,12 @@
 import * as attendancePolicyController from "../../controllers/attendance/attendancePolicy.controller.js";
 import express from "express";
-import { adminAuth } from "../../middlewares/auth.middleware.js";
+import { adminAuth, refreshAuth } from "../../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
 Router.use(adminAuth);
 
-Router.post("/", attendancePolicyController.createAttendancePolicy);
+Router.post("/",refreshAuth, attendancePolicyController.createAttendancePolicy);
 Router.get("/", attendancePolicyController.getDefaultAttendancePolicy);
 Router.get("/all", attendancePolicyController.getAttendancePolicies);
 Router.put("/:id", attendancePolicyController.updateAttendancePolicy);

@@ -13,50 +13,47 @@ const Router = express.Router();
 Router.get(
   "/interview/interviewers",
   adminAuth,
-  refreshAuth,
   InterviewController.getInterviewers,
 );
 
 Router.post(
   "/interview/assign",
-  adminAuth,
   refreshAuth,
+  adminAuth,
   InterviewController.assignInterview,
 );
 
 Router.get(
   "/interview/all",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   InterviewController.getInterviews,
 );
 
 Router.patch(
   "/interview/confirm/:id",
-  managerAuth,
   refreshAuth,
+  managerAuth,
   InterviewController.confirmInterview,
 );
 Router.patch(
   "/interview/decline/:id",
-  managerAuth,
   refreshAuth,
+  managerAuth,
   InterviewController.declineAssignedInterview,
 );
 
 Router.get(
   "/interview/active/:id",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   InterviewController.getActiveInterview,
 );
 
 Router.patch(
   "/interview/reschedule/:id",
-  userAuth,
   refreshAuth,
+  userAuth,
   allowRoles("manager", "admin"),
   InterviewController.rescheduleInterview,
 );

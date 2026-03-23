@@ -28,6 +28,7 @@ import InterviewFeedback from "./RecruitmentModels/InterviewFeedback.model.js";
 import Referral from "./RecruitmentModels/Referral.model.js";
 import JobRequisition from "./RecruitmentModels/JobRequisition.model.js";
 import InterviewAuditLog from "./RecruitmentModels/InterviewAuditLog.model.js";
+import Employee from "./EmployeeModels/Employee.model.js";
 
 // USER ↔ BASIC SECURITY
 
@@ -608,6 +609,17 @@ InterviewAuditLog.belongsTo(Interview, {
   foreignKey: "interviewId",
 });
 
+// Employee → User (One-to-One)
+
+User.hasOne(Employee, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+});
+
+Employee.belongsTo(User, {
+  foreignKey: "userId",
+});
+
 export {
   User,
   OTP,
@@ -638,5 +650,5 @@ export {
   InterviewFeedback,
   Referral,
   JobRequisition,
-  InterviewAuditLog
+  InterviewAuditLog,
 };

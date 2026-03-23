@@ -31,9 +31,9 @@ const LeavePolicy = sequelize.define(
       allowNull: true,
     },
     appliesTo: {
-      type: DataTypes.ENUM("user", "manager", "all"),
+      type: DataTypes.ENUM("employee", "manager", "all"),
       allowNull: false,
-      defaultValue: "user",
+      defaultValue: "employee",
     },
     description: {
       type: DataTypes.TEXT,

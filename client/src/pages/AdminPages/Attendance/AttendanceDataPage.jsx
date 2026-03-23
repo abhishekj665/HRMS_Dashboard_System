@@ -99,7 +99,7 @@ export default function AttendanceTable() {
         return {
           id: item.id,
           email: u.email || "-",
-          role: (u.role || "user").toLowerCase(),
+          role: (u.role || "employee").toLowerCase(),
           punchIn: fmtTime(a.punchInAt),
           punchOut: fmtTime(a.punchOutAt),
           worked: a.workedMinutes || 0,
@@ -360,7 +360,7 @@ export default function AttendanceTable() {
                   onChange={(e) => setRoleFilter(e.target.value)}
                 >
                   <MenuItem value="all">All</MenuItem>
-                  {tab == 0 ? <MenuItem value="user">User</MenuItem> : ""}
+                  {tab == 0 ? <MenuItem value="employee">Employee</MenuItem> : ""}
                   <MenuItem value="manager">Manager</MenuItem>
                 </Select>
               </FormControl>

@@ -9,7 +9,7 @@ import {
 } from "../../controllers/auth.controller.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import authSchema from "../../validators/auth.validator.js";
-import { userAuth } from "../../middlewares/auth.middleware.js";
+import { refreshAuth, userAuth } from "../../middlewares/auth.middleware.js";
 
 export const authRouter = express.Router();
 

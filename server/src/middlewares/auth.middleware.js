@@ -60,6 +60,6 @@ export const refreshAuth = (req, res, next) => {
     req.user = decode;
     next();
   } catch (error) {
-    return res.status(403).json({ message: error.message });
+    return res.status(401).json({ message: error.message });
   }
 };

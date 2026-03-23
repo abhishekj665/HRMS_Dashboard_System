@@ -15,28 +15,24 @@ Router.post(
 Router.get(
   "/application/all",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   ApplicationController.getApplications,
 );
 Router.get(
   "/application/:id",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   ApplicationController.getApplicationById,
 );
 Router.patch(
   "/application/shortlist/:id",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   ApplicationController.shortlistApplication,
 );
 Router.patch(
   "/application/reject/:id",
   userAuth,
-  refreshAuth,
   allowRoles("manager", "admin"),
   ApplicationController.rejectApplication,
 );

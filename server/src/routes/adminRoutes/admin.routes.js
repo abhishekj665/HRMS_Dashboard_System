@@ -11,7 +11,6 @@ import { leaveRequestRouter } from "./leaveRequest.route.js";
 const Router = express.Router();
 
 Router.use(adminAuth);
-Router.use(refreshAuth);
 Router.use(assetRouter);
 Router.use(requestRouter);
 Router.use(attendanceRouter);

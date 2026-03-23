@@ -13,7 +13,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user?.role !== "user") {
+    if (!loading && user?.role !== "employee") {
       navigate("/login");
     }
   }, [user, loading, navigate]);
@@ -22,7 +22,7 @@ const HomePage = () => {
     return <div>Loading...</div>;
   }
 
-  if (user?.role !== "user") {
+  if (user?.role !== "employee") {
     return null;
   }
   return (

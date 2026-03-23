@@ -1,5 +1,5 @@
 import express from "express";
-import { userAuth } from "../../middlewares/auth.middleware.js";
+import { refreshAuth, userAuth } from "../../middlewares/auth.middleware.js";
 
 import * as accountController from "../../controllers/user/account.controller.js";
 import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
@@ -10,10 +10,14 @@ accountRouter.use(userAuth);
 
 accountRouter
   .route("/")
-  .get(allowRoles("manager", "user"), accountController.getAccountData)
-  .post(allowRoles("manager", "user"), accountController.registerAccount);
+  .get(allowRoles("manager", "employee"), accountController.getAccountData)
+  .post(
+    allowRoles("manager", "employee"),
+    refreshAuth,
+    accountController.registerAccount,
+  );
 accountRouter.put(
   "/update",
-  allowRoles("manager", "user"),
+  allowRoles("manager", "employee"),
   accountController.updateAccount,
 );

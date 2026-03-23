@@ -76,7 +76,7 @@ export const assignWorkersToManagerService = async ({
     }
 
     const workers = await User.findAll({
-      where: { id: workerIds, role: "user" },
+      where: { id: workerIds, role: "employee" },
       transaction,
     });
 

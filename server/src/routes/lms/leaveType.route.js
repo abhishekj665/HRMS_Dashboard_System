@@ -11,7 +11,7 @@ Router.post("/leave/leave-type", adminAuth, leaveController.registerLeaveType);
 Router.get(
   "/leave/leave-type",
   userAuth,
-  allowRoles("manager", "admin", "user"),
+  allowRoles("manager", "admin", "employee"),
   lmsController.getLeaveTypes,
 );
 

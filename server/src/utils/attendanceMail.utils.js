@@ -267,7 +267,7 @@ Automated attendance notification. Do not reply.
 };
 
 export const getAttendanceReceiver = async (user, transaction) => {
-  if (user.role === "user") return user.managerId;
+  if (user.role === "employee") return user.managerId;
 
   if (user.role === "manager") {
     const admin = await User.findOne({

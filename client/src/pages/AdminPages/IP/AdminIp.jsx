@@ -85,7 +85,7 @@ export default function AdminIps() {
     fetchUser();
   }, []);
 
-  if (role == "user") {
+  if (role == "employee") {
     return <h1>You don't have permission for Dashboard</h1>;
   }
 

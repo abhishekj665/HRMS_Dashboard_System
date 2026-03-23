@@ -10,9 +10,9 @@ import { managerLeaveRouter } from "./leave.route.js";
 
 const Router = express.Router();
 
-Router.use(managerAuth);
-
 Router.use(refreshAuth);
+
+Router.use(managerAuth);
 
 Router.use(expenseRouter);
 Router.use(requestRouter);

@@ -11,7 +11,7 @@ export const getUsersService = async (page, limits, search) => {
   try {
     const { limit, offset } = getPagination(page, limits);
 
-    let whereCondition = { role: "user" };
+    let whereCondition = { role: "employee" };
 
     if (search != "" && search.trim() !== "") {
       whereCondition = {

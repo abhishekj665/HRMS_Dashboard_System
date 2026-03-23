@@ -72,6 +72,8 @@ const ManagerRequest = () => {
 
       if (response.success) {
         toast.success("Request Approved");
+        fetchRequestsData();
+        socket.emit("requestUpdated");
       } else {
         toast.error(response.message);
       }
@@ -171,7 +173,7 @@ const ManagerRequest = () => {
         </Button>
       </div>
 
-      <TableContainer  component={Paper}>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

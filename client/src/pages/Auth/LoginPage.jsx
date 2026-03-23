@@ -58,6 +58,8 @@ function LoginPage() {
         return;
       }
 
+      console.log(response);
+
       if (response.success) {
         if (response?.user?.role === "admin") {
           navigate("/admin/dashboard");

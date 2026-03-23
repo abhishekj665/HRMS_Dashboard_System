@@ -167,7 +167,7 @@ export const assignPolicyToUser = async (userId, policyId, year) => {
 
 export const assignPolicyBulk = async (policyId, filter, year, transaction) => {
   if (filter === "all") filter = {};
-  if (filter == "user") filter = { role: "user" };
+  if (filter == "employee") filter = { role: "employee" };
   if (filter == "manager") filter = { role: "manager" };
 
   try {

@@ -501,6 +501,25 @@ npm run dev
 - frontend: `http://localhost:5173`
 - backend: `http://localhost:5000`
 
+## Default Credentials
+
+For testing purposes, the following default user accounts are available:
+
+### Admin
+
+- Email: `admin@orvane.com`
+- Password: `Admin@123`
+
+### Manager
+
+- Email: `manager@orvane.com`
+- Password: `Manager@123`
+
+### Employee
+
+- Email: `employee@orvane.com`
+- Password: `Employee@123`
+
 ## Available Scripts
 
 ### Client

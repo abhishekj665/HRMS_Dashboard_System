@@ -71,7 +71,7 @@ export default function AttendanceData() {
 
   const visibleRows = useMemo(() => {
     if (tab === 1) {
-      return rows.filter((r) => r.role === "user" && r.status === "pending");
+      return rows.filter((r) => r.role === "employee" && r.status === "pending");
     }
 
     return rows;
@@ -115,7 +115,7 @@ export default function AttendanceData() {
 
       if (tab === 1) {
         params.status = "pending";
-        params.role = "user";
+        params.role = "employee";
         params.requestedTo = currentUser?.id;
       } else {
         if (statusFilter !== "all") params.status = statusFilter;
@@ -140,7 +140,7 @@ export default function AttendanceData() {
         return {
           id: item.id,
           email: u.email || "-",
-          role: (u.role || "user").toLowerCase(),
+          role: (u.role || "employee").toLowerCase(),
           punchIn: fmtTime(a.punchInAt),
           punchOut: fmtTime(a.punchOutAt),
           worked: a.workedMinutes || 0,
@@ -437,7 +437,7 @@ export default function AttendanceData() {
                     {tab === 1 && (
                       <TableCell align="center">
                         {currentUser?.role === "manager" &&
-                          row.role === "user" &&
+                          row.role === "employee" &&
                           row.status === "pending" && (
                             <Box className="flex gap-2 justify-center">
                               <Button

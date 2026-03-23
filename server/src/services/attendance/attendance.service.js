@@ -51,7 +51,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "User not found");
     }
 
-    if (!user.managerId && user.role === "user") {
+    if (!user.managerId && user.role === "employee") {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
         "You don't have an assigned manager so you can't punch in",

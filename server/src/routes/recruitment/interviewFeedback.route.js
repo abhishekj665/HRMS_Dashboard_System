@@ -7,10 +7,11 @@ import {
 } from "../../middlewares/auth.middleware.js";
 
 const Router = express.Router();
-Router.use(refreshAuth);
+
 
 Router.post(
   "/interview-feedback/:interviewId",
+  refreshAuth,
   userAuth,
   managerAuth,
   interviewFeedbackController.createInterviewFeedback,

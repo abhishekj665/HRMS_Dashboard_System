@@ -2,6 +2,7 @@ import express from "express";
 
 import * as expensesControllers from "../../controllers/user/expenses.controller.js";
 import { uploadReceipt } from "../../middlewares/upload.js";
+import { refreshAuth } from "../../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
@@ -12,7 +13,6 @@ Router.post(
   expensesControllers.createNewExpense,
 );
 
-Router.put("/expenses/:id", expensesControllers.updateExpense);
-Router.delete("/expenses/:id", expensesControllers.updateExpense);
+Router.put("/expenses/:id", refreshAuth, expensesControllers.updateExpense);
 
 export const expenseRouter = Router;

@@ -7,9 +7,9 @@ const Router = express.Router();
 
 
 
-Router.get("/lms/leave/requests",allowRoles("manager", "admin", "user"), userLeaveController.getLeaveRequests);
-Router.get("/lms/leave/leave-balance",allowRoles("manager", "admin", "user"), userLeaveController.getLeaveBalance);
+Router.get("/lms/leave/requests",allowRoles("manager", "admin", "employee"), userLeaveController.getLeaveRequests);
+Router.get("/lms/leave/leave-balance",allowRoles("manager", "admin", "employee"), userLeaveController.getLeaveBalance);
 
-Router.post("/lms/leave/apply",allowRoles("manager", "admin", "user"), userLeaveController.registerLeaveRequest);
+Router.post("/lms/leave/apply",allowRoles("manager", "admin", "employee"), userLeaveController.registerLeaveRequest);
 
 export const userLMSRouter = Router;

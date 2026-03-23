@@ -24,7 +24,7 @@ export const approveLeaveRequest = async (id, managerId) => {
         { model: LeaveAuditLog, as: "auditLogs", required: false },
         {
           model: User,
-          where: { role: "user", managerId: managerId },
+          where: { role: "employee", managerId: managerId },
           as: "employee",
           required: true,
           include: [
@@ -132,7 +132,7 @@ export const rejectLeaveRequest = async (id, remark, managerId) => {
         { model: LeaveAuditLog, as: "auditLogs", required: true },
         {
           model: User,
-          where: { role: "user", managerId: managerId },
+          where: { role: "employee", managerId: managerId },
           as: "employee",
           required: true,
         },
@@ -235,7 +235,7 @@ export const getLeaveRequests = async (
       include: [
         {
           model: User,
-          where: { role: "user", managerId },
+          where: { role: "employee", managerId },
           as: "employee",
           required: true,
           attributes: ["id", "first_name", "email"],

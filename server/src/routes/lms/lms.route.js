@@ -6,7 +6,7 @@ import { refreshAuth } from "../../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
-Router.use(refreshAuth);
+
 
 Router.use(leaveBalanceRouter);
 Router.use(leaveTypeRouter);

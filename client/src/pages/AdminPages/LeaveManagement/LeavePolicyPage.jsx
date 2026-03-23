@@ -254,8 +254,8 @@ export default function LeavePolicyPage() {
   }, []);
 
   const roleOptions = [
-    { label: "All Employees", value: "all" },
-    { label: "Users", value: "user" },
+    { label: "All", value: "all" },
+    { label: "Employees", value: "employee" },
     { label: "Managers", value: "manager" },
   ];
 

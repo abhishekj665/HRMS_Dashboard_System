@@ -15,25 +15,22 @@ Router.get("/job/:slug", JobPostingController.getJob);
 
 Router.use(userAuth);
 
-Router.patch("/job-post/:id", adminAuth,refreshAuth, JobPostingController.updateJobPosting);
+Router.patch("/job-post/:id", adminAuth, JobPostingController.updateJobPosting);
 Router.patch(
   "/job-post/active/:id",
   adminAuth,
-  refreshAuth,
   JobPostingController.activeJobPosting,
 );
 Router.get(
   "/job-post/:id",
   userAuth,
-  refreshAuth,
-  allowRoles("manager", "admin", "user"),
+  allowRoles("manager", "admin", "employee"),
   JobPostingController.getJobPosting,
 );
 Router.get(
   "/job-posts",
   userAuth,
-  refreshAuth,
-  allowRoles("manager", "admin", "user"),
+  allowRoles("manager", "admin", "employee"),
   JobPostingController.getJobPostings,
 );
 

@@ -12,40 +12,37 @@ const Router = express.Router();
 
 Router.post(
   "/job-requisition",
-  managerAuth,
   refreshAuth,
+  managerAuth,
   JobRequistionController.registerJobRequisition,
 );
 Router.get(
   "/job-requisitions",
   userAuth,
-  refreshAuth,
   allowRoles("admin", "manager"),
   JobRequistionController.getJobRequisitions,
 );
 Router.get(
   "/job-requisition/:id",
   userAuth,
-  refreshAuth,
   allowRoles("admin", "manager"),
   JobRequistionController.getJobRequisition,
 );
 Router.put(
   "/job-requisition/:id",
-  managerAuth,
   refreshAuth,
+  managerAuth,
   JobRequistionController.updateJobRequisition,
 );
 Router.patch(
   "/job-requisition/approve/:id",
   adminAuth,
-  refreshAuth,
   JobRequistionController.approveJobRequisition,
 );
 Router.patch(
   "/job-requisition/reject/:id",
-  adminAuth,
   refreshAuth,
+  adminAuth,
   JobRequistionController.rejectJobRequisition,
 );
 
