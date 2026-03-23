@@ -65,8 +65,7 @@ export default function JobApplicationPage() {
   });
   const getCandidateDetails = async () => {
     try {
-      console.log("Fetching candidate for:", form.email);
-
+      
       const response = await getCandidate(form.email);
 
       if (!response?.success) {

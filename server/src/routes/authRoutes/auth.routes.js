@@ -9,7 +9,7 @@ import {
 } from "../../controllers/auth.controller.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import authSchema from "../../validators/auth.validator.js";
-import { refreshAuth, userAuth } from "../../middlewares/auth.middleware.js";
+import { userAuth } from "../../middlewares/auth.middleware.js";
 
 export const authRouter = express.Router();
 
@@ -18,4 +18,4 @@ authRouter.post("/login", validate(authSchema), logIn);
 authRouter.post("/verify", verifyOtp);
 authRouter.post("/logout", userAuth, logOut);
 authRouter.get("/me", userAuth, me);
-authRouter.post("/access_token", userAuth, getAccessToken);
+authRouter.post("/access_token",userAuth, getAccessToken);
