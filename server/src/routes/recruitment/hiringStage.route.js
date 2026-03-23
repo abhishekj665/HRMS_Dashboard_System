@@ -7,8 +7,8 @@ const Router = express.Router();
 
 Router.patch(
   "/stage/next/:applicationId",
-  adminAuth,
   refreshAuth,
+  adminAuth,
   HiringStageController.moveToNextStage,
 );
 export const HiringStageRoute = Router;
