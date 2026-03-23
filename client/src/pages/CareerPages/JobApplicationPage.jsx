@@ -16,7 +16,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import { registerJobApplication } from "../../services/JobRecruitmentService/appllicationService";
-import { useEffect } from "react";
 import { getCandidate } from "../../services/JobRecruitmentService/candidateService";
 
 const steps = [
@@ -65,7 +64,6 @@ export default function JobApplicationPage() {
   });
   const getCandidateDetails = async () => {
     try {
-      
       const response = await getCandidate(form.email);
 
       if (!response?.success) {
@@ -117,7 +115,11 @@ export default function JobApplicationPage() {
       try {
         await getCandidateDetails(form.email);
       } catch (err) {
-        return;
+        setToast({
+          open: true,
+          message: "Failed to fetch candidate details",
+          severity: "error",
+        });
       }
     }
 
