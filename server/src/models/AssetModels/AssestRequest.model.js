@@ -14,6 +14,10 @@ const AssetRequest = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,

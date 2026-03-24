@@ -14,6 +14,10 @@ const Attendance = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     punchInAt: {
       type: DataTypes.DATE,
       allowNull: true,

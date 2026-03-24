@@ -10,6 +10,10 @@ const Account = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
 
     userId: {
       type: DataTypes.UUID,

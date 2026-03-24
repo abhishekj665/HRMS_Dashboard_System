@@ -10,6 +10,10 @@ const LeavePolicy = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     createdBy: {
       type: DataTypes.UUID,
       allowNull: false,

@@ -11,6 +11,10 @@ const AttendanceLog = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     attendanceId: {
       type: DataTypes.UUID,
       allowNull: true,

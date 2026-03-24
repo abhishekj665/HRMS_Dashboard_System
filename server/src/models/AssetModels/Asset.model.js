@@ -9,10 +9,13 @@ const Asset = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-
     title: {
       type: DataTypes.STRING(100),
       allowNull: false,
+    },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
     },
     description: {
       type: DataTypes.TEXT,

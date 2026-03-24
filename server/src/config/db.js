@@ -43,7 +43,7 @@ export const connectDB = async () => {
 
 export const syncDB = async () => {
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync();
 
     console.log("Tables created successfully");
   } catch (error) {

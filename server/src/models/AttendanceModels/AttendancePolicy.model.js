@@ -10,6 +10,10 @@ const AttendancePolicy = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     shiftType: {
       type: DataTypes.ENUM("SAMEDAY", "OVERNIGHT"),
     },

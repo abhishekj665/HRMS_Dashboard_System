@@ -10,6 +10,10 @@ const Expense = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
 
     userId: {
       type: DataTypes.UUID,

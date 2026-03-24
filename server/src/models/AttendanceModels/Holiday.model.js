@@ -8,6 +8,10 @@ const Holiday = sequelize.define("Holiday", {
         primaryKey : true,
         allowNull : false
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     name : {
         type : DataTypes.STRING,
         allowNull : false
@@ -26,3 +30,5 @@ const Holiday = sequelize.define("Holiday", {
     tableName : "Holidays",
     paranoid : true
 });
+
+export default Holiday;

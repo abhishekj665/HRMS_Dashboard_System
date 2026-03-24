@@ -15,6 +15,11 @@ const UserAsset = sequelize.define(
       allowNull: false,
     },
 
+    tenantId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
+
     assetId: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -29,7 +34,6 @@ const UserAsset = sequelize.define(
   {
     paranoid: true,
     timestamps: true,
-    
   },
 );
 

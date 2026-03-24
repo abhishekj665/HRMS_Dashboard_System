@@ -8,6 +8,10 @@ const UserIP = sequelize.define("UserIP", {
     primaryKey: true,
     allowNull: false,
   },
+  tenantId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+  },
   userAgent: {
     type: DataTypes.STRING,
     allowNull: false,

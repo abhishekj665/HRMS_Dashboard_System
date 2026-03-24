@@ -10,6 +10,10 @@ const Employee = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,

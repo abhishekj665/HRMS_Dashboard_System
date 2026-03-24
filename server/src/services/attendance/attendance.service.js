@@ -378,17 +378,19 @@ export const getAttendanceSummary = async (userId, month, year) => {
 
     let totalPresent = 0;
     let totalHalfDay = 0;
+    let totalLeave = 0;
     let totalLate = 0;
 
     attendanceData.forEach((item) => {
       if (item.isHalfDay) {
         totalHalfDay++;
-      } else {
+      } else if (item.isFullDay) {
         totalPresent++;
       }
-
       if (item.isLate) {
         totalLate++;
+      } else {
+        totalLeave++;
       }
     });
 
@@ -399,6 +401,7 @@ export const getAttendanceSummary = async (userId, month, year) => {
         totalPresent,
         totalHalfDay,
         totalLate,
+        totalLeave,
       },
     };
   } catch (error) {

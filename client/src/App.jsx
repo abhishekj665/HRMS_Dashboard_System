@@ -47,6 +47,7 @@ import AdminJobPostsPage from "./pages/AdminPages/Recruitment/AdminJobPostsPage"
 import AdminJobApplicationsPage from "./pages/AdminPages/Recruitment/JobApplicationPage";
 import ManagerInterviewsPage from "./pages/ManagerPages/JobRecruitment/interviewPage";
 import { OfferPage } from "./pages/CareerPages/OfferPage";
+import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +60,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/signup" element={<SignUpPage />} />
+          <Route
+            path="/organization/register"
+            element={<OrganizationRegisterPage />}
+          />
           <Route path="/login" element={<LogInPage />} />
           <Route path="/home" element={<HomePage />}>
             <Route path="asset" element={<UserAssetPage />}></Route>

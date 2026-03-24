@@ -10,6 +10,10 @@ const LeaveType = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,

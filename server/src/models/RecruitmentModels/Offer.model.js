@@ -10,6 +10,10 @@ const Offer = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     applicationId: {
       type: DataTypes.UUID,
       allowNull: false,

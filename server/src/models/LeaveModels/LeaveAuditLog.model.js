@@ -8,6 +8,10 @@ const LeaveAuditLog = sequelize.define("LeaveAuditLog", {
     primaryKey: true,
     allowNull: false
   },
+  tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
 
   leaveRequestId: {
     type: DataTypes.UUID,

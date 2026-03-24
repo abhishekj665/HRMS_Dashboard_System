@@ -11,6 +11,10 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.UUIDV4,
     },
+    tenantId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     managerId: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -54,15 +58,6 @@ const User = sequelize.define(
     login_At: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-    },
-
-    totalPresentDay: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
-    },
-    totalLeaves: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
     },
     attendancePolicyId: {
       type: DataTypes.UUID,

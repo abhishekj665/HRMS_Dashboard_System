@@ -10,7 +10,10 @@ const LeavePolicyRule = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-
+    tenantId : {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     policyId: {
       type: DataTypes.UUID,
       allowNull: false,
