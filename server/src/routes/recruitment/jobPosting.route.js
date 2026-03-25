@@ -11,9 +11,7 @@ import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 const Router = express.Router();
 
 Router.get("/jobs", JobPostingController.getJobs);
-Router.get("/job/:slug", JobPostingController.getJob);
-
-Router.use(userAuth);
+Router.get("/job/:orgSlug/:slug", JobPostingController.getJob);
 
 Router.patch("/job-post/:id", adminAuth, JobPostingController.updateJobPosting);
 Router.patch(

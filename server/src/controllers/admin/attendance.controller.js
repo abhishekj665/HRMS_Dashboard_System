@@ -4,7 +4,7 @@ import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
 export const getAllAttendanceData = async (req, res, next) => {
   try {
-    const response = await attendanceService.getAttendance(req.query);
+    const response = await attendanceService.getAttendance(req.query, req.user);
 
     if (response.success) {
       return successResponse(
@@ -30,7 +30,7 @@ export const getAllAttendanceData = async (req, res, next) => {
 export const approveAttendanceRequest = async (req, res, next) => {
   try {
     const response = await attendanceService.approveAttendanceRequest(
-      req.user.id,
+      req.user,
       req.params.id,
     );
 
@@ -52,7 +52,7 @@ export const approveAttendanceRequest = async (req, res, next) => {
 export const rejectAttendanceRequest = async (req, res, next) => {
   try {
     const response = await attendanceService.rejectAttendanceRequest(
-      req.user.id,
+      req.user,
       req.params.id,
       req.body,
     );
@@ -76,7 +76,7 @@ export const bulkAttendanceRequestApprove = async (req, res, next) => {
   try {
     let response = await attendanceService.bulkAttendanceRequestApprove(
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -99,7 +99,7 @@ export const bulkAttendanceRequestReject = async (req, res, next) => {
     
     let response = await attendanceService.bulkAttendanceRequestReject(
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {

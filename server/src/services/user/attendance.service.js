@@ -5,14 +5,16 @@ import {
   AttendanceRequest,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
+import { requireTenantId } from "../../utils/tenant.utils.js";
 
-export const getAttendance = async (filters = {}, userId) => {
+export const getAttendance = async (filters = {}, user) => {
   try {
+    const tenantId = requireTenantId(user);
     const { status, page = 1, limit = 10 } = filters;
 
     
 
-    const where = { requestedBy: userId };
+    const where = { requestedBy: user.id, tenantId };
     if (status) where.status = status.toUpperCase();
 
     const offset = (Number(page) - 1) * Number(limit);
@@ -66,10 +68,11 @@ export const getAttendance = async (filters = {}, userId) => {
   }
 };
 
-export const pendingAttendanceRequests = async (userId) => {
+export const pendingAttendanceRequests = async (user) => {
   try {
+    const tenantId = requireTenantId(user);
     const attendanceData = await AttendanceRequest.findAll({
-      where: { requestedBy: userId, status: "PENDING" },
+      where: { requestedBy: user.id, tenantId, status: "PENDING" },
     });
 
     if (!attendanceData) {
@@ -89,10 +92,11 @@ export const pendingAttendanceRequests = async (userId) => {
   }
 };
 
-export const approvedAttendanceRequest = async (userId) => {
+export const approvedAttendanceRequest = async (user) => {
   try {
+    const tenantId = requireTenantId(user);
     const attendanceData = await AttendanceRequest.findAll({
-      where: { requestedBy: userId, status: "APPROVED" },
+      where: { requestedBy: user.id, tenantId, status: "APPROVED" },
     });
 
     if (!attendanceData) {
@@ -109,10 +113,11 @@ export const approvedAttendanceRequest = async (userId) => {
   }
 };
 
-export const rejectedAttendanceRequest = async (userId) => {
+export const rejectedAttendanceRequest = async (user) => {
   try {
+    const tenantId = requireTenantId(user);
     const attendanceData = await AttendanceRequest.findAll({
-      where: { requestedBy: userId, status: "REJECTED" },
+      where: { requestedBy: user.id, tenantId, status: "REJECTED" },
     });
 
     if (!attendanceData) {

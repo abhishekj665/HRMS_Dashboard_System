@@ -15,9 +15,14 @@ import {
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import { getNumber } from "../../utils/calaculateTime.utils.js";
+import {
+  getScopedWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const registerJobRequisition = async (data, userId) => {
+export const registerJobRequisition = async (data, user) => {
   try {
+    const tenantId = requireTenantId(user);
     data.experienceMin = getNumber(data.experienceMin);
     data.experienceMax = getNumber(data.experienceMax);
     data.budgetMin = getNumber(data.budgetMin);
@@ -39,10 +44,11 @@ export const registerJobRequisition = async (data, userId) => {
       data.departmentId || "1b3f4a5c-6d7e-8f9a-b0c1-d2e3f4a5b6c7";
 
     const jobRequisition = await JobRequisition.create({
+      tenantId,
       ...data,
       departmentId: data.departmentId,
       status: "PENDING",
-      createdBy: userId,
+      createdBy: user.id,
     });
 
     const html = getJobRequisitionEmailTemplate({
@@ -51,7 +57,7 @@ export const registerJobRequisition = async (data, userId) => {
     });
 
     const admin = await User.findOne({
-      where: { role: "admin" },
+      where: getScopedWhere(user, { role: "admin" }),
       attributes: ["email"],
     });
 
@@ -69,7 +75,11 @@ export const registerJobRequisition = async (data, userId) => {
 
 export const getJobRequisitions = async (user) => {
   try {
-    const whereClause = user.role === "admin" ? {} : { createdBy: user.id };
+    const tenantId = requireTenantId(user);
+    const whereClause =
+      user.role === "admin"
+        ? { tenantId }
+        : { tenantId, createdBy: user.id };
 
     const jobRequisitions = await JobRequisition.findAll({
       where: whereClause,
@@ -102,9 +112,13 @@ export const getJobRequisitions = async (user) => {
   }
 };
 
-export const getJobRequisition = async (id) => {
+export const getJobRequisition = async (id, user) => {
   try {
-    const jobRequisition = await JobRequisition.findByPk(id);
+    const whereClause =
+      user.role === "admin"
+        ? { id, tenantId: requireTenantId(user) }
+        : { id, tenantId: requireTenantId(user), createdBy: user.id };
+    const jobRequisition = await JobRequisition.findOne({ where: whereClause });
 
     if (!jobRequisition)
       throw new ExpressError(STATUS.NOT_FOUND, "No job requisition found");
@@ -119,9 +133,13 @@ export const getJobRequisition = async (id) => {
   }
 };
 
-export const updateJobRequisition = async (id, data) => {
+export const updateJobRequisition = async (id, data, user) => {
   try {
-    const jobRequisition = await JobRequisition.findByPk(id);
+    const whereClause =
+      user.role === "admin"
+        ? { id, tenantId: requireTenantId(user) }
+        : { id, tenantId: requireTenantId(user), createdBy: user.id };
+    const jobRequisition = await JobRequisition.findOne({ where: whereClause });
 
     if (!jobRequisition)
       throw new ExpressError(STATUS.NOT_FOUND, "No job requisition found");
@@ -138,11 +156,12 @@ export const updateJobRequisition = async (id, data) => {
   }
 };
 
-export const approveJobRequisition = async (id, userId) => {
+export const approveJobRequisition = async (id, user) => {
   const transaction = await sequelize.transaction();
   try {
+    const tenantId = requireTenantId(user);
     const jobRequisition = await JobRequisition.findOne({
-      where: { id },
+      where: { id, tenantId },
       include: [
         {
           model: User,
@@ -159,7 +178,7 @@ export const approveJobRequisition = async (id, userId) => {
     await JobRequisition.update(
       {
         status: "APPROVED",
-        approvedBy: userId,
+        approvedBy: user.id,
         approvedAt: new Date(),
         remark: "Approved by admin",
       },
@@ -174,7 +193,7 @@ export const approveJobRequisition = async (id, userId) => {
         description: jobRequisition.jobDescription,
         visibility: "INTERNAL",
         isActive: false,
-        createdBy: userId,
+        createdBy: user.id,
       },
       { transaction },
     );
@@ -227,11 +246,12 @@ export const approveJobRequisition = async (id, userId) => {
   }
 };
 
-export const rejectJobRequisition = async (id, remark, userId) => {
+export const rejectJobRequisition = async (id, remark, user) => {
   const transaction = await sequelize.transaction();
   try {
+    const tenantId = requireTenantId(user);
     const jobRequisition = await JobRequisition.findOne({
-      where: { id },
+      where: { id, tenantId },
       include: [
         {
           model: User,
@@ -248,7 +268,7 @@ export const rejectJobRequisition = async (id, remark, userId) => {
     await JobRequisition.update(
       {
         status: "REJECTED",
-        approvedBy: userId,
+        approvedBy: user.id,
         approvedAt: new Date(),
         remark: remark,
       },

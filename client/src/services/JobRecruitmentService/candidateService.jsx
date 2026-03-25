@@ -1,9 +1,9 @@
-import { API } from "../AuthService/authService";
+import { publicAPI } from "../AuthService/authService";
 
-export const getCandidate = async (email) => {
+export const getCandidate = async (email, orgSlug) => {
   try {
-    const response = await API.get("/recruitment/candidate/get-by-email", {
-      params: { email },
+    const response = await publicAPI.get("/recruitment/candidate/get-by-email", {
+      params: { email, orgSlug },
     });
     console.log("Candidate response:", response.data);
     return response.data;

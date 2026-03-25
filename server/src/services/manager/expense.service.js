@@ -5,16 +5,22 @@ import { User } from "../../models/Associations.model.js";
 import { Op } from "sequelize";
 import { expenseApprovedMailTemplate, expenseRejectedMailTemplate } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import {
+  assertSameTenant,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getAllExpenseDataService = async (managerId) => {
+export const getAllExpenseDataService = async (manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     let expenseData = await Expenses.findAll({
+      where: { tenantId },
       include: [
         {
           model: User,
           as: "employee",
           attributes: ["email", "role", "managerId"],
-          where: { managerId: managerId },
+          where: { managerId: manager.id, tenantId },
           required: true,
         },
         {
@@ -45,7 +51,9 @@ export const getAllExpenseDataService = async (managerId) => {
 
 export const approveExpenseRequestService = async (id, data, manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     let expenseData = await Expenses.findByPk(id);
+    assertSameTenant(expenseData, tenantId, "Expense request");
 
     const approvedAmount = Number(data.approvedAmount);
 
@@ -100,7 +108,9 @@ export const approveExpenseRequestService = async (id, data, manager) => {
 
 export const rejectExpenseRequestService = async (id, manager, managerRemark) => {
   try {
+    const tenantId = requireTenantId(manager);
     let expenseData = await Expenses.findByPk(id);
+    assertSameTenant(expenseData, tenantId, "Expense request");
 
     if (expenseData.status != "pending") {
       return {

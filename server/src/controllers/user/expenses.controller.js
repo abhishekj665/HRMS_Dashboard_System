@@ -10,7 +10,10 @@ import fs from "fs";
 
 export const getExpenseData = async (req, res, next) => {
   try {
-    let response = await expensesServices.getExpenseDataService(req.user.id);
+    let response = await expensesServices.getExpenseDataService(
+      req.user.id,
+      req.user,
+    );
     if (response.success) {
       return successResponse(
         res,

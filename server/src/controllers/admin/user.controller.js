@@ -4,7 +4,7 @@ import * as userServices from "../../services/admin/user.service.js";
 
 export const registerUser = async (req, res, next) => {
   try {
-    let response = await userServices.registerUserService(req.body);
+    let response = await userServices.registerUserService(req.body, req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message);
@@ -20,7 +20,7 @@ export const blockUserController = async (req, res, next) => {
   try {
     const userId = req.params.id;
 
-    const result = await userServices.blockUserService(userId);
+    const result = await userServices.blockUserService(userId, req.user);
 
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);
@@ -35,7 +35,7 @@ export const blockUserController = async (req, res, next) => {
 export const unblockUserController = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    const result = await userServices.unblockUserService(userId);
+    const result = await userServices.unblockUserService(userId, req.user);
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);
     } else {
@@ -50,7 +50,7 @@ export const blockIPController = async (req, res, next) => {
   try {
     const { ip } = req.body;
 
-    const result = await userServices.blockIPService(ip);
+    const result = await userServices.blockIPService(ip, req.user);
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);
     } else {
@@ -65,7 +65,7 @@ export const unblockIPController = async (req, res, next) => {
   try {
     const { ip } = req.body;
 
-    const result = await userServices.unblockIPService(ip);
+    const result = await userServices.unblockIPService(ip, req.user);
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);
     } else {
@@ -82,7 +82,12 @@ export const getUsers = async (req, res, next) => {
     let limit = parseInt(req.query.limit, 10) || 5;
     const search = req.query.search || "";
 
-    const result = await userServices.getUsersService(page, limit, search);
+    const result = await userServices.getUsersService(
+      page,
+      limit,
+      search,
+      req.user,
+    );
 
     if (result.success) {
       return successResponse(res, result.data, result.message);
@@ -96,7 +101,7 @@ export const getUsers = async (req, res, next) => {
 
 export const getIPs = async (req, res, next) => {
   try {
-    const result = await userServices.getIPService();
+    const result = await userServices.getIPService(req.user);
     if (result.success) {
       return successResponse(res, result.data, result.message);
     } else {

@@ -65,6 +65,7 @@ export const logIn = async (req, res, next) => {
     const ipData = await getLocationFromIp(ip);
 
     await UserIP.create({
+      tenantId: result.user.tenantId || null,
       userAgent: req.headers["user-agent"] || "unknown",
       ipAddress: ipData?.ip || ip,
       country: ipData?.country_name || null,

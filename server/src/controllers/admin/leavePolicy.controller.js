@@ -7,7 +7,7 @@ export const registerLeavePolicy = async (req, res, next) => {
 
     const response = await leavePolicyService.registerLeavePolicy(
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -30,7 +30,7 @@ export const updateLeavePolicy = async (req, res, next) => {
     const response = await leavePolicyService.updateLeavePolicy(
       req.params.id,
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -50,7 +50,7 @@ export const updateLeavePolicy = async (req, res, next) => {
 
 export const deleteLeavePolicy = async (req, res, next) => {
   try {
-    const response = await leavePolicyService.deleteLeavePolicy(req.params.id);
+    const response = await leavePolicyService.deleteLeavePolicy(req.params.id, req.user);
 
     if (response.success) {
       return successResponse(
@@ -69,7 +69,7 @@ export const deleteLeavePolicy = async (req, res, next) => {
 
 export const getLeavePolicies = async (req, res, next) => {
   try {
-    const response = await leavePolicyService.getLeavePolicies();
+    const response = await leavePolicyService.getLeavePolicies(req.user);
 
     if (response.success) {
       return successResponse(
@@ -92,6 +92,7 @@ export const assignPolicyToUser = async (req, res, next) => {
       req.params.id,
       req.body.policyId,
       req.body.year,
+      req.user,
     );
 
     if (response.success) {
@@ -115,6 +116,7 @@ export const assignPolicyBulk = async (req, res, next) => {
       req.params.id,
       req.body.filter,
       req.body.year,
+      req.user,
     );
     if (response.success) {
       return successResponse(

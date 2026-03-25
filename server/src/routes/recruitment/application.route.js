@@ -1,15 +1,17 @@
 import express from "express";
 import { uploadResume } from "../../middlewares/upload.js";
 import * as ApplicationController from "../../controllers/recruitment/application.controller.js";
-import { refreshAuth, userAuth } from "../../middlewares/auth.middleware.js";
+import { userAuth } from "../../middlewares/auth.middleware.js";
 import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 const Router = express.Router();
 
+
+
 Router.post(
-  "/application/apply/:slug",
+  "/application/apply/:orgSlug/:slug",
   uploadResume.single("resume"),
-  ApplicationController.registerApplication,
+  ApplicationController.registerApplication
 );
 
 Router.get(

@@ -7,7 +7,7 @@ import { getJobDetail } from "../../services/JobRecruitmentService/jobsService";
 import { useEffect } from "react";
 
 export default function JobDetailPage() {
-  const { slug } = useParams();
+  const { orgSlug, slug } = useParams();
   const [job, setJob] = useState({});
 
   const isExpired = job?.expiresAt && new Date(job.expiresAt) < new Date();
@@ -20,7 +20,7 @@ export default function JobDetailPage() {
 
   const fetchJobDetail = async () => {
     try {
-      const response = await getJobDetail(slug);
+      const response = await getJobDetail(orgSlug, slug);
       if (response.success) {
         setJob(response.data);
       } else {
@@ -33,7 +33,7 @@ export default function JobDetailPage() {
 
   const handleApply = () => {
     try {
-      navigate(`/careers/${slug}/apply`);
+      navigate(`/careers/${orgSlug}/${slug}/apply`);
     } catch (error) {
       toast.error(error.message);
     }

@@ -112,7 +112,7 @@ export default function CareersPage() {
           {jobs.map((job) => (
             <Box
               key={job.id}
-              onClick={() => navigate(`/careers/${job.slug}`)}
+              onClick={() => navigate(`/careers/${job.orgSlug}/${job.slug}`)}
               className="cursor-pointer border-b pb-8 hover:border-black transition"
             >
               <div className="flex items-start gap-4">

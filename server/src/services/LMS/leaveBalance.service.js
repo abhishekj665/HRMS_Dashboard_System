@@ -8,18 +8,23 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
+import { requireTenantId } from "../../utils/tenant.utils.js";
 
-export const assignLeaveBalance = async (userId, year) => {
+export const assignLeaveBalance = async (userId, year, user) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const user = await User.findByPk(userId, { transaction });
+    const tenantId = requireTenantId(user);
+    const scopedUser = await User.findOne({
+      where: { id: userId, tenantId },
+      transaction,
+    });
 
-    if (!user) throw new Error("User not found");
-    if (!user.leavePolicyId) throw new Error("User has no policy assigned");
+    if (!scopedUser) throw new Error("User not found");
+    if (!scopedUser.leavePolicyId) throw new Error("User has no policy assigned");
 
     const rules = await LeavePolicyRule.findAll({
-      where: { policyId: user.leavePolicyId },
+      where: { policyId: scopedUser.leavePolicyId, tenantId },
       transaction,
     });
 
@@ -30,6 +35,7 @@ export const assignLeaveBalance = async (userId, year) => {
     const existingBalances = await LeaveBalance.findAll({
       where: {
         userId,
+        tenantId,
         year,
       },
       transaction,
@@ -50,6 +56,7 @@ export const assignLeaveBalance = async (userId, year) => {
       return {
         id: existing ? existing.id : undefined,
         userId,
+        tenantId,
         leaveTypeId: rule.leaveTypeId,
         totalAllocated,
         used,
@@ -76,15 +83,19 @@ export const assignLeaveBalance = async (userId, year) => {
   }
 };
 
-export const assignLeaveBalanceBulk = async (policyId, year, transaction) => {
+export const assignLeaveBalanceBulk = async (policyId, year, user, transaction) => {
   try {
+    const tenantId = requireTenantId(user);
     const currentYear = Number(year) || new Date().getFullYear();
 
-    const policy = await LeavePolicy.findByPk(policyId, { transaction });
+    const policy = await LeavePolicy.findOne({
+      where: { id: policyId, tenantId },
+      transaction,
+    });
     if (!policy) throw new Error("Policy not found");
 
     const users = await User.findAll({
-      where: { leavePolicyId: policyId },
+      where: { leavePolicyId: policyId, tenantId },
       attributes: ["id"],
       transaction,
     });
@@ -94,7 +105,7 @@ export const assignLeaveBalanceBulk = async (policyId, year, transaction) => {
     }
 
     const rules = await LeavePolicyRule.findAll({
-      where: { policyId },
+      where: { policyId, tenantId },
       transaction,
     });
 
@@ -105,6 +116,7 @@ export const assignLeaveBalanceBulk = async (policyId, year, transaction) => {
     const existingBalances = await LeaveBalance.findAll({
       where: {
         userId: users.map((u) => u.id),
+        tenantId,
         year: currentYear,
       },
       transaction,
@@ -129,6 +141,7 @@ export const assignLeaveBalanceBulk = async (policyId, year, transaction) => {
         balancesToUpsert.push({
           id: existing ? existing.id : undefined,
           userId: user.id,
+          tenantId,
           leaveTypeId: rule.leaveTypeId,
           totalAllocated,
           used,
@@ -153,10 +166,10 @@ export const assignLeaveBalanceBulk = async (policyId, year, transaction) => {
   }
 };
 
-export const getLeaveBalance = async (useId) => {
+export const getLeaveBalance = async (user) => {
   try {
     const leaveData = await LeaveBalance.findAll({
-      where: { userId: useId },
+      where: { userId: user.id, tenantId: requireTenantId(user) },
       attributes: [
         "balance",
         "policyId",

@@ -17,11 +17,13 @@ import {
   getLeaveRequestCreatedTemplate,
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
-export const registerLeaveRequest = async (data, userId) => {
+export const registerLeaveRequest = async (data, authUser) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const tenantId = requireTenantId(authUser);
     const dayRequested = calculateLeaveDays(
       data.startDate,
       data.endDate,
@@ -32,7 +34,8 @@ export const registerLeaveRequest = async (data, userId) => {
 
     const { leaveTypeId } = data;
 
-    const user = await User.findByPk(userId, {
+    const user = await User.findOne({
+      where: { id: authUser.id, tenantId },
       include: [
         { model: User, as: "manager", attributes: ["first_name", "email"] },
         {
@@ -46,7 +49,7 @@ export const registerLeaveRequest = async (data, userId) => {
                 {
                   model: LeaveType,
                   as: "leaveType",
-                  attributes: ["isActive", "name", "code"],
+                  attributes: ["isActive", "name", "code", "requiresApproval"],
                 },
               ],
             },
@@ -55,7 +58,7 @@ export const registerLeaveRequest = async (data, userId) => {
         {
           model: LeaveBalance,
           as: "leaveBalances",
-          where: { leaveTypeId },
+          where: { leaveTypeId, tenantId },
         },
       ],
     });
@@ -96,7 +99,8 @@ export const registerLeaveRequest = async (data, userId) => {
 
     const overlappingLeave = await LeaveRequest.findOne({
       where: {
-        userId,
+        userId: authUser.id,
+        tenantId,
         status: {
           [Op.in]: ["PENDING", "APPROVED"],
         },
@@ -116,11 +120,33 @@ export const registerLeaveRequest = async (data, userId) => {
       );
     }
 
+    const leaveType = await LeaveType.findOne({
+      where: { id: leaveTypeId, tenantId },
+    });
+
+    if (leaveType.requiresApproval && !user.manager) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "This leave type requires manager approval, but no manager is assigned to your profile. Please contact HR.",
+      );
+    }
+
+    if (!leaveType.requiresApproval) {
+      data.status = "APPROVED";
+
+      const leaveBalance = await LeaveBalance.findOne({
+        where: { leaveTypeId, userId: authUser.id, tenantId },
+      });
+
+      leaveBalance.balance -= data.daysRequested;
+      await leaveBalance.save({ transaction });
+    }
+
     const leaveData = await LeaveRequest.create(
       {
         ...data,
-        userId: userId,
-        status: "pending",
+        tenantId,
+        userId: authUser.id,
       },
       { transaction },
     );
@@ -128,7 +154,8 @@ export const registerLeaveRequest = async (data, userId) => {
     await LeaveAuditLog.create(
       {
         leaveRequestId: leaveData.id,
-        newStatus: "PENDING",
+        tenantId,
+        newStatus: leaveData.status,
         action: "APPLIED",
       },
       { transaction },
@@ -138,12 +165,11 @@ export const registerLeaveRequest = async (data, userId) => {
 
     if (user.role === "manager") {
       admin = await User.findOne({
-        where: { role: "admin" },
+        where: getScopedWhere(authUser, { role: "admin" }),
         attributes: ["email"],
         raw: true,
       });
     }
-
 
     const html = getLeaveRequestCreatedTemplate({
       managerName:
@@ -220,10 +246,10 @@ export const extendLeaveRequest = async (id, data, userId) => {
   }
 };
 
-export const getLeaveRequest = async (useId) => {
+export const getLeaveRequest = async (user) => {
   try {
     const leaveData = await LeaveRequest.findAll({
-      where: { userId: useId },
+      where: { userId: user.id, tenantId: requireTenantId(user) },
       order: [["createdAt", "DESC"]],
       include: [
         {

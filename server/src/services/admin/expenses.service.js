@@ -2,10 +2,16 @@ import STATUS from "../../constants/Status.js";
 import { Expenses } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import { User } from "../../models/Associations.model.js";
+import {
+  assertSameTenant,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getAllExpenseDataService = async () => {
+export const getAllExpenseDataService = async (adminUser) => {
   try {
+    const tenantId = requireTenantId(adminUser);
     let expenseData = await Expenses.findAll({
+      where: { tenantId },
       include: [
         { model: User, as: "employee", attributes: ["email"] },
         { model: User, as: "reviewer", attributes: ["email", "role"] },
@@ -32,7 +38,9 @@ export const getAllExpenseDataService = async () => {
 
 export const approveExpenseRequestService = async (id, admin) => {
   try {
+    const tenantId = requireTenantId(admin);
     let expenseData = await Expenses.findByPk(id);
+    assertSameTenant(expenseData, tenantId, "Expense request");
 
     if (expenseData.status != "pending") {
       return {
@@ -63,7 +71,9 @@ export const approveExpenseRequestService = async (id, admin) => {
 
 export const rejectExpenseRequestService = async (id, admin, adminRemark) => {
   try {
+    const tenantId = requireTenantId(admin);
     let expenseData = await Expenses.findByPk(id);
+    assertSameTenant(expenseData, tenantId, "Expense request");
 
     if (expenseData.status != "pending") {
       return {

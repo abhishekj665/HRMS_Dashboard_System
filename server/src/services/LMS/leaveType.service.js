@@ -1,10 +1,14 @@
 import { LeaveType } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
-export const registerLeaveType = async (data) => {
+export const registerLeaveType = async (data, user) => {
   try {
-    const leaveData = await LeaveType.create(data);
+    const leaveData = await LeaveType.create({
+      ...data,
+      tenantId: requireTenantId(user),
+    });
 
     return {
       success: true,
@@ -16,9 +20,11 @@ export const registerLeaveType = async (data) => {
   }
 };
 
-export const updateLeaveType = async (id, data) => {
+export const updateLeaveType = async (id, data, user) => {
   try {
-    const leaveData = await LeaveType.update(data, { where: { id } });
+    const leaveData = await LeaveType.update(data, {
+      where: getScopedWhere(user, { id }),
+    });
 
     if (leaveData) {
       return {
@@ -32,9 +38,11 @@ export const updateLeaveType = async (id, data) => {
   }
 };
 
-export const deleteLeaveType = async (id) => {
+export const deleteLeaveType = async (id, user) => {
   try {
-    const leaveData = await LeaveType.destroy({ where: { id } });
+    const leaveData = await LeaveType.destroy({
+      where: getScopedWhere(user, { id }),
+    });
 
     if (!leaveData) {
       return {
@@ -53,10 +61,12 @@ export const deleteLeaveType = async (id) => {
   }
 };
 
-export const getLeaveTypes = async () => {
+export const getLeaveTypes = async (user) => {
   try {
     
-    const leaveData = await LeaveType.findAll();
+    const leaveData = await LeaveType.findAll({
+      where: { tenantId: requireTenantId(user) },
+    });
 
     if (!leaveData) {
       return {

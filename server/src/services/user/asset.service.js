@@ -7,13 +7,15 @@ import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { assetRequestMailTemplate } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
 export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;
   const userId = user.id;
+  const tenantId = requireTenantId(user);
 
   const userData = await User.findOne({
-    where: { id: user.id },
+    where: getScopedWhere(user, { id: user.id }),
     attributes: ["managerId", "email", "first_name"],
     include: [{ model: User, as: "manager" }],
   });
@@ -29,12 +31,15 @@ export const createAssetRequestService = async (data, user) => {
     throw new ExpressError(400, "assetId and quantity are required");
   }
 
-  const asset = await Asset.findByPk(assetId);
+  const asset = await Asset.findOne({
+    where: getScopedWhere(user, { id: assetId }),
+  });
 
   if (!asset) throw new ExpressError(404, "Asset not found");
 
   await AssetRequest.create({
     userId,
+    tenantId,
     assetId,
     title: asset.title,
     quantity,
@@ -61,11 +66,11 @@ export const createAssetRequestService = async (data, user) => {
   return { success: true, message: "Asset request created successfully" };
 };
 
-export const getAssetRequestService = async (id) => {
+export const getAssetRequestService = async (id, user) => {
   try {
     const requestData = await AssetRequest.findAll({
       order: [["createdAt", "DESC"]],
-      where: { userId: id },
+      where: getScopedWhere(user, { userId: id }),
       include: [
         { model: User, attributes: ["email", "role"] },
         {
@@ -86,9 +91,10 @@ export const getAssetRequestService = async (id) => {
   }
 };
 
-export const getAvailableAssetsService = async () => {
+export const getAvailableAssetsService = async (user) => {
   let response = await Asset.findAll({
     where: {
+      tenantId: requireTenantId(user),
       availableQuantity: { [Op.gt]: 0 },
     },
     attributes: ["id", "title", "price", "category", "availableQuantity"],

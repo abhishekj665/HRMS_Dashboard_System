@@ -7,11 +7,19 @@ import {
 } from "../../models/Associations.model.js";
 import STATUS from "../../constants/Status.js";
 import { Op } from "sequelize";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
+import {
+  findOrganizationByPublicSlug,
+  getOrganizationPublicSlug,
+} from "../../utils/organization.utils.js";
+import { Organization } from "../../models/Associations.model.js";
 
-export const updateJobPosting = async (id, data, userId) => {
+export const updateJobPosting = async (id, data, user) => {
   const transaction = await sequelize.transaction();
   try {
-    const jobPosting = await JobPosting.findByPk(id);
+    const jobPosting = await JobPosting.findOne({
+      where: getScopedWhere(user, { id }),
+    });
 
     if (!jobPosting)
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
@@ -20,7 +28,7 @@ export const updateJobPosting = async (id, data, userId) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "Expiration date cannot be in the past");
     }
 
-    await jobPosting.update({ ...data, editedBy: userId }, { transaction });
+    await jobPosting.update({ ...data, editedBy: user.id }, { transaction });
 
     await transaction.commit();
 
@@ -35,9 +43,12 @@ export const updateJobPosting = async (id, data, userId) => {
   }
 };
 
-export const getJobPosting = async (id) => {
+export const getJobPosting = async (id, user) => {
   try {
-    const jobPosting = await JobPosting.findByPk(id);
+    
+    const jobPosting = await JobPosting.findOne({
+      where: getScopedWhere(user, { id }),
+    });
 
     if (!jobPosting)
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
@@ -52,9 +63,10 @@ export const getJobPosting = async (id) => {
   }
 };
 
-export const getJobPostings = async () => {
+export const getJobPostings = async (user) => {
   try {
     const jobPostings = await JobPosting.findAll({
+      where: { tenantId: requireTenantId(user) },
       order: [["createdAt", "DESC"]],
     });
     if (!jobPostings)
@@ -70,9 +82,11 @@ export const getJobPostings = async () => {
   }
 };
 
-export const activeJobPosting = async (id, userId) => {
+export const activeJobPosting = async (id, user) => {
   try {
-    const jobPosting = await JobPosting.findByPk(id);
+    const jobPosting = await JobPosting.findOne({
+      where: getScopedWhere(user, { id }),
+    });
 
     if (!jobPosting)
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
@@ -84,7 +98,7 @@ export const activeJobPosting = async (id, userId) => {
       );
     }
 
-    await jobPosting.update({ isActive: true, editedBy: userId });
+    await jobPosting.update({ isActive: true, editedBy: user.id });
 
     return {
       success: true,
@@ -134,6 +148,11 @@ export const getJobs = async () => {
             "departmentId",
           ],
         },
+        {
+          model: Organization,
+          as: "organization",
+          attributes: ["id", "name", "domain"],
+        },
       ],
     });
 
@@ -141,7 +160,14 @@ export const getJobs = async () => {
 
     return {
       success: true,
-      data: jobs,
+      data: jobs.map((job) => {
+        const jobData = job.toJSON();
+
+        return {
+          ...jobData,
+          orgSlug: getOrganizationPublicSlug(jobData.organization),
+        };
+      }),
       message: "Jobs fetched successfully",
     };
   } catch (error) {
@@ -149,10 +175,15 @@ export const getJobs = async () => {
   }
 };
 
-export const getJob = async (slug) => {
+export const getJob = async (orgSlug, slug) => {
   try {
+    const organization = await findOrganizationByPublicSlug(orgSlug);
+
+    if (!organization) throw new ExpressError(STATUS.NOT_FOUND, "No job found");
+
     const job = await JobPosting.findOne({
       where: {
+        tenantId: organization.id,
         slug: slug,
         isActive: true,
         visibility: "EXTERNAL",
@@ -201,6 +232,11 @@ export const getJob = async (slug) => {
             "isDefault",
           ],
         },
+        {
+          model: Organization,
+          as: "organization",
+          attributes: ["id", "name", "domain"],
+        },
       ],
       order: [[{ model: HiringStage, as: "stages" }, "stageOrder", "ASC"]],
     });
@@ -209,7 +245,10 @@ export const getJob = async (slug) => {
 
     return {
       success: true,
-      data: job,
+      data: {
+        ...job.toJSON(),
+        orgSlug: getOrganizationPublicSlug(job.organization),
+      },
       message: "Job fetched successfully",
     };
   } catch (error) {

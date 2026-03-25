@@ -38,6 +38,6 @@ const resumeFileFilter = (req, file, cb) => {
 
 export const uploadResume = multer({
   storage,
-  resumeFileFilter,
+  fileFilter: resumeFileFilter,
   limits: { fileSize: 3 * 1024 * 1024 },
 });

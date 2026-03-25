@@ -6,7 +6,7 @@ import { io } from "../../server.js";
 
 export const getRequestData = async (req, res, next) => {
   try {
-    const response = await requestServices.getRequestDataService();
+    const response = await requestServices.getRequestDataService(req.user);
 
     if (response.success) {
       return successResponse(
@@ -27,7 +27,7 @@ export const approveRequest = async (req, res, next) => {
   try {
     const response = await requestServices.approveRequestService(
       req.params.id,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -51,7 +51,7 @@ export const rejectRequest = async (req, res, next) => {
     const response = await requestServices.rejectRequestService(
       req.params.id,
       remark,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {

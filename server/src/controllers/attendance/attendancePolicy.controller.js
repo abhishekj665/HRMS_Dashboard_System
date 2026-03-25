@@ -4,7 +4,7 @@ import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
 export const createAttendancePolicy = async (req, res, next) => {
   try {
-    const response = await attendancePolicyServices.createAttendancePolicy(req.user.id,
+    const response = await attendancePolicyServices.createAttendancePolicy(req.user,
       req.body,
     );
 
@@ -26,6 +26,7 @@ export const createAttendancePolicy = async (req, res, next) => {
 export const getAttendancePolicies = async (req, res, next) => {
   try {
     const response = await attendancePolicyServices.getAttendancePolicies({
+      user: req.user,
       page: Number(req.query.page) || 1,
       limit: Number(req.query.limit) || 10,
       search: req.query.search || "",
@@ -50,6 +51,7 @@ export const getAttendancePolicies = async (req, res, next) => {
 export const getDefaultAttendancePolicy = async (req, res, next) => {
   try {
     const response = await attendancePolicyServices.getDefaultAttendancePolicy({
+      user: req.user,
       page: Number(req.query.page) || 1,
       limit: Number(req.query.limit) || 10,
       search: req.query.search || "",
@@ -95,6 +97,7 @@ export const updateAttendancePolicy = async (req, res, next) => {
   try {
     const response = await attendancePolicyServices.updateAttendancePolicy(
       req.params.id,
+      req.user,
       req.body,
     );
 
@@ -117,6 +120,7 @@ export const deleteAttendancePolicy = async (req, res, next) => {
   try {
     const response = await attendancePolicyServices.deleteAttendancePolicy(
       req.params.id,
+      req.user,
     );
 
     if (response.success) {

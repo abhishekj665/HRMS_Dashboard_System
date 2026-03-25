@@ -5,7 +5,7 @@ import { io } from "../../server.js";
 
 export const getAllExpense = async (req, res, next) => {
   try {
-    let response = await expensesService.getAllExpenseDataService(req.user.id);
+    let response = await expensesService.getAllExpenseDataService(req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);

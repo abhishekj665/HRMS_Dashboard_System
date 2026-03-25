@@ -34,7 +34,7 @@ export const createAssetRequest = async (req, res, next) => {
 export const getAssetRequest = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    let response = await assestServices.getAssetRequestService(userId);
+    let response = await assestServices.getAssetRequestService(userId, req.user);
 
     if (response.success) {
       return successResponse(res, response, response.message, STATUS.OK);
@@ -48,7 +48,7 @@ export const getAssetRequest = async (req, res, next) => {
 
 export const getAvailableAssets = async (req, res, next) => {
   try {
-    const assets = await assestServices.getAvailableAssetsService();
+    const assets = await assestServices.getAvailableAssetsService(req.user);
     return successResponse(res, { assets }, "Assets fetched", 200);
   } catch (e) {
     next(e);

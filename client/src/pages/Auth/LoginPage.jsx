@@ -175,7 +175,7 @@ function LoginPage() {
 
             <Typography variant="body2" sx={{ mt: 1 }}>
               Don’t have an account?{" "}
-              <Link component={RouterLink} to="/signup" underline="hover">
+              <Link component={RouterLink} to="/organization/register" underline="hover">
                 Sign up
               </Link>
             </Typography>

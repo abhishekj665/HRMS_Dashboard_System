@@ -100,6 +100,7 @@ const LeaveManagement = () => {
       if (response.success) {
         setOpen(false);
         getRequests();
+        getLeaveBalanceData();
         setFormData({
           leaveTypeId: "",
           startDate: "",

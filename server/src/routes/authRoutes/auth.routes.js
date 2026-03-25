@@ -1,7 +1,7 @@
 import express from "express";
 import {
   logIn,
-  signUp,
+ 
   verifyOtp,
   logOut,
   me,
@@ -13,7 +13,7 @@ import { userAuth } from "../../middlewares/auth.middleware.js";
 
 export const authRouter = express.Router();
 
-authRouter.post("/signup", validate(authSchema), signUp);
+// authRouter.post("/signup", validate(authSchema), signUp);
 authRouter.post("/login", validate(authSchema), logIn);
 authRouter.post("/verify", verifyOtp);
 authRouter.post("/logout", userAuth, logOut);

@@ -1,6 +1,5 @@
 import HomePage from "./pages/UserPages/UserLayoutPage";
 import AdminUserPage from "./pages/AdminPages/User/AdminUserPage";
-import SignUpPage from "./pages/Auth/SignupPage";
 import LogInPage from "./pages/Auth/LoginPage";
 
 import "./App.css";
@@ -52,6 +51,18 @@ import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterP
 function App() {
   const dispatch = useDispatch();
   useEffect(() => {
+    const pathname = window.location.pathname;
+    const isPublicRoute =
+      pathname === "/" ||
+      pathname === "/login" ||
+      pathname === "/organization/register" ||
+      pathname.startsWith("/careers") ||
+      pathname.startsWith("/offer/");
+
+    if (isPublicRoute) {
+      return;
+    }
+
     dispatch(fetchUser());
   }, []);
 
@@ -59,7 +70,7 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/signup" element={<SignUpPage />} />
+          {/* <Route path="/signup" element={<SignUpPage />} /> */}
           <Route
             path="/organization/register"
             element={<OrganizationRegisterPage />}
@@ -114,10 +125,13 @@ function App() {
           <Route path="/offer/:token" element={<OfferPage />} />
 
           <Route path="/careers" element={<CareersPage />}></Route>
-          <Route path="/careers/:slug" element={<JobDetailPage />} />
-          <Route path="/careers/:slug/apply" element={<JobApplicationPage />} />
+          <Route path="/careers/:orgSlug/:slug" element={<JobDetailPage />} />
+          <Route
+            path="/careers/:orgSlug/:slug/apply"
+            element={<JobApplicationPage />}
+          />
 
-          <Route path="/" element={<SignUpPage />}></Route>
+          <Route path="/" element={<LogInPage />}></Route>
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>

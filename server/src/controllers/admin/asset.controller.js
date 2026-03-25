@@ -4,7 +4,7 @@ import * as assetServices from "../../services/admin/asset.service.js";
 
 export const createAsset = async (req, res, next) => {
   try {
-    const response = await assetServices.createAssetService(req.body);
+    const response = await assetServices.createAssetService(req.body, req.user);
 
     if (response.success) {
       return successResponse(
@@ -23,7 +23,7 @@ export const createAsset = async (req, res, next) => {
 
 export const getAllAsset = async (req, res, next) => {
   try {
-    let response = await assetServices.getAllAsset();
+    let response = await assetServices.getAllAsset(req.user);
 
     if (response.success) {
       successResponse(res, response, response.message, STATUS.ACCEPTED);
@@ -37,7 +37,7 @@ export const getAllAsset = async (req, res, next) => {
 
 export const deleteAsset = async (req, res, next) => {
   try {
-    let response = await assetServices.deleteAssetService(req.params.id);
+    let response = await assetServices.deleteAssetService(req.params.id, req.user);
     if (response.success) {
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
@@ -52,7 +52,8 @@ export const updateAsset = async (req, res, next) => {
   try {
     let response = await assetServices.updateAssetService(
       req.params.id,
-      req.body
+      req.body,
+      req.user,
     );
     if (response.success) {
       successResponse(res, response, response.message, STATUS.ACCEPTED);

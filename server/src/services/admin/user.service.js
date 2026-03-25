@@ -6,15 +6,23 @@ import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
+import {
+  getScopedWhere,
+  getTenantOrGlobalWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getUsersService = async (page, limits, search) => {
+export const getUsersService = async (page, limits, search, adminUser) => {
   try {
     const { limit, offset } = getPagination(page, limits);
+    const tenantId = requireTenantId(adminUser);
 
-    let whereCondition = { role: "employee" };
+    let whereCondition = { role: "employee", tenantId };
 
     if (search != "" && search.trim() !== "") {
       whereCondition = {
+        tenantId,
+        role: "employee",
         [Op.or]: [
           { email: { [Op.like]: `%${search}%` } },
           { first_name: { [Op.like]: `%${search}%` } },
@@ -64,9 +72,9 @@ export const getUsersService = async (page, limits, search) => {
   }
 };
 
-export const blockUserService = async (id) => {
+export const blockUserService = async (id, adminUser) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findOne({ where: getScopedWhere(adminUser, { id }) });
     if (!user) {
       return { success: false, message: "User not found" };
     }
@@ -82,9 +90,11 @@ export const blockUserService = async (id) => {
   }
 };
 
-export const unblockUserService = async (userId) => {
+export const unblockUserService = async (userId, adminUser) => {
   try {
-    const user = await User.findByPk(userId);
+    const user = await User.findOne({
+      where: getScopedWhere(adminUser, { id: userId }),
+    });
     if (!user) {
       return { success: false, message: "User not found" };
     }
@@ -96,11 +106,11 @@ export const unblockUserService = async (userId) => {
   }
 };
 
-export const blockIPService = async (ip) => {
+export const blockIPService = async (ip, adminUser) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: true },
-      { where: { ipAddress: ip } },
+      { where: getScopedWhere(adminUser, { ipAddress: ip }) },
     );
 
     if (updatedCount === 0) {
@@ -116,11 +126,11 @@ export const blockIPService = async (ip) => {
   }
 };
 
-export const unblockIPService = async (ip) => {
+export const unblockIPService = async (ip, adminUser) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: false },
-      { where: { ipAddress: ip } },
+      { where: getScopedWhere(adminUser, { ipAddress: ip }) },
     );
 
     if (updatedCount === 0) {
@@ -132,7 +142,7 @@ export const unblockIPService = async (ip) => {
   }
 };
 
-export const registerUserService = async ({ data }) => {
+export const registerUserService = async ({ data }, adminUser) => {
   try {
     if (!data.email || !data.password) {
       return {
@@ -141,16 +151,20 @@ export const registerUserService = async ({ data }) => {
       };
     }
 
+    const tenantId = requireTenantId(adminUser);
     let hashedPassword = await generateHash(data.password);
 
     const attendancePolicy = await AttendancePolicy.findOne({
-      where: { isDefault: true },
+      where: getTenantOrGlobalWhere(tenantId, { isDefault: true }),
+      order: [["tenantId", "DESC"]],
     });
 
     let userData = await User.create({
       ...data,
+      isVerified: true,
+      tenantId,
       password: hashedPassword,
-      attendancePolicyId: attendancePolicy.id,
+      attendancePolicyId: attendancePolicy?.id || null,
     });
 
     return {
@@ -163,9 +177,10 @@ export const registerUserService = async ({ data }) => {
   }
 };
 
-export const getIPService = async () => {
+export const getIPService = async (adminUser) => {
   try {
     const ips = await UserIP.findAll({
+      where: { tenantId: requireTenantId(adminUser) },
       attributes: [
         [sequelize.fn("DISTINCT", sequelize.col("ipAddress")), "ipAddress"],
         "isBlocked",

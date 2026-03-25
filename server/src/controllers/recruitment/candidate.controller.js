@@ -5,7 +5,10 @@ import ExpressError from "../../utils/Error.utils.js";
 export const getCandidate = async (req, res, next) => {
   try {
     
-    const response = await CandidateService.getCandidate(req.query.email);
+    const response = await CandidateService.getCandidate(
+      req.query.email,
+      req.query.orgSlug,
+    );
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {

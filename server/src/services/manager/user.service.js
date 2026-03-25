@@ -5,16 +5,21 @@ import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { Attendance } from "../../models/Associations.model.js";
+import {
+  getTenantOrGlobalWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
 export const getUsersService = async (page, limits, user) => {
   try {
     const { limit, offset } = getPagination(page, limits);
+    const tenantId = requireTenantId(user);
 
     const { count, rows } = await User.findAndCountAll({
       distinct: true,
       limit,
       offset,
-      where: { managerId: user.id },
+      where: { managerId: user.id, tenantId },
       attributes: ["id", "isVerified", "isBlocked", "email", "role"],
       include: [
         {
@@ -36,7 +41,7 @@ export const getUsersService = async (page, limits, user) => {
   }
 };
 
-export const registerUserService = async ({ data }, managerId) => {
+export const registerUserService = async ({ data }, manager) => {
   try {
     if (!data.email || !data.password) {
       return {
@@ -45,17 +50,20 @@ export const registerUserService = async ({ data }, managerId) => {
       };
     }
 
+    const tenantId = requireTenantId(manager);
     let hashedPassword = await generateHash(data.password);
 
     const attendancePolicy = await AttendancePolicy.findOne({
-      where: { isDefault: true },
+      where: getTenantOrGlobalWhere(tenantId, { isDefault: true }),
+      order: [["tenantId", "DESC"]],
     });
 
     const userData = await User.create({
       ...data,
-      managerId : managerId,
+      tenantId,
+      managerId: manager.id,
       password: hashedPassword,
-      attendancePolicyId: attendancePolicy.id,
+      attendancePolicyId: attendancePolicy?.id || null,
     });
 
     return {

@@ -7,7 +7,7 @@ export const getAttendanceData = async (req, res, next) => {
   try {
     const response = await userAttendanceService.getAttendance(
       req.query,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -23,7 +23,7 @@ export const getAttendanceData = async (req, res, next) => {
 export const pendingAttendanceRequest = async (req, res, next) => {
   try {
     const response = await userAttendanceService.pendingAttendanceRequests(
-      req.user.id,
+      req.user,
     );
     if (response.success) {
       return successResponse(
@@ -43,7 +43,7 @@ export const pendingAttendanceRequest = async (req, res, next) => {
 export const rejectedAttendanceRequest = async (req, res, next) => {
   try {
     const response = await userAttendanceService.rejectedAttendanceRequest(
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -64,7 +64,7 @@ export const rejectedAttendanceRequest = async (req, res, next) => {
 export const approvedAttendanceRequest = async (req, res, next) => {
   try {
     const response = await userAttendanceService.approvedAttendanceRequest(
-      req.user.id,
+      req.user,
     );
     if (response.success) {
       return successResponse(

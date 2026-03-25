@@ -6,7 +6,7 @@ export const registerJobRequisition = async (req, res, next) => {
   try {
     const response = await JobRequisitionService.registerJobRequisition(
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -42,6 +42,7 @@ export const getJobRequisition = async (req, res, next) => {
   try {
     const response = await JobRequisitionService.getJobRequisition(
       req.params.id,
+      req.user,
     );
 
     if (response.success) {
@@ -59,6 +60,7 @@ export const updateJobRequisition = async (req, res, next) => {
     const response = await JobRequisitionService.updateJobRequisition(
       req.params.id,
       req.body,
+      req.user,
     );
 
     if (response.success) {
@@ -75,7 +77,7 @@ export const approveJobRequisition = async (req, res, next) => {
   try {
     const response = await JobRequisitionService.approveJobRequisition(
       req.params.id,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -93,7 +95,7 @@ export const rejectJobRequisition = async (req, res, next) => {
     const response = await JobRequisitionService.rejectJobRequisition(
       req.params.id,
       req.body.remark,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {

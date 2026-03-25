@@ -13,10 +13,17 @@ import {
   assetRejectedMailTemplate,
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import {
+  assertSameTenant,
+  getScopedWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getRequestDataService = async () => {
+export const getRequestDataService = async (manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     const requests = await AssetRequest.findAll({
+      where: { tenantId },
       order: [["createdAt", "DESC"]],
       include: [
         {
@@ -48,6 +55,7 @@ export const getRequestDataService = async () => {
 };
 
 export const rejectRequestService = async (id, remark, manager) => {
+  const tenantId = requireTenantId(manager);
   const request = await AssetRequest.findByPk(id, {
     include: [
       { model: User, as: "User" },
@@ -65,6 +73,8 @@ export const rejectRequestService = async (id, remark, manager) => {
       },
     ],
   });
+
+  assertSameTenant(request, tenantId, "Asset request");
 
   if (!request || request.status !== "pending") {
     throw new ExpressError(400, "Invalid request");
@@ -101,6 +111,7 @@ export const rejectRequestService = async (id, remark, manager) => {
 
 export const approveRequestService = async (id, manager) => {
   const t = await sequelize.transaction();
+  const tenantId = requireTenantId(manager);
 
   try {
     const request = await AssetRequest.findByPk(
@@ -125,11 +136,14 @@ export const approveRequestService = async (id, manager) => {
       { transaction: t },
     );
 
+    assertSameTenant(request, tenantId, "Asset request");
+
     if (!request || request.status !== "pending") {
       throw new ExpressError(400, "Invalid request");
     }
 
     const asset = await Asset.findByPk(request.assetId, { transaction: t });
+    assertSameTenant(asset, tenantId, "Asset");
 
     if (!asset || asset.availableQuantity < request.quantity) {
       return {
@@ -146,7 +160,7 @@ export const approveRequestService = async (id, manager) => {
     }
 
     const totalCredited = await UserAsset.sum("quantity", {
-      where: { userId: request.userId },
+      where: { userId: request.userId, tenantId },
       transaction: t,
     });
 
@@ -160,6 +174,7 @@ export const approveRequestService = async (id, manager) => {
     await UserAsset.create(
       {
         userId: request.userId,
+        tenantId,
         assetId: request.assetId,
         quantity: request.quantity,
       },
@@ -203,9 +218,10 @@ export const approveRequestService = async (id, manager) => {
 export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;
   const userId = user.id;
+  const tenantId = requireTenantId(user);
 
   const userData = await User.findOne({
-    where: { id: user.id },
+    where: getScopedWhere(user, { id: user.id }),
     attributes: ["email", "first_name"],
   });
 
@@ -213,12 +229,15 @@ export const createAssetRequestService = async (data, user) => {
     throw new ExpressError(400, "assetId and quantity are required");
   }
 
-  const asset = await Asset.findByPk(assetId);
+  const asset = await Asset.findOne({
+    where: getScopedWhere(user, { id: assetId }),
+  });
 
   if (!asset) throw new ExpressError(404, "Asset not found");
 
   await AssetRequest.create({
     userId,
+    tenantId,
     assetId,
     title: asset.title,
     quantity,
@@ -226,7 +245,7 @@ export const createAssetRequestService = async (data, user) => {
   });
 
   const adminData = await User.findOne({
-    where: { role: "admin" },
+    where: getScopedWhere(user, { role: "admin" }),
     attributes: ["email"],
   });
 

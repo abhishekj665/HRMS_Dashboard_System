@@ -2,6 +2,7 @@ import ExpressError from "../../utils/Error.utils.js";
 import { Candidate } from "../../models/Associations.model.js";
 import STATUS from "../../constants/Status.js";
 import { where } from "sequelize";
+import { findOrganizationByPublicSlug } from "../../utils/organization.utils.js";
 
 export const registerCandidate = async (data) => {
   try {
@@ -44,10 +45,16 @@ export const getCandidateByJobPost = async (id) => {
   }
 };
 
-export const getCandidate = async (email) => {
+export const getCandidate = async (email, orgSlug) => {
   try {
-    
-    const candidate = await Candidate.findOne({ where: { email } });
+    const organization = await findOrganizationByPublicSlug(orgSlug);
+
+    if (!organization)
+      throw new ExpressError(STATUS.NOT_FOUND, "No organization found");
+
+    const candidate = await Candidate.findOne({
+      where: { email, tenantId: organization.id },
+    });
 
     if (!candidate)
       throw new ExpressError(STATUS.NOT_FOUND, "No candidate found");

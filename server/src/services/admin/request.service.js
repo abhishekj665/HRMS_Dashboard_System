@@ -12,10 +12,16 @@ import {
   assetRejectedMailTemplate,
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import {
+  assertSameTenant,
+  getScopedWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getRequestDataService = async () => {
+export const getRequestDataService = async (adminUser) => {
   try {
     const requests = await AssetRequest.findAll({
+      where: { tenantId: requireTenantId(adminUser) },
       order: [["createdAt", "DESC"]],
       include: [
         {
@@ -44,7 +50,8 @@ export const getRequestDataService = async () => {
   }
 };
 
-export const rejectRequestService = async (id, remark, adminId) => {
+export const rejectRequestService = async (id, remark, adminUser) => {
+  const tenantId = requireTenantId(adminUser);
   const request = await AssetRequest.findByPk(id, {
     include: [
       { model: User },
@@ -65,16 +72,19 @@ export const rejectRequestService = async (id, remark, adminId) => {
 
   
 
+  assertSameTenant(request, tenantId, "Asset request");
+
   if (!request || request.status !== "pending") {
     throw new ExpressError(400, "Invalid request");
   }
 
   request.status = "rejected";
   request.adminRemark = remark;
-  request.reviewedBy = adminId;
+  request.reviewedBy = adminUser.id;
   await request.save();
 
-  const adminData = await User.findByPk(adminId, {
+  const adminData = await User.findOne({
+    where: getScopedWhere(adminUser, { id: adminUser.id }),
     attributes: ["email"],
   });
 
@@ -98,9 +108,10 @@ export const rejectRequestService = async (id, remark, adminId) => {
   };
 };
 
-export const approveRequestService = async (id, adminId) => {
+export const approveRequestService = async (id, adminUser) => {
   const t = await sequelize.transaction();
   let committed = false;
+  const tenantId = requireTenantId(adminUser);
 
   try {
     const request = await AssetRequest.findByPk(id, {
@@ -122,11 +133,14 @@ export const approveRequestService = async (id, adminId) => {
       transaction: t,
     });
 
+    assertSameTenant(request, tenantId, "Asset request");
+
     if (!request || request.status !== "pending") {
       throw new ExpressError(400, "Invalid request");
     }
 
     const asset = await Asset.findByPk(request.assetId, { transaction: t });
+    assertSameTenant(asset, tenantId, "Asset");
 
     if (!asset || asset.availableQuantity < request.quantity) {
       throw new ExpressError(400, "Not enough quantity available");
@@ -137,7 +151,7 @@ export const approveRequestService = async (id, adminId) => {
     }
 
     const totalCredited = await UserAsset.sum("quantity", {
-      where: { userId: request.userId },
+      where: { userId: request.userId, tenantId },
       transaction: t,
     });
 
@@ -151,6 +165,7 @@ export const approveRequestService = async (id, adminId) => {
     await UserAsset.create(
       {
         userId: request.userId,
+        tenantId,
         assetId: request.assetId,
         quantity: request.quantity,
       },
@@ -159,13 +174,14 @@ export const approveRequestService = async (id, adminId) => {
 
     request.status = "approved";
     request.adminRemark = `Approved by admin`;
-    request.reviewedBy = adminId;
+    request.reviewedBy = adminUser.id;
     await request.save({ transaction: t });
 
     await t.commit();
     committed = true;
 
-    const adminData = await User.findByPk(adminId, {
+    const adminData = await User.findOne({
+      where: getScopedWhere(adminUser, { id: adminUser.id }),
       attributes: ["email"],
     });
 

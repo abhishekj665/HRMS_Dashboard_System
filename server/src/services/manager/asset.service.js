@@ -4,10 +4,13 @@ import ExpressError from "../../utils/Error.utils.js";
 import { Op } from "sequelize";
 
 import STATUS from "../../constants/Status.js";
+import { requireTenantId } from "../../utils/tenant.utils.js";
 
-export const getAllAsset = async () => {
+export const getAllAsset = async (user) => {
   try {
-    let data = await Asset.findAll();
+    let data = await Asset.findAll({
+      where: { tenantId: requireTenantId(user) },
+    });
 
     if (!data) {
       return {
@@ -26,9 +29,10 @@ export const getAllAsset = async () => {
   }
 };
 
-export const getAvailableAssetsService = async () => {
+export const getAvailableAssetsService = async (user) => {
   let response = await Asset.findAll({
     where: {
+      tenantId: requireTenantId(user),
       availableQuantity: { [Op.gt]: 0 },
     },
     attributes: ["id", "title", "price", "category", "availableQuantity"],

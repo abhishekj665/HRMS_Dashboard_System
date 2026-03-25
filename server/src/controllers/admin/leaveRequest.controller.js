@@ -6,7 +6,7 @@ export const approveLeaveRequest = async (req, res, next) => {
   try {
     const response = await leaveApprovalService.approveLeaveRequest(
       req.params.id,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -29,7 +29,7 @@ export const rejectLeaveRequest = async (req, res, next) => {
     const response = await leaveApprovalService.rejectLeaveRequest(
       req.params.id,
       req.body.remark,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -52,7 +52,7 @@ export const getLeaveRequests = async (req, res, next) => {
     
     const response = await leaveApprovalService.getLeaveRequests(
       req.query,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {

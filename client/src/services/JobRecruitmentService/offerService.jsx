@@ -1,4 +1,4 @@
-import { API } from "../AuthService/authService";
+import { API, publicAPI } from "../AuthService/authService";
 
 export const generateOffer = async (applicationId, offerData) => {
   try {
@@ -21,7 +21,7 @@ export const generateOffer = async (applicationId, offerData) => {
 
 export const validateOfferToken = async (token) => {
   try {
-    const response = await API.post(`/recruitment/offer/accept/${token}`);
+    const response = await publicAPI.post(`/recruitment/offer/accept/${token}`);
     return response.data;
   } catch (error) {
     return {

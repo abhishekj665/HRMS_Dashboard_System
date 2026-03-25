@@ -2,28 +2,33 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
+import { registerOrganization } from "../../services/OrganizationService/organizationService";
 
 const initialFormData = {
   email: "",
   organizationName: "",
   modelSelectionType: "",
-  industryType: "",
-  allowedUsers: "",
+  industry: "",
+  domain: "",
+
   admin_first_name: "",
   admin_last_name: "",
-  adminPhone: "",
-  GST: "",
-  PAN: "",
+  contactNumber: "",
+
+  panNumber: "",
+  gstNumber: "",
+
   country: "",
   state: "",
   city: "",
   address: "",
-  postal_code: "",
+  postalCode: "",
+
   website: "",
+  description: "",
+  logoUrl: "",
+
   termsAccepted: false,
-  gstFileInput: null,
-  panFileInput: null,
-  logoInput: null,
 };
 
 const stepFields = [
@@ -31,19 +36,19 @@ const stepFields = [
     "email",
     "organizationName",
     "modelSelectionType",
-    "industryType",
+    "industry",
     "allowedUsers",
   ],
   [
     "admin_first_name",
     "admin_last_name",
-    "adminPhone",
-    "PAN",
+    "contactNumber",
+    "panNumber",
     "country",
     "state",
     "city",
     "address",
-    "postal_code",
+    "postalCode",
     "termsAccepted",
   ],
 ];
@@ -164,19 +169,53 @@ function OrganizationRegisterPage() {
     setActiveStep(0);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validateStep()) return;
 
     const payload = {
-      ...formData,
-      gstFileInput: formData.gstFileInput?.name || null,
-      panFileInput: formData.panFileInput?.name || null,
-      logoInput: formData.logoInput?.name || null,
+      organization: {
+        name: formData.organizationName,
+        industry: formData.industry,
+        domain: formData.domain,
+        status: formData.status,
+      },
+      profile: {
+        organizationName: formData.organizationName,
+        address: formData.address,
+        contactNumber: formData.contactNumber,
+        website: formData.website,
+        description: formData.description,
+        postalCode: formData.postalCode,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        logoUrl: formData.logoUrl,
+      },
+      adminData: {
+        firstName: formData.admin_first_name,
+        lastName: formData.admin_last_name,
+        contactNumber: formData.contactNumber,
+        email: formData.email,
+      },
+      legal: {
+        panNumber: formData.panNumber,
+        gstNumber: formData.gstNumber,
+      },
     };
 
-    toast.success("Organization registration form is ready.");
-    console.log("Organization register payload", payload);
+    const response = await registerOrganization(payload);
+
+    
+
+    if (response.success) {
+      toast.success(response.message);
+      setActiveStep(0);
+      setFormData(initialFormData);
+      navigate("/login");
+    } else {
+      toast.error(response.message);
+    }
   };
 
   const renderUploadRow = (name, label, accept) => (
@@ -241,7 +280,11 @@ function OrganizationRegisterPage() {
         <div className="ml-0 mr-auto grid grid-cols-12  px-5 py-10 sm:px-10 sm:py-14 md:px-24 lg:min-h-screen lg:max-w-387.5 lg:px-14 lg:py-0 xl:px-24 2xl:max-w-437.5">
           <div className="relative z-50 col-span-12 h-full rounded-2xl bg-white pl-4 pr-6 py-7 sm:pl-6 sm:pr-10 shadow-[0_30px_80px_rgba(15,23,42,0.12)] sm:p-14 lg:col-span-5 lg:bg-transparent lg:p-0 lg:pr-4 lg:shadow-none xl:pr-24 2xl:col-span-4">
             <div className="sidebar-scroll relative z-10 flex w-full flex-col justify-start lg:justify-start overflow-y-auto py-6 lg:h-screen lg:py-16">
-              <form onSubmit={activeStep === 0 ? handleNext : handleSubmit}>
+              <form
+                onSubmit={
+                  activeStep === 0 ? handleNext : (e) => handleSubmit(e)
+                }
+              >
                 {activeStep === 0 ? (
                   <>
                     <div className="mb-5 ">
@@ -307,16 +350,18 @@ function OrganizationRegisterPage() {
                         <span className="text-red-600">*</span>
                       </label>
                       <select
-                        name="industryType"
+                        name="industry"
                         className={inputClassName}
-                        value={formData.industryType}
+                        value={formData.industry}
                         onChange={handleChange}
                       >
                         <option value="">Select an industry</option>
-                        <option value="construction">Construction</option>
-                        <option value="healthcare">Healthcare</option>
-                        <option value="education">Education</option>
-                        <option value="others">Others</option>
+                        <option value="IT">Construction</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="Manufacturing">Manufacturing</option>
+                        <option value="Retail">Retail</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
 
@@ -344,14 +389,14 @@ function OrganizationRegisterPage() {
                     <div className="mt-6 flex flex-col gap-4 text-center xl:text-left">
                       <button
                         type="submit"
-                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95"
+                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
                       >
                         Next
                       </button>
                       <Link to="/login" className="w-full">
                         <button
                           type="button"
-                          className="w-full rounded-full border border-slate-300 bg-white px-3 py-3 font-medium text-slate-600 transition duration-200 hover:bg-slate-50"
+                          className="w-full rounded-full border border-slate-300 bg-white px-3 py-3 font-medium text-slate-600 transition duration-200 hover:bg-slate-50 hover:cursor-pointer"
                         >
                           Already have an account? Sign In
                         </button>
@@ -409,11 +454,11 @@ function OrganizationRegisterPage() {
                         </label>
                         <input
                           type="tel"
-                          name="adminPhone"
+                          name="contactNumber"
                           maxLength={10}
                           className={inputClassName}
                           placeholder="Enter contact number"
-                          value={formData.adminPhone}
+                          value={formData.contactNumber}
                           onChange={handleChange}
                         />
                       </div>
@@ -422,11 +467,11 @@ function OrganizationRegisterPage() {
                         <label className={labelClassName}>GST Number</label>
                         <input
                           type="text"
-                          name="GST"
+                          name="gstNumber"
                           maxLength={15}
                           className={inputClassName}
                           placeholder="Enter GST number (e.g., 22AAAAA0000A1Z5)"
-                          value={formData.GST}
+                          value={formData.gstNumber}
                           onChange={handleChange}
                         />
                       </div>
@@ -437,11 +482,11 @@ function OrganizationRegisterPage() {
                         </label>
                         <input
                           type="text"
-                          name="PAN"
+                          name="panNumber"
                           maxLength={10}
                           className={inputClassName}
                           placeholder="Enter PAN number (e.g., ABCDE1234F)"
-                          value={formData.PAN}
+                          value={formData.panNumber}
                           onChange={handleChange}
                         />
                       </div>
@@ -519,11 +564,11 @@ function OrganizationRegisterPage() {
                         </label>
                         <input
                           type="text"
-                          name="postal_code"
+                          name="postalCode"
                           maxLength={10}
                           className={inputClassName}
                           placeholder="Enter postal code"
-                          value={formData.postal_code}
+                          value={formData.postalCode}
                           onChange={handleChange}
                         />
                       </div>
@@ -593,7 +638,7 @@ function OrganizationRegisterPage() {
                             htmlFor="terms"
                             className="cursor-pointer select-none"
                           >
-                            I agree to the SigmaDesk
+                            I agree to the HRMS Dashboard
                           </label>
                           <button
                             type="button"
@@ -615,14 +660,15 @@ function OrganizationRegisterPage() {
                     <div className="mt-6 flex flex-col gap-3">
                       <button
                         type="submit"
-                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95"
+
+                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
                       >
-                        Send OTP & Verify
+                        Register Organization
                       </button>
                       <button
                         type="button"
                         onClick={handlePrevious}
-                        className="w-full rounded-full border border-slate-300 bg-white px-3 py-3 font-medium text-slate-600 transition duration-200 hover:bg-slate-50"
+                        className="w-full rounded-full border border-slate-300 bg-white px-3 py-3 font-medium text-slate-600 transition duration-200 hover:bg-slate-50 hover:cursor-pointer"
                       >
                         Previous
                       </button>

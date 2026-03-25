@@ -114,6 +114,7 @@ const ManagerLeaveManagement = () => {
       if (response.success) {
         setOpen(false);
         getRequests();
+        getLeaveBalanceData();
         setFormData({
           leaveTypeId: "",
           startDate: "",

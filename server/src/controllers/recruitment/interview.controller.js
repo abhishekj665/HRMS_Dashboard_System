@@ -3,7 +3,7 @@ import { successResponse, errorResponse } from "../../utils/response.utils.js";
 
 export const getInterviewers = async (req, res, next) => {
   try {
-    const response = await interviewService.getInterviewers();
+    const response = await interviewService.getInterviewers(req.user.id);
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {

@@ -4,7 +4,7 @@ import STATUS from "../../constants/Status.js";
 
 export const getLeaveTypes = async (req, res, next) => {
   try {
-    const response = await lmsLeaveTypeService.getLeaveTypes();
+    const response = await lmsLeaveTypeService.getLeaveTypes(req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);

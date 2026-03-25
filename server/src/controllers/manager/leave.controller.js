@@ -7,7 +7,7 @@ export const registerLeaveRequest = async (req, res, next) => {
   try {
     const response = await leaveService.registerLeaveRequest(
       req.body,
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -27,7 +27,7 @@ export const registerLeaveRequest = async (req, res, next) => {
 
 export const getLeaveBalance = async (req, res, next) => {
   try {
-    const response = await leaveBalanceService.getLeaveBalance(req.user.id);
+    const response = await leaveBalanceService.getLeaveBalance(req.user);
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);
     } else {
@@ -40,7 +40,7 @@ export const getLeaveBalance = async (req, res, next) => {
 
 export const getLeaveRequests = async (req, res, next) => {
   try {
-    const response = await leaveService.getLeaveRequest(req.user.id);
+    const response = await leaveService.getLeaveRequest(req.user);
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);
     } else {

@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getProfile = async () => {
   try {
-    const response = await API.get("/users/profile", {
+    const response = await API.get("/users/info/profile", {
       withCredentials: true,
     });
     return response.data;
@@ -109,7 +109,7 @@ export const getLeaveBalance = async () => {
 
 export const registerLeaveRequest = async (data) => {
   try {
-    console.log(data);
+    
     const res = await API.post("/users/lms/leave/apply", data);
     return res.data;
   } catch (error) {

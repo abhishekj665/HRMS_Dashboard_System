@@ -1,9 +1,9 @@
-import { API } from "../AuthService/authService";
+import { API, publicAPI } from "../AuthService/authService";
 
-export const registerJobApplication = async (slug, data) => {
+export const registerJobApplication = async (orgSlug, slug, data) => {
   try {
-    const response = await API.post(
-      `/recruitment/application/apply/${slug}`,
+    const response = await publicAPI.post(
+      `/recruitment/application/apply/${orgSlug}/${slug}`,
       data,
     );
 
@@ -57,9 +57,10 @@ export const getApplicationById = async (id) => {
 };
 
 export const shortlistApplication = async (id) => {
-  
   try {
-    const response = await API.patch(`/recruitment/application/shortlist/${id}`);
+    const response = await API.patch(
+      `/recruitment/application/shortlist/${id}`,
+    );
 
     return response.data;
   } catch (error) {

@@ -12,6 +12,7 @@ import { LeavePolicy } from "../models/Associations.model.js";
 import jwtSign, { jwtAccessSign } from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
 import { findOtpData } from "../config/otpService.js";
+import { getTenantOrGlobalWhere } from "../utils/tenant.utils.js";
 
 export const signUpService = async ({ first_name, email, password }) => {
   if (!email || !password) {
@@ -64,7 +65,7 @@ export const logInService = async ({ email, password }) => {
   }
 
   const ipDetails = await UserIP.findOne({
-    where: { userId: user.id },
+    where: { userId: user.id, tenantId: user.tenantId || null },
     order: [["createdAt", "DESC"]],
     attributes: {
       include: ["isBlocked"],
@@ -98,15 +99,16 @@ export const logInService = async ({ email, password }) => {
   }
 
   const attendancePolicy = await AttendancePolicy.findOne({
-    where: { isDefault: true },
+    where: getTenantOrGlobalWhere(user.tenantId, { isDefault: true }),
+    order: [["tenantId", "DESC"]],
   });
 
   if (attendancePolicy) {
     user.attendancePolicyId = attendancePolicy.id;
   }
 
-  const token = jwtSign(user.id, user.role);
-  const refreshToken = jwtAccessSign(user.id, user.role);
+  const token = jwtSign(user.id, user.role, user.tenantId);
+  const refreshToken = jwtAccessSign(user.id, user.role, user.tenantId);
 
   user.login_At = new Date();
   user.isVerified = true;
@@ -118,6 +120,7 @@ export const logInService = async ({ email, password }) => {
       id: user.id,
       email: user.email,
       role: user.role,
+      tenantId: user.tenantId,
       isVerified: user.isVerified,
     },
     token,
@@ -164,7 +167,8 @@ export const verifyOtpService = async (email, otp, purpose) => {
   await user.save();
 
   const leavePolicy = await LeavePolicy.findOne({
-    where: { isActive: true },
+    where: getTenantOrGlobalWhere(user.tenantId, { isActive: true }),
+    order: [["tenantId", "DESC"]],
   });
 
   if (leavePolicy) {
@@ -217,16 +221,23 @@ export const me = async (userId) => {
       user: {
         email: userData.email,
         role: userData.role,
+        tenantId: userData.tenantId,
         isBlocked: userData.isBlocked,
         isVerified: userData.isVerified,
       },
     };
-  } catch {}
+  } catch (error){
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
 };
 
 export const getAccessToken = async (refreshToken) => {
   try {
-    const accessToken = jwtAccessSign(refreshToken.id, refreshToken.role);
+    const accessToken = jwtAccessSign(
+      refreshToken.id,
+      refreshToken.role,
+      refreshToken.tenantId,
+    );
 
     return {
       success: true,

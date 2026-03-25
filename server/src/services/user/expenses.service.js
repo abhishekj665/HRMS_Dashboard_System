@@ -9,11 +9,17 @@ import { sequelize } from "../../config/db.js";
 import { expenseMailToManagerTemplate } from "../../utils/mailTemplate.utils.js";
 import { now } from "sequelize/lib/utils";
 import { sendMail } from "../../config/otpService.js";
+import {
+  assertSameTenant,
+  getScopedWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getExpenseDataService = async (id) => {
+export const getExpenseDataService = async (id, user) => {
   try {
+    const tenantId = requireTenantId(user);
     let expenseAccount = await Account.findOne({
-      where: { userId: id },
+      where: { userId: id, tenantId },
     });
 
     if (!expenseAccount) {
@@ -24,7 +30,7 @@ export const getExpenseDataService = async (id) => {
     }
 
     let expenseData = await Expenses.findAll({
-      where: { userId: id },
+      where: { userId: id, tenantId },
       include: [
         { model: User, as: "employee", attributes: ["email"] },
         { model: User, as: "reviewer", attributes: ["email", "role"] },
@@ -52,10 +58,11 @@ export const getExpenseDataService = async (id) => {
 export const newExpensesService = async (data, user) => {
   const transaction = await sequelize.transaction();
   let committed = false;
+  const tenantId = requireTenantId(user);
 
   try {
     const expenseAccount = await Account.findOne({
-      where: { userId: user.id },
+      where: { userId: user.id, tenantId },
       transaction,
     });
 
@@ -69,7 +76,7 @@ export const newExpensesService = async (data, user) => {
     if (!verify) throw new Error("Invalid PIN");
 
     const userData = await User.findOne({
-      where: { id: user.id },
+      where: getScopedWhere(user, { id: user.id }),
       attributes: ["managerId", "email", "first_name"],
       include: [{ model: User, as: "manager" }],
       transaction,
@@ -93,6 +100,7 @@ export const newExpensesService = async (data, user) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "Invalid Expense Date");
     const expense = await Expenses.create(
       {
+        tenantId,
         userId: user.id,
         amount,
         expenseDate,
@@ -149,6 +157,7 @@ export const updateExpenses = async (expenseId, user, remark = null) => {
     }
 
     const expense = await Expenses.findByPk(expenseId);
+    assertSameTenant(expense, requireTenantId(user), "Expense");
 
     if (!expense) {
       return {

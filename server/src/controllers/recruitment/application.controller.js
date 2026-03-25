@@ -23,6 +23,7 @@ export const registerApplication = async (req, res, next) => {
 
 
     const response = await ApplicationService.registerApplication(
+      req.params.orgSlug,
       req.params.slug,
       req.body,
     );
@@ -44,7 +45,7 @@ export const registerApplication = async (req, res, next) => {
 
 export const getApplications = async (req, res, next) => {
   try {
-    const response = await ApplicationService.getApplications(req.query);
+    const response = await ApplicationService.getApplications(req.query, req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message);
@@ -58,7 +59,10 @@ export const getApplications = async (req, res, next) => {
 
 export const getApplicationById = async (req, res, next) => {
   try {
-    const response = await ApplicationService.getApplicationById(req.params.id);
+    const response = await ApplicationService.getApplicationById(
+      req.params.id,
+      req.user,
+    );
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {
@@ -75,7 +79,7 @@ export const shortlistApplication = async (req, res, next) => {
   try {
     const response = await ApplicationService.shortlistApplication(
       req.params.id,
-      req.user.id,
+      req.user,
     );
     if (response.success) {
       return successResponse(res, response.data, response.message);
@@ -91,7 +95,7 @@ export const rejectApplication = async (req, res, next) => {
   try {
     const response = await ApplicationService.rejectApplication(
       req.params.id,
-      req.user.id,
+      req.user,
     );
     if (response.success) {
       return successResponse(res, response.data, response.message);

@@ -13,18 +13,20 @@ import {
   getLeaveRejectedTemplate,
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
-export const approveLeaveRequest = async (id, managerId) => {
+export const approveLeaveRequest = async (id, manager) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const tenantId = requireTenantId(manager);
     const leaveData = await LeaveRequest.findOne({
-      where: { id },
+      where: { id, tenantId },
       include: [
         { model: LeaveAuditLog, as: "auditLogs", required: false },
         {
           model: User,
-          where: { role: "employee", managerId: managerId },
+          where: { role: "employee", managerId: manager.id, tenantId },
           as: "employee",
           required: true,
           include: [
@@ -58,6 +60,7 @@ export const approveLeaveRequest = async (id, managerId) => {
       where: {
         userId: leaveData.userId,
         leaveTypeId: leaveData.leaveTypeId,
+        tenantId,
       },
     });
 
@@ -72,7 +75,7 @@ export const approveLeaveRequest = async (id, managerId) => {
     await leaveData.update(
       {
         status: "APPROVED",
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
         reviewedAt: new Date(),
         remark: "Approved By Manager",
       },
@@ -82,22 +85,23 @@ export const approveLeaveRequest = async (id, managerId) => {
     await LeaveAuditLog.create(
       {
         leaveRequestId: leaveData.id,
+        tenantId,
         newStatus: "APPROVED",
         action: "APPROVED",
         reviewedAt: new Date(),
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
       },
       { transaction },
     );
 
-    const manager = await User.findOne({
-      where: { id: managerId },
+    const managerData = await User.findOne({
+      where: getScopedWhere(manager, { id: manager.id }),
       attributes: ["email"],
       raw: true,
     });
 
     const html = getLeaveApprovedTemplate({
-      managerName: manager?.email.split("@")[0],
+      managerName: managerData?.email.split("@")[0],
       employeeName:
         leaveData.employee?.first_name ||
         leaveData.employee?.email.split("@")[0],
@@ -119,20 +123,22 @@ export const approveLeaveRequest = async (id, managerId) => {
       messsage: "Leave Approved Successfully",
     };
   } catch (error) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
 
-export const rejectLeaveRequest = async (id, remark, managerId) => {
+export const rejectLeaveRequest = async (id, remark, manager) => {
   const transaction = await sequelize.transaction();
   try {
+    const tenantId = requireTenantId(manager);
     const leaveData = await LeaveRequest.findOne({
-      where: { id },
+      where: { id, tenantId },
       include: [
         { model: LeaveAuditLog, as: "auditLogs", required: true },
         {
           model: User,
-          where: { role: "employee", managerId: managerId },
+          where: { role: "employee", managerId: manager.id, tenantId },
           as: "employee",
           required: true,
         },
@@ -158,9 +164,9 @@ export const rejectLeaveRequest = async (id, remark, managerId) => {
     await leaveData.update(
       {
         status: "REJECTED",
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
         reviewedAt: new Date(),
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
         remark: remark,
       },
       { transaction },
@@ -169,23 +175,24 @@ export const rejectLeaveRequest = async (id, remark, managerId) => {
     await LeaveAuditLog.create(
       {
         leaveRequestId: leaveData.id,
+        tenantId,
         newStatus: "REJECTED",
         action: "REJECTED",
         reviewedAt: new Date(),
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
       },
       { transaction },
     );
 
-    const manager = await User.findOne({
-      where: { id: managerId },
+    const managerData = await User.findOne({
+      where: getScopedWhere(manager, { id: manager.id }),
       attributes: ["email"],
       raw: true,
     });
 
 
     const html = getLeaveRejectedTemplate({
-      managerName: manager?.email.split("@")[0],
+      managerName: managerData?.email.split("@")[0],
       employeeName:
         leaveData.employee?.first_name ||
         leaveData.employee?.email.split("@")[0],
@@ -215,12 +222,13 @@ export const rejectLeaveRequest = async (id, remark, managerId) => {
 
 export const getLeaveRequests = async (
   { status = "PENDING", page = 1, limit = 10 },
-  managerId,
+  manager,
 ) => {
   try {
+    const tenantId = requireTenantId(manager);
     const offset = (page - 1) * limit;
 
-    const whereClause = {};
+    const whereClause = { tenantId };
 
     if (!status || status === "PENDING") {
       whereClause.status = "PENDING";
@@ -235,7 +243,7 @@ export const getLeaveRequests = async (
       include: [
         {
           model: User,
-          where: { role: "employee", managerId },
+          where: { role: "employee", managerId: manager.id, tenantId },
           as: "employee",
           required: true,
           attributes: ["id", "first_name", "email"],

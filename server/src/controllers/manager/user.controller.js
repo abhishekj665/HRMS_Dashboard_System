@@ -4,10 +4,7 @@ import * as userServices from "../../services/manager/user.service.js";
 
 export const registerUser = async (req, res, next) => {
   try {
-    let response = await userServices.registerUserService(
-      req.body,
-      req.user.id,
-    );
+    let response = await userServices.registerUserService(req.body, req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message);

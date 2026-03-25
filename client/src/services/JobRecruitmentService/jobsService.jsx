@@ -1,8 +1,8 @@
-import { API } from "../AuthService/authService";
+import { publicAPI } from "../AuthService/authService";
 
 export const getAllJobs = async () => {
   try {
-    const response = await API.get("/recruitment/jobs");
+    const response = await publicAPI.get("/recruitment/jobs");
     return response.data;
   } catch (error) {
     return {
@@ -12,9 +12,9 @@ export const getAllJobs = async () => {
   }
 };
 
-export const getJobDetail = async (slug) => {
+export const getJobDetail = async (orgSlug, slug) => {
   try {
-    const response = await API.get(`/recruitment/job/${slug}`);
+    const response = await publicAPI.get(`/recruitment/job/${orgSlug}/${slug}`);
     return response.data;
   } catch (error) {
     return {

@@ -27,7 +27,7 @@ const steps = [
 ];
 
 export default function JobApplicationPage() {
-  const { slug } = useParams();
+  const { orgSlug, slug } = useParams();
   const navigate = useNavigate();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -64,39 +64,38 @@ export default function JobApplicationPage() {
   });
   const getCandidateDetails = async () => {
     try {
-      const response = await getCandidate(form.email);
+      const response = await getCandidate(form.email, orgSlug);
 
-      if (!response?.success) {
+      if (response.success && response.data) {
+        const candidate = response.data;
+
+        setForm((prev) => ({
+          ...prev,
+          firstName: candidate?.firstName ?? "",
+          lastName: candidate?.lastName ?? "",
+          email: candidate?.email ?? "",
+          contact: candidate?.contact?.toString() ?? "",
+          address: candidate?.address ?? "",
+          city: candidate?.city ?? "",
+          state: candidate?.state ?? "",
+          country: candidate?.country ?? "",
+          currentCompany: candidate?.currentCompany ?? "",
+          totalExperience: candidate?.totalExperience?.toString() ?? "",
+          currentCTC: candidate?.currentCTC?.toString() ?? "",
+          expectedCTC: candidate?.expectedCTC?.toString() ?? "",
+          noticePeriodDays: candidate?.noticePeriodDays?.toString() ?? "",
+          source: candidate?.source ?? "",
+          linkedInUrl: candidate?.linkedInUrl ?? "",
+          portfolioUrl: candidate?.portfolioUrl ?? "",
+          resumeUrl: candidate?.resumeUrl ?? "",
+        }));
+
         setToast({
           open: true,
-          message: response?.message || "Candidate not found",
-          severity: "info",
+          message: "Candidate details loaded. Please verify and continue.",
+          severity: "success",
         });
-        return;
       }
-
-      const candidate = response.data;
-
-      setForm((prev) => ({
-        ...prev,
-        firstName: candidate?.firstName ?? "",
-        lastName: candidate?.lastName ?? "",
-        email: candidate?.email ?? "",
-        contact: candidate?.contact?.toString() ?? "",
-        address: candidate?.address ?? "",
-        city: candidate?.city ?? "",
-        state: candidate?.state ?? "",
-        country: candidate?.country ?? "",
-        currentCompany: candidate?.currentCompany ?? "",
-        totalExperience: candidate?.totalExperience?.toString() ?? "",
-        currentCTC: candidate?.currentCTC?.toString() ?? "",
-        expectedCTC: candidate?.expectedCTC?.toString() ?? "",
-        noticePeriodDays: candidate?.noticePeriodDays?.toString() ?? "",
-        source: candidate?.source ?? "",
-        linkedInUrl: candidate?.linkedInUrl ?? "",
-        portfolioUrl: candidate?.portfolioUrl ?? "",
-        resumeUrl: candidate?.resumeUrl ?? "",
-      }));
     } catch (err) {
       console.error("Candidate fetch error:", err);
 
@@ -164,7 +163,9 @@ export default function JobApplicationPage() {
         formData.append("resume", resumeFile);
       }
 
-      const response = await registerJobApplication(slug, formData);
+      const response = await registerJobApplication(orgSlug, slug, formData);
+
+      console.log("Application response:", response);
 
       if (response.success) {
         setToast({

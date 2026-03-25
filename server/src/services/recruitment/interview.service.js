@@ -21,11 +21,17 @@ import { sequelize } from "../../config/db.js";
 import dayjs from "dayjs";
 import { Op } from "sequelize";
 
-export const getInterviewers = async () => {
+export const getInterviewers = async (adminId) => {
   try {
+    const admin = await User.findOne({
+      where: { id: adminId, role: "admin" },
+    });
+
+    const tenantId = admin.tenantId;
     const interviewers = await User.findAll({
       where: {
         role: "manager",
+        tenantId,
       },
       attributes: ["id", "email"],
     });

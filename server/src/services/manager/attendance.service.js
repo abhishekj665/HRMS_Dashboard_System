@@ -11,12 +11,17 @@ import {
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import { sequelize } from "../../config/db.js";
+import {
+  getScopedWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getAllAttendance = async (filters = {}, managerId) => {
+export const getAllAttendance = async (filters = {}, manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     const { status, role, page = 1, limit = 10 } = filters;
 
-    const where = { requestedTo: managerId };
+    const where = { tenantId, requestedTo: manager.id };
     if (status) where.status = status.toUpperCase();
 
     const requesterWhere = {};
@@ -67,11 +72,12 @@ export const getAllAttendance = async (filters = {}, managerId) => {
   }
 };
 
-export const getAttendance = async (filters = {}, managerId) => {
+export const getAttendance = async (filters = {}, manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     const { status, role, page = 1, limit = 10 } = filters;
 
-    const where = { requestedBy: managerId };
+    const where = { tenantId, requestedBy: manager.id };
     if (status) where.status = status.toUpperCase();
 
     const requesterWhere = {};
@@ -128,12 +134,13 @@ export const getAttendance = async (filters = {}, managerId) => {
   }
 };
 
-export const approveAttendanceRequest = async (managerId, id) => {
+export const approveAttendanceRequest = async (manager, id) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const tenantId = requireTenantId(manager);
     const attendanceData = await AttendanceRequest.findOne({
-      where: { id: id, status: "PENDING" },
+      where: { id: id, status: "PENDING", tenantId, requestedTo: manager.id },
       include: [
         { model: Attendance },
         { model: User, as: "requester", attributes: ["email", "role"] },
@@ -157,25 +164,26 @@ export const approveAttendanceRequest = async (managerId, id) => {
     }
 
     attendance.status = "APPROVED";
-    attendance.approvedBy = managerId;
+    attendance.approvedBy = manager.id;
     attendance.approvedAt = new Date();
     await attendance.save({ transaction });
 
     attendanceData.status = "APPROVED";
-    attendanceData.reviewedBy = managerId;
+    attendanceData.reviewedBy = manager.id;
     attendanceData.reviewedAt = new Date();
 
     await attendanceData.save({ transaction });
 
     await transaction.commit();
 
-    const manager = await User.findByPk(managerId, {
+    const managerData = await User.findOne({
+      where: getScopedWhere(manager, { id: manager.id }),
       attributes: ["email"],
     });
 
     const html = attendanceApprovedMailTemplate({
       userName: attendanceData.requester.email.split("@")[0],
-      managerName: manager.email.split("@")[0],
+      managerName: managerData.email.split("@")[0],
       date: new Date().toLocaleString("en-IN"),
       punchInTime: attendanceData.Attendance.punchInAt,
       punchOutTime: attendanceData.Attendance.punchOutAt,
@@ -194,12 +202,13 @@ export const approveAttendanceRequest = async (managerId, id) => {
   }
 };
 
-export const rejectAttendanceRequest = async (managerId, id, data) => {
+export const rejectAttendanceRequest = async (manager, id, data) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const tenantId = requireTenantId(manager);
     const attendanceData = await AttendanceRequest.findOne({
-      where: { id: id, status: "PENDING" },
+      where: { id: id, status: "PENDING", tenantId, requestedTo: manager.id },
       include: [
         { model: Attendance, attributes: ["punchOutAt", "punchInAt"] },
         { model: User, as: "requester", attributes: ["email", "role"] },
@@ -223,11 +232,11 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
     }
 
     attendance.status = "APPROVED";
-    attendance.approvedBy = managerId;
+    attendance.approvedBy = manager.id;
     attendance.approvedAt = new Date();
     await attendance.save({ transaction });
 
-    attendanceData.reviewedBy = managerId;
+    attendanceData.reviewedBy = manager.id;
     attendanceData.reviewedAt = new Date();
     attendanceData.status = "REJECTED";
     attendanceData.remark = data.remark;
@@ -236,13 +245,14 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
 
     await transaction.commit();
 
-    const manager = await User.findByPk(managerId, {
+    const managerData = await User.findOne({
+      where: getScopedWhere(manager, { id: manager.id }),
       attributes: ["email"],
     });
 
     const html = attendanceRejectedMailTemplate({
       userName: attendanceData.requester.email.split("@")[0],
-      managerName: manager.email.split("@")[0],
+      managerName: managerData.email.split("@")[0],
       date: new Date().toLocaleString("en-IN"),
       punchInTime: attendanceData.Attendance.punchInAt,
       punchOutTime: attendanceData.Attendance.punchOutAt,
@@ -263,9 +273,10 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
 
 export const bulkAttendanceRequestReject = async (
   { ids, remark },
-  managerId,
+  manager,
 ) => {
   try {
+    const tenantId = requireTenantId(manager);
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
@@ -278,7 +289,7 @@ export const bulkAttendanceRequestReject = async (
     }
 
     const requests = await AttendanceRequest.findAll({
-      where: { id: ids, status: "PENDING" },
+      where: { id: ids, status: "PENDING", tenantId, requestedTo: manager.id },
       include: [
         {
           model: Attendance,
@@ -307,10 +318,10 @@ export const bulkAttendanceRequestReject = async (
       {
         status: "REJECTED",
         remark,
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
       },
       {
-        where: { id: ids, status: "PENDING" },
+        where: { id: ids, status: "PENDING", tenantId, requestedTo: manager.id },
       },
     );
 
@@ -323,8 +334,9 @@ export const bulkAttendanceRequestReject = async (
   }
 };
 
-export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
+export const bulkAttendanceRequestApprove = async ({ ids }, manager) => {
   try {
+    const tenantId = requireTenantId(manager);
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
@@ -333,7 +345,7 @@ export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
     }
 
     const requests = await AttendanceRequest.findAll({
-      where: { id: ids, status: "PENDING" },
+      where: { id: ids, status: "PENDING", tenantId, requestedTo: manager.id },
       include: [
         {
           model: Attendance,
@@ -363,22 +375,22 @@ export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
     await Attendance.update(
       {
         status: "APPROVED",
-        approvedBy: managerId,
+        approvedBy: manager.id,
         approvedAt: new Date(),
       },
       {
-        where: { id: attendanceIds },
+        where: { id: attendanceIds, tenantId },
       },
     );
 
     await AttendanceRequest.update(
       {
         status: "APPROVED",
-        reviewedBy: managerId,
+        reviewedBy: manager.id,
         reviewedAt: new Date(),
       },
       {
-        where: { id: ids, status: "PENDING" },
+        where: { id: ids, status: "PENDING", tenantId, requestedTo: manager.id },
       },
     );
 

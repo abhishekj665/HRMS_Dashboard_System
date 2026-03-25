@@ -3,13 +3,19 @@ import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
 import { Op } from "sequelize";
+import {
+  getTenantOrGlobalWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getAttendancePolicies = async () => {
+export const getAttendancePolicies = async ({ user }) => {
   try {
+    const tenantId = requireTenantId(user);
     const policyData = await AttendancePolicy.findAll({
-      where: { deletedAt: null },
+      where: getTenantOrGlobalWhere(tenantId, { deletedAt: null }),
       include: [OvertimePolicy],
       order: [
+        ["tenantId", "DESC"],
         ["isDefault", "DESC"],
         ["effectiveFrom", "DESC"],
         ["createdAt", "DESC"],
@@ -26,10 +32,15 @@ export const getAttendancePolicies = async () => {
   }
 };
 
-export const getDefaultAttendancePolicy = async () => {
+export const getDefaultAttendancePolicy = async ({ user }) => {
+  const tenantId = requireTenantId(user);
   const policy = await AttendancePolicy.findOne({
-    where: { isDefault: true, deletedAt: null },
+    where: getTenantOrGlobalWhere(tenantId, {
+      isDefault: true,
+      deletedAt: null,
+    }),
     include: [OvertimePolicy],
+    order: [["tenantId", "DESC"]],
   });
 
   if (!policy) {
@@ -39,8 +50,9 @@ export const getDefaultAttendancePolicy = async () => {
   return { success: true, data: policy };
 };
 
-export const createAttendancePolicy = async (userId, { data }) => {
+export const createAttendancePolicy = async (user, { data }) => {
   const t = await sequelize.transaction();
+  const tenantId = requireTenantId(user);
 
   try {
     const { attendancePolicy, overtimePolicy } = data;
@@ -89,6 +101,7 @@ export const createAttendancePolicy = async (userId, { data }) => {
 
     const overlap = await AttendancePolicy.findOne({
       where: {
+        tenantId,
         deletedAt: null,
         effectiveFrom: {
           [Op.lte]: attendancePolicy.effectiveTo || "9999-12-31",
@@ -114,15 +127,16 @@ export const createAttendancePolicy = async (userId, { data }) => {
     if (attendancePolicy.isDefault === true) {
       await AttendancePolicy.update(
         { isDefault: false },
-        { where: { isDefault: true }, transaction: t },
+        { where: { tenantId, isDefault: true }, transaction: t },
       );
     }
 
     const attendance = await AttendancePolicy.create(
       {
         ...attendancePolicy,
+        tenantId,
         shiftType,
-        createdBy: userId,
+        createdBy: user.id,
       },
       { transaction: t },
     );
@@ -158,28 +172,9 @@ export const createAttendancePolicy = async (userId, { data }) => {
   }
 };
 
-// export const getAttendancePolicyById = async (id) => {
-//   try {
-//     const policyData = await AttendancePolicy.findByPk(id, {
-//       include: [OvertimePolicy],
-//     });
-
-//     if (!policyData) {
-//       return { success: false, message: "Attendance Policy Data Not Found" };
-//     }
-
-//     return {
-//       success: true,
-//       data: policyData,
-//       message: "Attendance Policy Data Fetched Successfully",
-//     };
-//   } catch (error) {
-//     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
-//   }
-// };
-
-export const updateAttendancePolicy = async (id, { data }) => {
+export const updateAttendancePolicy = async (id, user, { data }) => {
   const t = await sequelize.transaction();
+  const tenantId = requireTenantId(user);
   try {
     const { attendancePolicy, overtimePolicy } = data;
 
@@ -228,6 +223,7 @@ export const updateAttendancePolicy = async (id, { data }) => {
     const overlap = await AttendancePolicy.findOne({
       where: {
         id: { [Op.ne]: id },
+        tenantId,
         deletedAt: null,
         effectiveFrom: {
           [Op.lte]: attendancePolicy.effectiveTo || "9999-12-31",
@@ -247,7 +243,7 @@ export const updateAttendancePolicy = async (id, { data }) => {
       await AttendancePolicy.update(
         { isDefault: false },
         {
-          where: { isDefault: true, deletedAt: null },
+          where: { tenantId, isDefault: true, deletedAt: null },
           transaction: t,
         },
       );
@@ -259,7 +255,7 @@ export const updateAttendancePolicy = async (id, { data }) => {
         shiftType,
       },
       {
-        where: { id },
+        where: { id, tenantId },
         transaction: t,
       },
     );
@@ -306,9 +302,11 @@ export const updateAttendancePolicy = async (id, { data }) => {
   }
 };
 
-export const deleteAttendancePolicy = async (id) => {
+export const deleteAttendancePolicy = async (id, user) => {
   try {
-    const policy = await AttendancePolicy.findByPk(id);
+    const policy = await AttendancePolicy.findOne({
+      where: { id, tenantId: requireTenantId(user) },
+    });
 
     if (!policy) {
       return { success: false, message: "Policy Data Not Found" };
@@ -343,3 +341,24 @@ export const deleteAttendancePolicy = async (id) => {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
+
+// export const getAttendancePolicyById = async (id) => {
+//   try {
+//     const policyData = await AttendancePolicy.findByPk(id, {
+//       include: [OvertimePolicy],
+//     });
+
+//     if (!policyData) {
+//       return { success: false, message: "Attendance Policy Data Not Found" };
+//     }
+
+//     return {
+//       success: true,
+//       data: policyData,
+//       message: "Attendance Policy Data Fetched Successfully",
+//     };
+//   } catch (error) {
+//     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+//   }
+// };
+

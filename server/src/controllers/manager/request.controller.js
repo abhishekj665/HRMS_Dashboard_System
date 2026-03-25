@@ -6,7 +6,7 @@ import { io } from "../../server.js";
 
 export const getRequestData = async (req, res, next) => {
   try {
-    const response = await requestServices.getRequestDataService();
+    const response = await requestServices.getRequestDataService(req.user);
 
     if (response.success) {
       return successResponse(

@@ -2,8 +2,9 @@ import { AssetRequest, Asset } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
 import STATUS from "../../constants/Status.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
-export const createAssetService = async (data) => {
+export const createAssetService = async (data, adminUser) => {
   const {
     title,
     description,
@@ -18,12 +19,11 @@ export const createAssetService = async (data) => {
     throw new ExpressError(400, "All required fields must be provided");
   }
 
+  const tenantId = requireTenantId(adminUser);
   title.toLowerCase();
 
   const existingAsset = await Asset.findOne({
-    where: {
-      title,
-    },
+    where: getScopedWhere(adminUser, { title }),
   });
 
   if (existingAsset) {
@@ -40,6 +40,7 @@ export const createAssetService = async (data) => {
   }
 
   const asset = await Asset.create({
+    tenantId,
     title,
     description,
     category,
@@ -58,9 +59,11 @@ export const createAssetService = async (data) => {
   };
 };
 
-export const getAllAsset = async () => {
+export const getAllAsset = async (adminUser) => {
   try {
-    let data = await Asset.findAll();
+    let data = await Asset.findAll({
+      where: getScopedWhere(adminUser, {}),
+    });
 
     if (!data) {
       return {
@@ -79,10 +82,10 @@ export const getAllAsset = async () => {
   }
 };
 
-export const deleteAssetService = async (id) => {
+export const deleteAssetService = async (id, adminUser) => {
   try {
-    let asset = await Asset.findAll({
-      where: { id },
+    let asset = await Asset.findOne({
+      where: getScopedWhere(adminUser, { id }),
       include: {
         model: AssetRequest,
         required: false,
@@ -91,7 +94,7 @@ export const deleteAssetService = async (id) => {
 
     if (!asset) return { message: "Asset not found" };
 
-    await Asset.destroy({ where: { id } });
+    await Asset.destroy({ where: getScopedWhere(adminUser, { id }) });
 
     if (!asset) return { message: "Asset not found" };
 
@@ -101,13 +104,15 @@ export const deleteAssetService = async (id) => {
   }
 };
 
-export const updateAssetService = async (id, data) => {
+export const updateAssetService = async (id, data, adminUser) => {
   try {
     if (!id) {
       throw new ExpressError(400, "Asset ID is required");
     }
 
-    const asset = await Asset.findByPk(id);
+    const asset = await Asset.findOne({
+      where: getScopedWhere(adminUser, { id }),
+    });
 
     if (!asset || asset.isDeleted) {
       throw new ExpressError(404, "Asset not found");

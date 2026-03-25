@@ -11,12 +11,19 @@ import { OfferRoute } from "./offer.route.js";
 const Router = express.Router();
 
 Router.use(JobRequistionRouter);
+
 Router.use(JobPostingRouter);
+
 Router.use(ApplicationRouter);
+
 Router.use(CandidateRouter);
+
 Router.use(InterviewRouter);
+
 Router.use(InterviewFeedbackRouter);
-Router.use(HiringStageRoute)
+
+Router.use(HiringStageRoute);
+
 Router.use(OfferRoute);
 
 export const RecruitmentRouter = Router;

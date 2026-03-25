@@ -19,12 +19,37 @@ import {
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import app from "../../app.js";
+import { requireTenantId } from "../../utils/tenant.utils.js";
+import { findOrganizationByPublicSlug } from "../../utils/organization.utils.js";
 
-export const registerApplication = async (slug, data) => {
+export const registerApplication = async (orgSlug, slug, data) => {
   const transaction = await sequelize.transaction();
   try {
+    const organization = await findOrganizationByPublicSlug(
+      orgSlug,
+      transaction,
+    );
+
+    if (!organization) {
+      throw new ExpressError(STATUS.NOT_FOUND, "No organization found");
+    }
+
+    const jobPosting = await JobPosting.findOne({
+      where: { slug: slug, tenantId: organization.id },
+      transaction,
+    });
+
+    if (
+      !jobPosting ||
+      jobPosting.isActive === false ||
+      (jobPosting.expiresAt && jobPosting.expiresAt < new Date())
+    ) {
+      throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
+    }
+
+    const tenantId = jobPosting.tenantId;
     let candidate = await Candidate.findOne({
-      where: { email: data.email },
+      where: { email: data.email, tenantId },
       transaction,
     });
 
@@ -35,6 +60,7 @@ export const registerApplication = async (slug, data) => {
     if (!candidate) {
       candidate = await Candidate.create(
         {
+          tenantId,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
@@ -59,23 +85,11 @@ export const registerApplication = async (slug, data) => {
       await candidate.save({ transaction });
     }
 
-    const jobPosting = await JobPosting.findOne({
-      where: { slug: slug },
-      transaction,
-    });
-
-    if (
-      !jobPosting ||
-      jobPosting.isActive === false ||
-      (jobPosting.expiresAt && jobPosting.expiresAt < new Date())
-    ) {
-      throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
-    }
-
     const id = jobPosting.id;
 
     const application = await Application.findOne({
       where: {
+        tenantId,
         candidateId: candidate.id,
         jobPostingId: id,
       },
@@ -92,6 +106,7 @@ export const registerApplication = async (slug, data) => {
 
     const firstStage = await HiringStage.findOne({
       where: {
+        tenantId,
         jobPostingId: id,
         isDefault: true,
       },
@@ -104,6 +119,7 @@ export const registerApplication = async (slug, data) => {
 
     const newApplication = await Application.create(
       {
+        tenantId,
         candidateId: candidate.id,
         jobPostingId: id,
         currentStageId: firstStage.id,
@@ -133,15 +149,16 @@ export const registerApplication = async (slug, data) => {
   }
 };
 
-export const getApplications = async (query) => {
+export const getApplications = async (query, user) => {
   try {
+    const tenantId = requireTenantId(user);
     const { jobId, stageId, status, search } = query;
 
     const pageNumber = Math.max(parseInt(query.page) || 1, 1);
     const pageSize = Math.min(Math.max(parseInt(query.limit) || 10, 1), 100);
 
     const offset = (pageNumber - 1) * pageSize;
-    const whereClause = {};
+    const whereClause = { tenantId };
 
     if (jobId) whereClause.jobPostingId = jobId;
     const stageFilter = stageId ? { name: stageId } : null;
@@ -212,10 +229,10 @@ export const getApplications = async (query) => {
   }
 };
 
-export const getApplicationById = async (id) => {
+export const getApplicationById = async (id, user) => {
   try {
     const application = await Application.findOne({
-      where: { id: id },
+      where: { id: id, tenantId: requireTenantId(user) },
       include: [
         {
           model: Candidate,
@@ -279,11 +296,12 @@ export const getApplicationById = async (id) => {
   }
 };
 
-export const shortlistApplication = async (id, userId) => {
+export const shortlistApplication = async (id, user) => {
   const transaction = await sequelize.transaction();
   try {
+    const tenantId = requireTenantId(user);
     const application = await Application.findOne({
-      where: { id: id },
+      where: { id: id, tenantId },
       include: [
         {
           model: HiringStage,
@@ -312,6 +330,7 @@ export const shortlistApplication = async (id, userId) => {
 
     const nextStage = await HiringStage.findOne({
       where: {
+        tenantId,
         jobPostingId: application.jobPostingId,
         stageOrder: application.currentStage.stageOrder + 1,
       },
@@ -328,10 +347,11 @@ export const shortlistApplication = async (id, userId) => {
 
     await ApplicationStageLog.create(
       {
+        tenantId,
         applicationId: application.id,
         fromStageId: application.currentStage.id,
         toStageId: nextStage.id,
-        changedBy: userId,
+        changedBy: user.id,
         changedByType: "ADMIN",
         oldStatus: "Applied",
         newStatus: nextStage.name,
@@ -365,12 +385,14 @@ export const shortlistApplication = async (id, userId) => {
   }
 };
 
-export const rejectApplication = async (id, userId) => {
+export const rejectApplication = async (id, user) => {
   const transaction = await sequelize.transaction();
   try {
+    const tenantId = requireTenantId(user);
     const application = await Application.findOne({
       where: {
         id: id,
+        tenantId,
         status: {
           [Op.notIn]: ["REJECTED", "WITHDRAWN", "HIRED", "OFFERED"],
         },
@@ -437,10 +459,11 @@ export const rejectApplication = async (id, userId) => {
 
     await ApplicationStageLog.create(
       {
+        tenantId,
         applicationId: application.id,
         fromStageId: currentStage.id,
         toStageId: rejectStage.id,
-        changedBy: userId,
+        changedBy: user.id,
         chandegedByType: "ADMIN",
         oldStatus: currentStage.name,
         newStatus: rejectStage.name,

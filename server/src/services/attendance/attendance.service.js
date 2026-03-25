@@ -19,30 +19,38 @@ import {
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import { getToday } from "../../utils/localTime.utils.js";
+import {
+  getTenantOrGlobalWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-const getActivePolicy = async (date, transaction) => {
+const getActivePolicy = async (tenantId, date, transaction) => {
   const d = date.toISOString().slice(0, 10);
 
   return AttendancePolicy.findOne({
     where: {
+      ...getTenantOrGlobalWhere(tenantId, {}),
       effectiveFrom: { [Op.lte]: d },
       [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: d } }],
     },
     include: [{ model: OvertimePolicy }],
+    order: [["tenantId", "DESC"]],
     transaction,
     lock: transaction.LOCK.UPDATE,
   });
 };
 
-export const registerInService = async (userId, { data }, ipAddress) => {
+export const registerInService = async (authUser, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
   let committed = false;
   let mailPayload = null;
   try {
     const now = new Date();
     const { lat, lng } = data;
+    const tenantId = requireTenantId(authUser);
 
-    const user = await User.findByPk(userId, {
+    const user = await User.findOne({
+      where: { id: authUser.id, tenantId },
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
@@ -58,7 +66,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       );
     }
 
-    const policy = await getActivePolicy(now, transaction);
+    const policy = await getActivePolicy(tenantId, now, transaction);
 
     if (!policy) {
       throw new ExpressError(
@@ -83,14 +91,14 @@ export const registerInService = async (userId, { data }, ipAddress) => {
     end.setHours(23, 59, 59, 999);
 
     let row = await Attendance.findOne({
-      where: { userId, punchInAt: { [Op.between]: [start, end] } },
+      where: { userId: authUser.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
 
     if (row) {
       const req = await AttendanceRequest.findOne({
-        where: { attendanceId: row.id },
+        where: { attendanceId: row.id, tenantId },
         attributes: ["status"],
         transaction,
         lock: transaction.LOCK.UPDATE,
@@ -106,7 +114,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
 
     if (row) {
       const lastLog = await AttendanceLog.findOne({
-        where: { attendanceId: row.id },
+        where: { attendanceId: row.id, tenantId },
         order: [["punchTime", "DESC"]],
         transaction,
         lock: transaction.LOCK.UPDATE,
@@ -127,7 +135,8 @@ export const registerInService = async (userId, { data }, ipAddress) => {
     if (!row) {
       row = await Attendance.create(
         {
-          userId,
+          tenantId,
+          userId: authUser.id,
           punchInAt: now,
           date: getToday,
           lastInAt: now,
@@ -143,8 +152,9 @@ export const registerInService = async (userId, { data }, ipAddress) => {
         await AttendanceRequest.create(
           {
             attendanceId: row.id,
+            tenantId,
             requestType: "REGULARIZATION",
-            requestedBy: userId,
+            requestedBy: authUser.id,
             requestedTo,
             status: "PENDING",
           },
@@ -163,7 +173,8 @@ export const registerInService = async (userId, { data }, ipAddress) => {
 
     await AttendanceLog.create(
       {
-        userId,
+        tenantId,
+        userId: authUser.id,
         attendanceId: row.id,
         punchType: "IN",
         punchTime: now,
@@ -230,11 +241,12 @@ export const registerInService = async (userId, { data }, ipAddress) => {
   }
 };
 
-export const registerOutService = async (userId, { data }, ipAddress) => {
+export const registerOutService = async (authUser, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
   try {
     const now = new Date();
     const { lat, lng } = data;
+    const tenantId = requireTenantId(authUser);
 
     const start = new Date();
     start.setHours(0, 0, 0, 0);
@@ -242,7 +254,7 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: { userId, punchInAt: { [Op.between]: [start, end] } },
+      where: { userId: authUser.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
@@ -252,7 +264,7 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
     }
 
     const lastLog = await AttendanceLog.findOne({
-      where: { attendanceId: row.id },
+      where: { attendanceId: row.id, tenantId },
       order: [["punchTime", "DESC"]],
       transaction,
       lock: transaction.LOCK.UPDATE,
@@ -264,7 +276,8 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
 
     await AttendanceLog.create(
       {
-        userId,
+        tenantId,
+        userId: authUser.id,
         attendanceId: row.id,
         punchType: "OUT",
         punchTime: now,
@@ -277,7 +290,7 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
     );
 
     const totalSeconds = await calculateWorkedSecondsFromLogs(
-      userId,
+      authUser.id,
       row.id,
       transaction,
     );
@@ -318,15 +331,16 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
   }
 };
 
-export const getTodayAttendanceService = async (userId) => {
+export const getTodayAttendanceService = async (user) => {
   try {
+    const tenantId = requireTenantId(user);
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: { userId, punchInAt: { [Op.between]: [start, end] } },
+      where: { userId: user.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
     });
 
     if (!row) {
@@ -334,7 +348,7 @@ export const getTodayAttendanceService = async (userId) => {
     }
 
     const totalSeconds = await calculateWorkedSecondsFromLogs(
-      userId,
+      user.id,
       row.id,
       null,
     );
@@ -351,8 +365,9 @@ export const getTodayAttendanceService = async (userId) => {
   }
 };
 
-export const getAttendanceSummary = async (userId, month, year) => {
+export const getAttendanceSummary = async (user, month, year) => {
   try {
+    const tenantId = requireTenantId(user);
     const monthNum = Number(month);
     const yearNum = Number(year);
 
@@ -367,7 +382,8 @@ export const getAttendanceSummary = async (userId, month, year) => {
 
     const attendanceData = await Attendance.findAll({
       where: {
-        userId,
+        userId: user.id,
+        tenantId,
         status: "APPROVED",
         date: {
           [Op.between]: [startDate, endDate],

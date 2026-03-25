@@ -8,7 +8,7 @@ export const registerInController = async (req, res, next) => {
     const ipAddress = getIP(req);
 
     const response = await attendanceServices.registerInService(
-      req.user.id,
+      req.user,
       req.body,
       ipAddress,
     );
@@ -33,7 +33,7 @@ export const registerOutController = async (req, res, next) => {
     const ipAddress = getIP(req);
 
     const response = await attendanceServices.registerOutService(
-      req.user.id,
+      req.user,
       req.body,
       ipAddress,
     );
@@ -56,7 +56,7 @@ export const registerOutController = async (req, res, next) => {
 export const getTodayAttendance = async (req, res, next) => {
   try {
     const response = await attendanceServices.getTodayAttendanceService(
-      req.user.id,
+      req.user,
     );
 
     if (response.success) {
@@ -79,7 +79,11 @@ export const getAttendanceSummary = async (req, res) => {
     const userId = req.user.id;
     const { month, year } = req.query;
 
-    const response = await attendanceServices.getAttendanceSummary(userId, month, year);
+    const response = await attendanceServices.getAttendanceSummary(
+      req.user,
+      month,
+      year,
+    );
 
     if (response.success) {
       return successResponse(res, response.data, response.message);

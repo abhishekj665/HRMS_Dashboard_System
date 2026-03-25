@@ -1,8 +1,15 @@
 import axios from "axios";
 import { loadingRef } from "../../loadingContext";
 
+const baseURL = import.meta.env.VITE_BASE_URL;
+
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL,
+  withCredentials: true,
+});
+
+export const publicAPI = axios.create({
+  baseURL,
   withCredentials: true,
 });
 
@@ -11,7 +18,23 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+publicAPI.interceptors.request.use((config) => {
+  loadingRef.set(true);
+  return config;
+});
+
 API.interceptors.response.use(
+  (res) => {
+    loadingRef.set(false);
+    return res;
+  },
+  (err) => {
+    loadingRef.set(false);
+    return Promise.reject(err);
+  },
+);
+
+publicAPI.interceptors.response.use(
   (res) => {
     loadingRef.set(false);
     return res;

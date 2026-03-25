@@ -4,7 +4,7 @@ import STATUS from "../../constants/Status.js";
 
 export const getAllManagersData = async (req, res, next) => {
   try {
-    let response = await managerServices.getAllManagers();
+    let response = await managerServices.getAllManagers(req.user);
 
     return successResponse(res, response.data, response.message, STATUS.OK);
   } catch (error) {
@@ -16,7 +16,7 @@ export const registerManager = async (req, res, next) => {
   try {
     let data = req.body.data;
 
-    let response = await managerServices.registerManagerService(data);
+    let response = await managerServices.registerManagerService(data, req.user);
 
     if (response.success) {
       return successResponse(
@@ -42,6 +42,7 @@ export const assignWorkersToManager = async (req, res, next) => {
   try {
     const response = await managerServices.assignWorkersToManagerService(
       req.body,
+      req.user,
     );
     return res.status(200).json(response);
   } catch (error) {
@@ -51,7 +52,7 @@ export const assignWorkersToManager = async (req, res, next) => {
 
 export const getManagersWithUsers = async (req, res, next) => {
   try {
-    const response = await managerServices.getManagersWithUsersService();
+    const response = await managerServices.getManagersWithUsersService(req.user);
     return res.status(200).json(response);
   } catch (error) {
     return next(error);

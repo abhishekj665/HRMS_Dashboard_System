@@ -3,10 +3,26 @@ import STATUS from "../../constants/Status.js";
 import { User, AttendancePolicy } from "../../models/Associations.model.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { sequelize } from "../../config/db.js";
+import {
+  getScopedWhere,
+  getTenantOrGlobalWhere,
+  requireTenantId,
+} from "../../utils/tenant.utils.js";
 
-export const getAllManagers = async () => {
+export const getAllManagers = async (adminUser) => {
   try {
-    const managerData = await User.findAll({ where: { role: "manager" } });
+
+    
+    const admin = await User.findOne({
+      where: { id: adminUser.id, role: "admin" },
+    });
+
+    const tenantId = admin.tenantId;
+
+    
+    const managerData = await User.findAll({
+      where: { tenantId, role: "manager" },
+    });
 
     if (!managerData) {
       return {
@@ -14,6 +30,8 @@ export const getAllManagers = async () => {
         message: "Manager Data Not Found",
       };
     }
+
+   
 
     return {
       success: true,
@@ -25,24 +43,28 @@ export const getAllManagers = async () => {
   }
 };
 
-export const registerManagerService = async (data) => {
+export const registerManagerService = async (data, adminUser) => {
   try {
     const { email, password } = data;
+    const tenantId = requireTenantId(adminUser);
 
     const hashedPassword = await generateHash(password);
 
     const attendancePolicy = await AttendancePolicy.findOne({
-      where: { isDefault: true },
+      where: getTenantOrGlobalWhere(tenantId, { isDefault: true }),
+      order: [["tenantId", "DESC"]],
     });
 
     const managerData = await User.create({
-      first_name: data.first_name || "Manager2",
+      first_name: data.first_name || "",
       last_name: data.last_name || "",
       email,
       contact: data.contact || 0,
+      tenantId,
       password: hashedPassword,
       role: "manager",
-      attendancePolicyId: attendancePolicy.id,
+      isVerified: true,
+      attendancePolicyId: attendancePolicy?.id || null,
     });
 
     return {
@@ -55,11 +77,12 @@ export const registerManagerService = async (data) => {
   }
 };
 
-export const assignWorkersToManagerService = async ({
-  managerId,
-  workerIds,
-}) => {
+export const assignWorkersToManagerService = async (
+  { managerId, workerIds },
+  adminUser,
+) => {
   const transaction = await sequelize.transaction();
+  const tenantId = requireTenantId(adminUser);
 
   try {
     if (!managerId || !workerIds?.length) {
@@ -67,7 +90,7 @@ export const assignWorkersToManagerService = async ({
     }
 
     const manager = await User.findOne({
-      where: { id: managerId, role: "manager" },
+      where: { id: managerId, role: "manager", tenantId },
       transaction,
     });
 
@@ -76,7 +99,7 @@ export const assignWorkersToManagerService = async ({
     }
 
     const workers = await User.findAll({
-      where: { id: workerIds, role: "employee" },
+      where: { id: workerIds, role: "employee", tenantId },
       transaction,
     });
 
@@ -98,16 +121,19 @@ export const assignWorkersToManagerService = async ({
   }
 };
 
-export const getManagersWithUsersService = async () => {
+export const getManagersWithUsersService = async (adminUser) => {
+  const tenantId = requireTenantId(adminUser);
   try {
     const managers = await User.findAll({
-      where: { role: "manager" },
+      where: getScopedWhere(adminUser, { role: "manager" }),
       attributes: ["id", "email", "first_name", "last_name"],
       include: [
         {
           model: User,
           as: "workers",
           attributes: ["id", "email", "first_name", "last_name"],
+          where: { tenantId },
+          required: false,
         },
       ],
     });
