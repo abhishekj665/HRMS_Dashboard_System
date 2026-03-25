@@ -74,7 +74,9 @@ export const getUsersService = async (page, limits, search, adminUser) => {
 
 export const blockUserService = async (id, adminUser) => {
   try {
-    const user = await User.findOne({ where: getScopedWhere(adminUser, { id }) });
+    const user = await User.findOne({
+      where: getScopedWhere(adminUser, { id }),
+    });
     if (!user) {
       return { success: false, message: "User not found" };
     }
@@ -161,7 +163,6 @@ export const registerUserService = async ({ data }, adminUser) => {
 
     let userData = await User.create({
       ...data,
-      isVerified: true,
       tenantId,
       password: hashedPassword,
       attendancePolicyId: attendancePolicy?.id || null,

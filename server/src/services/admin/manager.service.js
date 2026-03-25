@@ -63,7 +63,6 @@ export const registerManagerService = async (data, adminUser) => {
       tenantId,
       password: hashedPassword,
       role: "manager",
-      isVerified: true,
       attendancePolicyId: attendancePolicy?.id || null,
     });
 
