@@ -4,6 +4,11 @@ import { errorResponse } from "../../utils/response.utils.js";
 import * as expensesServices from "../../services/user/expenses.service.js";
 import STATUS from "../../constants/Status.js";
 import { io } from "../../server.js";
+import {
+  getAdminRoom,
+  getManagerRoom,
+  getUserRoom,
+} from "../../utils/socketRooms.utils.js";
 
 import cloudinary from "../../config/cloudinary.js";
 import fs from "fs";
@@ -11,7 +16,6 @@ import fs from "fs";
 export const getExpenseData = async (req, res, next) => {
   try {
     let response = await expensesServices.getExpenseDataService(
-      req.user.id,
       req.user,
     );
     if (response.success) {
@@ -52,9 +56,9 @@ export const createNewExpense = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("expenseCreated");
-      io.to("admin").emit("expenseCreated");
-      io.to(`user:${req.user.id}`).emit("expenseCreated");
+      io.to(getManagerRoom(req.user.tenantId)).emit("expenseCreated");
+      io.to(getAdminRoom(req.user.tenantId)).emit("expenseCreated");
+      io.to(getUserRoom(req.user.id, req.user.tenantId)).emit("expenseCreated");
 
       return successResponse(res, response.data, response.message);
     } else {
@@ -73,15 +77,15 @@ export const updateExpense = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("expenseUpdated", {
+      io.to(getManagerRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense updated",
       });
 
-      io.to("admin").emit("expenseUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense updated",
       });
 
-      io.to(`user:${response.userId}`).emit("expenseUpdated", {
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("expenseUpdated", {
         message: "Your expense was updated",
       });
 

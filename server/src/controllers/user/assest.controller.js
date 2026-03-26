@@ -3,6 +3,10 @@ import STATUS from "../../constants/Status.js";
 
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 import { io } from "../../server.js";
+import {
+  getAdminRoom,
+  getManagerRoom,
+} from "../../utils/socketRooms.utils.js";
 
 export const createAssetRequest = async (req, res, next) => {
   try {
@@ -14,11 +18,11 @@ export const createAssetRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("requestCreated", {
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestCreated", {
         message: "New request created",
       });
 
-      io.to("admin").emit("requestCreated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestCreated", {
         message: "New request created",
       });
 

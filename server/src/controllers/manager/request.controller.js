@@ -3,6 +3,11 @@ import STATUS from "../../constants/Status.js";
 import * as requestServices from "../../services/manager/request.service.js";
 
 import { io } from "../../server.js";
+import {
+  getAdminRoom,
+  getManagerRoom,
+  getUserRoom,
+} from "../../utils/socketRooms.utils.js";
 
 export const getRequestData = async (req, res, next) => {
   try {
@@ -33,14 +38,14 @@ export const approveRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("requestUpdated");
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestUpdated");
 
-      io.to("admin").emit("requestUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated", {
         message: "Request status updated",
       });
 
 
-      io.to(`user:${response.userId}`).emit("requestUpdated");
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
@@ -63,14 +68,14 @@ export const rejectRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("requestUpdated");
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestUpdated");
 
-      io.to("admin").emit("requestUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated", {
         message: "Request status updated",
       });
 
 
-      io.to(`user:${response.userId}`).emit("requestUpdated");
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
@@ -91,10 +96,10 @@ export const createAssetRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("requestCreated", {
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestCreated", {
         message: "New request created",
       });
-      io.to("admin").emit("requestUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated", {
         message: "Request status updated",
       });
 

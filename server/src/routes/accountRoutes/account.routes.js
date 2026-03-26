@@ -6,18 +6,8 @@ import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 export const accountRouter = express.Router();
 
-accountRouter.use(userAuth);
-
 accountRouter
   .route("/")
   .get(allowRoles("manager", "employee"), accountController.getAccountData)
-  .post(
-    allowRoles("manager", "employee"),
-    refreshAuth,
-    accountController.registerAccount,
-  );
-accountRouter.put(
-  "/update",
-  allowRoles("manager", "employee"),
-  accountController.updateAccount,
-);
+  .post(userAuth, accountController.registerAccount);
+accountRouter.put("/update", userAuth, accountController.updateAccount);

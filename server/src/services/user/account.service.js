@@ -2,10 +2,13 @@ import { Account } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
 export const getAccountDataService = async (user) => {
   try {
-    let accountData = Account.findOne({ where: { userId: user.id } });
+    let accountData = await Account.findOne({
+      where: getScopedWhere(user, { userId: user.id }),
+    });
 
     if (accountData) {
       return {
@@ -24,6 +27,7 @@ export const getAccountDataService = async (user) => {
 
 export const registerAccountService = async (data, user) => {
   try {
+    const tenantId = requireTenantId(user);
     let { email, pin } = data;
     if (!email || !pin) {
       return new ExpressError(STATUS.BAD_REQUEST, "Email and Pincode Required");
@@ -31,13 +35,17 @@ export const registerAccountService = async (data, user) => {
     let hashPin = await generateHash(String(pin), 10);
 
     const lastAccount = await Account.findOne({
+      where: { tenantId },
       order: [["createdAt", "DESC"]],
     });
 
     const accountNumber = lastAccount ? lastAccount.accountNumber + 1 : 1;
 
+    
+
     let account = await Account.create({
       userId: user.id,
+      tenantId,
       accountNumber: accountNumber,
       pin: hashPin,
       email: email,
@@ -54,6 +62,7 @@ export const registerAccountService = async (data, user) => {
 
 export const updateAccountService = async (data, user) => {
   try {
+    const tenantId = requireTenantId(user);
     let { newEmail, pin } = data;
 
     let hashPin = await generateHash(String(pin), 10);
@@ -64,11 +73,13 @@ export const updateAccountService = async (data, user) => {
         email: newEmail,
       },
       {
-        where: { userId: user.id },
+        where: { userId: user.id, tenantId },
       },
     );
 
-    let accountInfo = await Account.findOne({ where: { userId: user.id } });
+    let accountInfo = await Account.findOne({
+      where: { userId: user.id, tenantId },
+    });
 
     if (updatedCount) {
       return {

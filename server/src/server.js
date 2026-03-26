@@ -6,6 +6,11 @@ import { Server } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
 import { syncDB } from "./config/db.js";
+import {
+  getAdminRoom,
+  getManagerRoom,
+  getUserRoom,
+} from "./utils/socketRooms.utils.js";
 
 const server = http.createServer(app);
 
@@ -29,22 +34,29 @@ io.on("connection", (socket) => {
     const token = cookies.token;
 
     const decoded = jwt.verify(token, env.jwt_password);
+    const tenantId = decoded.tenantId;
 
-    if (decoded.role === "admin") {
-      socket.join("admin");
-    } else if (decoded.role === "manager") {
-      socket.join("manager");
+    if (tenantId) {
+      if (decoded.role === "admin") {
+        socket.join(getAdminRoom(tenantId));
+      } else if (decoded.role === "manager") {
+        socket.join(getManagerRoom(tenantId));
+      }
+
+      socket.join(getUserRoom(decoded.id, tenantId));
     }
 
-    socket.join(`user:${decoded.id}`);
-
     socket.on("requestCreated", (data) => {
-      io.to("admin").emit("requestCreated", data);
+      if (tenantId) {
+        io.to(getAdminRoom(tenantId)).emit("requestCreated", data);
+      }
     });
 
     socket.on("requestUpdated", (data) => {
-      io.to("admin").emit("requestUpdated", data);
-      io.to("manager").emit("requestUpdated", data);
+      if (tenantId) {
+        io.to(getAdminRoom(tenantId)).emit("requestUpdated", data);
+        io.to(getManagerRoom(tenantId)).emit("requestUpdated", data);
+      }
     });
   } catch (err) {
     socket.disconnect();

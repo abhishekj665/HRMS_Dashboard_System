@@ -2,6 +2,11 @@ import STATUS from "../../constants/Status.js";
 import * as expensesService from "../../services/manager/expense.service.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 import { io } from "../../server.js";
+import {
+  getAdminRoom,
+  getManagerRoom,
+  getUserRoom,
+} from "../../utils/socketRooms.utils.js";
 
 export const getAllExpense = async (req, res, next) => {
   try {
@@ -26,15 +31,15 @@ export const approveExpenseRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("expenseUpdated", {
+      io.to(getManagerRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense status updated",
       });
 
-      io.to("admin").emit("expenseUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense status updated",
       });
 
-      io.to(`user:${response.userId}`).emit("expenseUpdated", {
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("expenseUpdated", {
         message: "Your expense status updated",
       });
 
@@ -61,15 +66,15 @@ export const rejectExpenseRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("manager").emit("expenseUpdated", {
+      io.to(getManagerRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense status updated",
       });
 
-      io.to("admin").emit("expenseUpdated", {
+      io.to(getAdminRoom(req.user.tenantId)).emit("expenseUpdated", {
         message: "Expense status updated",
       });
 
-      io.to(`user:${response.userId}`).emit("expenseUpdated", {
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("expenseUpdated", {
         message: "Your expense status updated",
       });
 

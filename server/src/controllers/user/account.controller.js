@@ -2,7 +2,7 @@ import STATUS from "../../constants/Status.js";
 import * as accountServices from "../../services/user/account.service.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
-export const getAccountData = async () => {
+export const getAccountData = async (req, res, next) => {
   try {
     let response = await accountServices.getAccountDataService(req.user);
 

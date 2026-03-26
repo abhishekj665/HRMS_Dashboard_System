@@ -3,6 +3,10 @@ import STATUS from "../../constants/Status.js";
 import * as requestServices from "../../services/admin/request.service.js";
 
 import { io } from "../../server.js";
+import {
+  getAdminRoom,
+  getUserRoom,
+} from "../../utils/socketRooms.utils.js";
 
 export const getRequestData = async (req, res, next) => {
   try {
@@ -31,9 +35,9 @@ export const approveRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("admin").emit("requestUpdated");
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated");
 
-      io.to(`user:${response.userId}`).emit("requestUpdated");
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {
@@ -55,9 +59,9 @@ export const rejectRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("admin").emit("requestUpdated");
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated");
 
-      io.to(`user:${response.userId}`).emit("requestUpdated");
+      io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 
       return successResponse(res, response, response.message, STATUS.ACCEPTED);
     } else {

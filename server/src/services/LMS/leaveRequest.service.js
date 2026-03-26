@@ -30,6 +30,8 @@ export const registerLeaveRequest = async (data, authUser) => {
       data.isHalfDay,
     );
 
+    
+
     data.daysRequested = dayRequested;
 
     const { leaveTypeId } = data;
@@ -63,6 +65,11 @@ export const registerLeaveRequest = async (data, authUser) => {
       ],
     });
 
+    if(user.managerId === null){
+      throw new ExpressError(STATUS.BAD_REQUEST, "No manager assigned to your profile. Please contact Admin."
+      );
+    }
+
     if (!user || !user.leavePolicy)
       throw new ExpressError(STATUS.BAD_REQUEST, "No policy found");
 
@@ -86,6 +93,7 @@ export const registerLeaveRequest = async (data, authUser) => {
         `Leave request must be within policy effective period (${policy.effectiveFrom} - ${policy.effectiveTo})`,
       );
     }
+    
 
     if (
       !user.leavePolicy.isActive ||
@@ -124,6 +132,8 @@ export const registerLeaveRequest = async (data, authUser) => {
       where: { id: leaveTypeId, tenantId },
     });
 
+    
+
     if (leaveType.requiresApproval && !user.manager) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
@@ -141,6 +151,8 @@ export const registerLeaveRequest = async (data, authUser) => {
       leaveBalance.balance -= data.daysRequested;
       await leaveBalance.save({ transaction });
     }
+
+    
 
     const leaveData = await LeaveRequest.create(
       {
@@ -161,6 +173,8 @@ export const registerLeaveRequest = async (data, authUser) => {
       { transaction },
     );
 
+
+    
     let admin = null;
 
     if (user.role === "manager") {
@@ -170,6 +184,12 @@ export const registerLeaveRequest = async (data, authUser) => {
         raw: true,
       });
     }
+
+    
+
+    await transaction.commit();
+
+  
 
     const html = getLeaveRequestCreatedTemplate({
       managerName:
@@ -186,7 +206,7 @@ export const registerLeaveRequest = async (data, authUser) => {
       sendMail(admin.email, "New Leave Request", html);
     } else sendMail(user.manager.email, "New Leave Request", html);
 
-    await transaction.commit();
+    
 
     return {
       success: true,

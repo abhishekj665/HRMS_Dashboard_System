@@ -1,6 +1,11 @@
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
-import { User, AttendancePolicy } from "../../models/Associations.model.js";
+import {
+  User,
+  AttendancePolicy,
+  Employee,
+  Organization,
+} from "../../models/Associations.model.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { sequelize } from "../../config/db.js";
 import {
@@ -8,18 +13,18 @@ import {
   getTenantOrGlobalWhere,
   requireTenantId,
 } from "../../utils/tenant.utils.js";
+import { getInviteEmailTemplate } from "../../utils/mailTemplate.utils.js";
+import { env } from "../../config/env.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const getAllManagers = async (adminUser) => {
   try {
-
-    
     const admin = await User.findOne({
       where: { id: adminUser.id, role: "admin" },
     });
 
     const tenantId = admin.tenantId;
 
-    
     const managerData = await User.findAll({
       where: { tenantId, role: "manager" },
     });
@@ -30,8 +35,6 @@ export const getAllManagers = async (adminUser) => {
         message: "Manager Data Not Found",
       };
     }
-
-   
 
     return {
       success: true,
@@ -44,9 +47,19 @@ export const getAllManagers = async (adminUser) => {
 };
 
 export const registerManagerService = async (data, adminUser) => {
+  const transaction = await sequelize.transaction();
   try {
     const { email, password } = data;
     const tenantId = requireTenantId(adminUser);
+
+    const existingManager = await User.findOne({
+      where: { email, tenantId },
+      transaction,
+    });
+
+    if (existingManager) {
+      throw new ExpressError(400, "Manager with this email already exists");
+    }
 
     const hashedPassword = await generateHash(password);
 
@@ -55,16 +68,44 @@ export const registerManagerService = async (data, adminUser) => {
       order: [["tenantId", "DESC"]],
     });
 
-    const managerData = await User.create({
-      first_name: data.first_name || "",
-      last_name: data.last_name || "",
-      email,
-      contact: data.contact || 0,
-      tenantId,
-      password: hashedPassword,
-      role: "manager",
-      attendancePolicyId: attendancePolicy?.id || null,
+    const managerData = await User.create(
+      {
+        first_name: data.first_name || "",
+        last_name: data.last_name || "",
+        email,
+        contact: data.contact || 0,
+        tenantId,
+        password: hashedPassword,
+        role: "manager",
+        attendancePolicyId: attendancePolicy?.id || null,
+      },
+      { transaction },
+    );
+
+    // const employee = await Employee.create({
+    //   userId: managerData.id,
+    //   tenantId,
+    //   role: "manager",
+    // }, { transaction });
+
+    const organization = await Organization.findOne({
+      where: { id: tenantId },
+      transaction,
     });
+
+    const html = getInviteEmailTemplate({
+      name: managerData.first_name || managerData.email.split("@")[0],
+      role: "Manager",
+      companyName: organization?.name || "our organization",
+      inviteLink: env.client_url,
+      password: password,
+      email,
+      password,
+    });
+
+    await sendMail(email, "Welcome to the team!", html);
+
+    await transaction.commit();
 
     return {
       success: true,
@@ -72,6 +113,7 @@ export const registerManagerService = async (data, adminUser) => {
       message: "Message Register Successfully",
     };
   } catch (error) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

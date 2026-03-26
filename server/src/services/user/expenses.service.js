@@ -7,7 +7,6 @@ import bcrypt from "bcrypt";
 import { sequelize } from "../../config/db.js";
 
 import { expenseMailToManagerTemplate } from "../../utils/mailTemplate.utils.js";
-import { now } from "sequelize/lib/utils";
 import { sendMail } from "../../config/otpService.js";
 import {
   assertSameTenant,
@@ -15,11 +14,11 @@ import {
   requireTenantId,
 } from "../../utils/tenant.utils.js";
 
-export const getExpenseDataService = async (id, user) => {
+export const getExpenseDataService = async (user) => {
   try {
     const tenantId = requireTenantId(user);
     let expenseAccount = await Account.findOne({
-      where: { userId: id, tenantId },
+      where: { userId: user.id, tenantId },
     });
 
     if (!expenseAccount) {
@@ -30,7 +29,7 @@ export const getExpenseDataService = async (id, user) => {
     }
 
     let expenseData = await Expenses.findAll({
-      where: { userId: id, tenantId },
+      where: { userId: user.id, tenantId },
       include: [
         { model: User, as: "employee", attributes: ["email"] },
         { model: User, as: "reviewer", attributes: ["email", "role"] },
@@ -81,6 +80,13 @@ export const newExpensesService = async (data, user) => {
       include: [{ model: User, as: "manager" }],
       transaction,
     });
+
+    if (!userData.manager) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "No manager assigned to you. Please contact admin.",
+      );
+    }
 
     const expenseDateObj = new Date(expenseDate);
 

@@ -2499,3 +2499,69 @@ export const offerEmailTemplate = ({
   </div>
   `;
 };
+
+export const getInviteEmailTemplate = ({
+  name,
+  role,
+  companyName,
+  inviteLink,
+  password,
+  email,
+}) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <body style="margin:0;background:#f4f6f8;font-family:Arial">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px">
+      <tr>
+        <td align="center">
+
+          <table width="600" style="background:#fff;border-radius:8px">
+
+            <tr>
+              <td style="background:#111827;color:#fff;padding:20px;text-align:center">
+                <h2>${companyName}</h2>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:30px;color:#333">
+
+                <h3>Hello ${name},</h3>
+
+                <p>
+                  You are invited as <b>${role}</b> to join ${companyName}.
+                </p>
+
+                <div style="text-align:center;margin:25px 0">
+                  <a href="${inviteLink}" 
+                    style="background:#2563eb;color:#fff;padding:12px 20px;text-decoration:none;border-radius:5px">
+                    Login to Dashboard
+                  </a>  
+                </div>
+
+                
+
+                <p><b>Email:</b> ${email}</p>
+                <p><b>Password:</b> ${password}</p>
+
+              </td>
+            </tr>
+
+            <tr>
+              <td style="text-align:center;padding:15px;font-size:12px;color:#888">
+                © ${new Date().getFullYear()} ${companyName}
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+};

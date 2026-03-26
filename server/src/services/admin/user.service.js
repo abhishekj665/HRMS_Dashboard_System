@@ -1,16 +1,19 @@
 import ExpressError from "../../utils/Error.utils.js";
-import { UserIP } from "../../models/Associations.model.js";
-import { User, AttendancePolicy } from "../../models/Associations.model.js";
+import { Employee, UserIP } from "../../models/Associations.model.js";
+import { User, AttendancePolicy, Organization } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
 import { Op } from "sequelize";
+import { env } from "../../config/env.js";
+import { sendMail } from "../../config/otpService.js";
 import { sequelize } from "../../config/db.js";
 import {
   getScopedWhere,
   getTenantOrGlobalWhere,
   requireTenantId,
 } from "../../utils/tenant.utils.js";
+import { getInviteEmailTemplate } from "../../utils/mailTemplate.utils.js";
 
 export const getUsersService = async (page, limits, search, adminUser) => {
   try {
@@ -145,6 +148,7 @@ export const unblockIPService = async (ip, adminUser) => {
 };
 
 export const registerUserService = async ({ data }, adminUser) => {
+  const transaction = await sequelize.transaction();
   try {
     if (!data.email || !data.password) {
       return {
@@ -154,6 +158,14 @@ export const registerUserService = async ({ data }, adminUser) => {
     }
 
     const tenantId = requireTenantId(adminUser);
+
+    const existingUser = await User.findOne({
+      where: { email: data.email, tenantId },
+    });
+
+    if (existingUser) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "User ALready exist");
+    }
     let hashedPassword = await generateHash(data.password);
 
     const attendancePolicy = await AttendancePolicy.findOne({
@@ -161,12 +173,39 @@ export const registerUserService = async ({ data }, adminUser) => {
       order: [["tenantId", "DESC"]],
     });
 
-    let userData = await User.create({
-      ...data,
-      tenantId,
-      password: hashedPassword,
-      attendancePolicyId: attendancePolicy?.id || null,
+    const userData = await User.create(
+      {
+        ...data,
+        tenantId,
+        password: hashedPassword,
+        attendancePolicyId: attendancePolicy?.id || null,
+      },
+      { transaction },
+    );
+
+    // const employee = await Employee.create({
+    //   userId: userData.id,
+    //   tenantId,
+    // }, { transaction }); // Pending cause of department dependency
+
+    const organization = await Organization.findOne({
+      where: { id : tenantId },
+      transaction,
     });
+
+    const html = getInviteEmailTemplate({
+      name: userData.first_name || userData.email.split("@")[0],
+      role: "employee",
+      companyName: organization?.name || "our organization",
+      inviteLink: env.client_url,
+      password: data.password,
+      email: data.email,
+      password: data.password,
+    });
+
+    await sendMail(data.email, "Welcome to the team!", html);
+
+    await transaction.commit();
 
     return {
       success: true,
@@ -174,6 +213,7 @@ export const registerUserService = async ({ data }, adminUser) => {
       message: "User Registered Successfully",
     };
   } catch (error) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
