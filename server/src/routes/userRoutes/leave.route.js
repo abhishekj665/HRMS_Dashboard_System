@@ -1,6 +1,6 @@
 import express from "express";
 import * as userLeaveController from "../../controllers/user/leave.controller.js";
-import { allowRoles , userAuth} from "../../middlewares/roleAuth.middleware.js";
+import { userAuth } from "../../middlewares/auth.middleware.js";
 
 
 const Router = express.Router();
