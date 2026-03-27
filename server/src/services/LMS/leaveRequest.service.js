@@ -65,7 +65,7 @@ export const registerLeaveRequest = async (data, authUser) => {
       ],
     });
 
-    if(user.managerId === null){
+    if(user.role === "employee" && user.managerId === null){
       throw new ExpressError(STATUS.BAD_REQUEST, "No manager assigned to your profile. Please contact Admin."
       );
     }

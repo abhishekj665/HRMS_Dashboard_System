@@ -1,11 +1,14 @@
-# HRMS Dashboard System
+# Multi-Organization HRMS Dashboard System
 
 HRMS Dashboard System is a full-stack Human Resource Management platform for handling employee operations, attendance, leave workflows, expenses, assets, and recruitment from a single dashboard. It is built as a monorepo with a React frontend and a Node.js + Express backend backed by MySQL through Sequelize.
+
+The platform now supports a multi-organization architecture, allowing multiple companies to operate independently within the same application. Each organization has its own admin, users, policies, dashboards, and operational records, with tenant-aware isolation enforced across the backend, database layer, and realtime communication.
 
 This repository is focused on practical, production-style HR workflows:
 
 - secure authentication with OTP verification
 - role-based dashboards for admin, manager, and employee users
+- multi-organization onboarding with tenant-scoped data separation
 - attendance monitoring and attendance policy management
 - leave policy, leave balance, and leave approval workflows
 - asset allocation and request handling
@@ -32,10 +35,17 @@ For testing purposes, the following default user accounts are available:
 - Email: `employee@orvane.com`
 - Password: `Employee@123`
 
+### Organization Registration Default
+
+When a new organization is registered through the organization onboarding flow, the current service creates the initial organization admin with the default password:
+
+- Password: `Admin@123`
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Key Capabilities](#key-capabilities)
+- [Multi-Organization Architecture](#multi-organization-architecture)
 - [User Roles](#user-roles)
 - [Tech Stack](#tech-stack)
 - [System Architecture](#system-architecture)
@@ -51,6 +61,7 @@ For testing purposes, the following default user accounts are available:
 - [Deployment Notes](#deployment-notes)
 - [Current Limitations](#current-limitations)
 - [Roadmap](#roadmap)
+- [Conclusion](#conclusion)
 
 ## Project Overview
 
@@ -59,11 +70,12 @@ The HRMS Dashboard System centralizes internal HR operations that are usually sp
 The codebase is split into:
 
 - `client/` for the web dashboard and public career pages
-- `server/` for the REST API, business logic, and database layer
+- `server/` for the REST API, business logic, realtime events, and database layer
 
 The system currently includes modules for:
 
 - authentication
+- organization registration and onboarding
 - employee and manager management
 - attendance and attendance-policy administration
 - leave management system
@@ -72,6 +84,13 @@ The system currently includes modules for:
 - recruitment management
 
 ## Key Capabilities
+
+### Organization Management
+
+- register a new organization from a public onboarding flow
+- create the first admin user during organization registration
+- maintain organization profile and legal information
+- support isolated organization-level dashboards and operations
 
 ### Authentication and Session Management
 
@@ -127,15 +146,41 @@ The system currently includes modules for:
 ### Public Careers Experience
 
 - list open jobs
-- view job details
+- view organization-specific job details
 - submit job applications
 - review and accept offers through tokenized links
+
+## Multi-Organization Architecture
+
+The platform is now structured as a multi-tenant HRMS system.
+
+### What This Means
+
+- each organization is created through `/organization/register`
+- the registering admin is attached to that organization as its tenant owner
+- major business entities carry `tenantId` for data isolation
+- tenant-aware helpers such as `requireTenantId`, `getScopedWhere`, and `assertSameTenant` are used across services
+- public recruitment routes support organization-aware career pages using organization slug-based URLs
+- Socket.IO rooms are tenant-aware for admin, manager, and user notifications
+
+### Tenant-Aware Modules
+
+The current backend structure shows organization-aware relationships across:
+
+- users and managers
+- attendance and attendance policies
+- leave requests, leave balances, leave types, and leave policies
+- assets and asset requests
+- expenses
+- recruitment entities such as job postings, candidates, interviews, offers, and applications
+
+This design allows the same application instance to support multiple organizations without mixing HR, leave, attendance, asset, expense, or recruitment records across tenants.
 
 ## User Roles
 
 ### Admin
 
-Admins have the highest level of operational control in the system. They can manage users, managers, attendance policies, leave settings, IP restrictions, requests, expenses, assets, and recruitment workflows.
+Admins have the highest level of operational control in the system for their own organization. They can manage users, managers, attendance policies, leave settings, IP restrictions, requests, expenses, assets, and recruitment workflows.
 
 ### Manager
 
@@ -202,7 +247,7 @@ Client UI
 - `services/` contain business logic
 - `models/` define entities and relationships
 - `middlewares/` handle auth, validation, and error flow
-- `utils/` provide helpers for JWT, mail templates, geo lookup, PDF generation, and response formatting
+- `utils/` provide helpers for tenant scoping, JWT, mail templates, geo lookup, PDF generation, socket room generation, and response formatting
 
 ### Architectural Highlights
 
@@ -210,6 +255,7 @@ Client UI
 - role-based routing and middleware
 - modular domain organization
 - reusable service layer
+- multi-organization tenant isolation
 - realtime event delivery with Socket.IO
 
 ## Folder Structure
@@ -226,7 +272,8 @@ Authentication_Security/
 |   |   |   |-- Auth/
 |   |   |   |-- CareerPages/
 |   |   |   |-- ManagerPages/
-|   |   |   \-- UserPages/
+|   |   |   |-- UserPages/
+|   |   |   \-- organization/
 |   |   |-- redux/
 |   |   |-- services/
 |   |   |-- store/
@@ -244,6 +291,7 @@ Authentication_Security/
 |   |   |   |-- attendance/
 |   |   |   |-- LMS/
 |   |   |   |-- manager/
+|   |   |   |-- organization/
 |   |   |   |-- recruitment/
 |   |   |   \-- user/
 |   |   |-- middlewares/
@@ -251,6 +299,7 @@ Authentication_Security/
 |   |   |   |-- AssetModels/
 |   |   |   |-- AttendanceModels/
 |   |   |   |-- LeaveModels/
+|   |   |   |-- Organizations/
 |   |   |   |-- RecruitmentModels/
 |   |   |   \-- UserModels/
 |   |   |-- routes/
@@ -270,6 +319,7 @@ Authentication_Security/
 - `client/src/pages/ManagerPages/` manager dashboard modules
 - `client/src/pages/UserPages/` employee dashboard modules
 - `client/src/pages/CareerPages/` public recruitment pages
+- `client/src/pages/organization/` organization onboarding flow
 - `client/src/services/` API integrations grouped by domain
 
 ### Important Backend Areas
@@ -280,7 +330,7 @@ Authentication_Security/
 - `server/src/services/` domain logic
 - `server/src/models/` Sequelize schema definitions
 - `server/src/middlewares/` auth and validation middleware
-- `server/src/ERDiagrams/` model reference material
+- `server/src/utils/tenant.utils.js` tenant-scoping utilities
 
 ## Frontend Routes
 
@@ -289,11 +339,11 @@ The frontend uses React Router and currently exposes major screens such as:
 ### Public Routes
 
 - `/`
-- `/signup`
 - `/login`
+- `/organization/register`
 - `/careers`
-- `/careers/:slug`
-- `/careers/:slug/apply`
+- `/careers/:orgSlug/:slug`
+- `/careers/:orgSlug/:slug/apply`
 - `/offer/:token`
 
 ### User Dashboard
@@ -346,6 +396,7 @@ Major backend route groups mounted in `server/src/app.js`:
 - `/attendance-policy`
 - `/lms`
 - `/recruitment`
+- `/organization`
 
 ### Module Breakdown
 
@@ -359,19 +410,23 @@ Handles authenticated user operations such as assets, expenses, attendance, leav
 
 #### Admin Module
 
-Handles organization-wide management flows including users, managers, assets, attendance, expenses, and leave requests.
+Handles organization-wide management flows including users, managers, assets, attendance, expenses, leave requests, and recruitment management for the current tenant.
 
 #### Manager Module
 
-Handles team-level workflows such as employee oversight, requests, expenses, attendance, and leave actions.
+Handles team-level workflows such as employee oversight, requests, expenses, attendance, leave actions, and selected recruitment workflows.
 
 #### LMS Module
 
-Handles leave balances, leave types, and leave policies.
+Handles leave balances, leave types, leave policies, and leave-related workflows.
 
 #### Recruitment Module
 
 Handles requisitions, job postings, applications, candidates, interviews, interview feedback, stage progression, and offers.
+
+#### Organization Module
+
+Handles public organization registration and onboarding.
 
 ## API Summary
 
@@ -386,6 +441,12 @@ Base path: `/auth`
 - `POST /auth/verify`
 - `POST /auth/logout`
 - `GET /auth/me`
+
+### Organization Endpoints
+
+Base path: `/organization`
+
+- `POST /organization/register`
 
 ### Attendance Policy Endpoints
 
@@ -466,7 +527,6 @@ CLOUD_SECRET=your_cloudinary_secret
 CLIENT_URL=http://localhost:5173
 BREVO_API_KEY=your_brevo_api_key
 OFFER_URL=http://localhost:5173/offer
-NODE_ENV=development
 ```
 
 ### Client `.env`
@@ -515,8 +575,13 @@ cd client
 npm run dev
 ```
 
+### Multi-Organization Flow to Test
 
-
+1. Start the backend and frontend locally.
+2. Open `/organization/register` to create a new organization.
+3. Use the generated admin account to log in.
+4. Create managers and employees under that organization.
+5. Verify that attendance, leave, expenses, assets, and recruitment data stay isolated to that organization.
 
 ## Available Scripts
 
@@ -551,14 +616,15 @@ The project currently uses several security-related controls:
 - IP logging on login
 - IP and user blocking capabilities
 - cookie-based auth propagation into Socket.IO connections
+- tenant-aware access validation in service logic
 
 ### Security Notes
 
 - frontend requests are sent with `withCredentials: true`
 - cookies are configured with `httpOnly`
-- cookies use `sameSite: "None"`
-- cookies are configured as `secure: true`
+- cross-origin requests are enabled for trusted frontend origins
 - production deployments should run over HTTPS
+- tenant-aware service checks help prevent cross-organization access
 
 ## Realtime Communication
 
@@ -569,6 +635,7 @@ Current realtime usage includes:
 - room-based subscriptions for admins
 - room-based subscriptions for managers
 - user-specific socket rooms
+- tenant-aware event isolation
 - request update broadcasting
 
 Supported events in the current implementation include:
@@ -581,8 +648,9 @@ Supported events in the current implementation include:
 - the frontend contains `client/vercel.json`, which indicates Vercel deployment support for the UI
 - set `CLIENT_URL` to the deployed frontend origin
 - set `VITE_BASE_URL` to the deployed backend base URL
-- use HTTPS in production because cookies are secure and cross-site
+- use HTTPS in production because cookies are secure in real deployments
 - ensure MySQL and any mail/cloud integrations are configured in the deployment environment
+- verify tenant-aware environment configuration when deploying as a shared multi-organization system
 
 ## Current Limitations
 
@@ -590,17 +658,20 @@ Supported events in the current implementation include:
 - no root license is defined yet
 - no `.env.example` files are included yet
 - API request and response examples are not documented yet
-- setup instructions do not yet include seed/demo data
+- setup instructions do not yet include seed/demo data for multiple organizations
+- organization onboarding documentation can be expanded further with payload examples
 
 ## Roadmap
 
 - add `.env.example` files
 - add Postman or OpenAPI documentation
 - add screenshots of admin, manager, and user dashboards
-- add seed scripts for demo users and policies
+- add screenshots for the organization registration flow
+- add seed scripts for demo users, policies, and organizations
 - add automated tests for auth and core HR workflows
 - add deployment guides for frontend and backend
+- expand documentation around tenant lifecycle and organization administration
 
 ## Conclusion
 
-This project represents a practical HRMS Dashboard System with clear module separation, role-based workflows, and a broad operational scope. It is suitable as a major project, portfolio project, or foundation for a more production-ready HR platform.
+This project represents a practical, multi-organization HRMS Dashboard System with clear module separation, role-based workflows, and a broad operational scope. It is suitable as a major project, portfolio project, or foundation for a more production-ready SaaS-style HR platform.

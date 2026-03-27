@@ -34,7 +34,7 @@ export const registerLeavePolicy = async (data, adminUser) => {
       { transaction: t },
     );
 
-    console.log("Saved policy:", policy.toJSON());
+    
 
     for (const r of rules) {
       await LeavePolicyRule.create(
@@ -47,10 +47,10 @@ export const registerLeavePolicy = async (data, adminUser) => {
       );
     }
 
-   
 
-
-    await assignPolicyBulk(policy.id, policy.appliesTo, policy.year, adminUser, t);
+    if(policy.isActive) {
+      await assignPolicyBulk(policy.id, policy.appliesTo, policy.year, adminUser, t);
+    }
 
     await t.commit();
 
@@ -209,6 +209,17 @@ export const assignPolicyBulk = async (
 
     if (!policy)
       throw new ExpressError(STATUS.NOT_FOUND, "Policy not found");
+
+    if (!policy.isActive) {
+      if (!transaction) {
+        await ownTransaction.commit();
+      }
+      return {
+        success: true,
+        message: "Policy is inactive, no users were assigned",
+        affectedUsers: 0,
+      };
+    }
 
     const [affectedRows] = await User.update(
       { leavePolicyId: policyId },
