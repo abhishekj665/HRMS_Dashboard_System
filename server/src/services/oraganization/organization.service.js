@@ -118,7 +118,7 @@ export const registerOrganization = async (data) => {
       },
       { transaction },
     );
-    // await transaction.commit();
+    await transaction.commit();
 
     const html = generateOrgVerificationEmail({
       name: admin.first_name || admin.email.split("@")[0],
