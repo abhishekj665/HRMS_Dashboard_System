@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, UNSAFE_ErrorResponseImpl, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import { registerOrganization } from "../../services/OrganizationService/organizationService";
+import { verify } from "../../services/AuthService/authService";
 
 const initialFormData = {
   email: "",
@@ -113,6 +114,9 @@ function OrganizationRegisterPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState(initialFormData);
   const [openDocuments, setOpenDocuments] = useState(true);
+  const [verified, setVerified] = useState(true);
+  const [otp, setOtp] = useState("");
+  const [showCheckbox, setShowCheckbox] = useState(false);
 
   const currentStates = useMemo(
     () => stateOptions[formData.country] || [],
@@ -206,15 +210,39 @@ function OrganizationRegisterPage() {
 
     const response = await registerOrganization(payload);
 
-    
-
     if (response.success) {
-      toast.success(response.message);
-      setActiveStep(0);
-      setFormData(initialFormData);
-      navigate("/login");
-    } else {
+      setVerified(false);
+      toast.info(response.message);
+      return;
+    }else {
       toast.error(response.message);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      toast.error("Please enter the OTP sent to your email.");
+      return;
+    }
+
+    try {
+      const response = await verify({
+        email: formData.email,
+        otp,
+        purpose: "SIGNUP",
+      });
+
+      if (response.success) {
+        toast.success("OTP verified successfully! & Organization registered completely.");
+        setVerified(true);
+        navigate("/login");
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(
+        error.message || "OTP verification failed. Please try again.",
+      );
     }
   };
 
@@ -389,7 +417,7 @@ function OrganizationRegisterPage() {
                     <div className="mt-6 flex flex-col gap-4 text-center xl:text-left">
                       <button
                         type="submit"
-                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
+                        className="w-full rounded-full bg-linear-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
                       >
                         Next
                       </button>
@@ -657,13 +685,34 @@ function OrganizationRegisterPage() {
                       </div>
                     </div>
 
+                    {!verified && (
+                      <div>
+                        <label className={labelClassName}>
+                          Enter OTP <span className="text-red-600">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          name="otp"
+                          maxLength={6}
+                          className={inputClassName}
+                          placeholder="Enter OTP"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                        />
+                      </div>
+                    )}
+
                     <div className="mt-6 flex flex-col gap-3">
                       <button
-                        type="submit"
-
-                        className="w-full rounded-full bg-gradient-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
+                        {...(verified
+                          ? { type: "submit" }
+                          : {
+                              type: "button",
+                              onClick: () => handleVerifyOtp(),
+                            })}
+                        className="w-full rounded-full bg-linear-to-r from-sky-600 to-indigo-700 px-3 py-3.5 font-medium text-white shadow-lg shadow-blue-500/20 transition duration-200 hover:opacity-95 hover:cursor-pointer"
                       >
-                        Register Organization
+                        {verified ? "Register Organization" : "Verify OTP"}
                       </button>
                       <button
                         type="button"

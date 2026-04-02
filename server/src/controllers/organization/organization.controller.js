@@ -6,9 +6,9 @@ export const registerOrganization = async (req, res, next) => {
   try {
     const response = await organizationService.registerOrganization(req.body);
     if (response.success) {
-      return successResponse(res, response.data, response.message);
+      return successResponse(res, response.data, response.message, response.status);
     }
-    return errorResponse(res, response.message);
+    return errorResponse(res, response.message, response.status);
   } catch (error) {
     next(error);
   }

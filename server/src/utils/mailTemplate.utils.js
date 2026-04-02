@@ -2565,3 +2565,165 @@ export const getInviteEmailTemplate = ({
   </html>
   `;
 };
+
+export const generateOrgVerificationEmail = ({
+  name,
+  organizationName,
+  otp,
+}) => {
+  return `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+      <div style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0;">HRMS Dashboard</h1>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 30px;">
+          <h2 style="margin-top: 0; color: #111827;">Verify Your Email Address</h2>
+
+          <p style="color: #374151; font-size: 14px;">
+            Hello <strong>${name || "User"}</strong>,
+          </p>
+
+          <p style="color: #374151; font-size: 14px;">
+            Thank you for initiating the registration process for your organization 
+            <strong>${organizationName}</strong> on our HRMS platform.
+          </p>
+
+          <p style="color: #374151; font-size: 14px;">
+            To proceed, please verify your email address using the One-Time Password (OTP) below:
+          </p>
+
+          <!-- OTP Box -->
+          <div style="margin: 25px 0; text-align: center;">
+            <span style="display: inline-block; padding: 15px 25px; font-size: 24px; letter-spacing: 4px; font-weight: bold; background: #f3f4f6; border-radius: 6px; color: #111827;">
+              ${otp}
+            </span>
+          </div>
+
+          <p style="color: #374151; font-size: 14px;">
+            This OTP is valid for <strong>5 minutes</strong>. Please do not share this code with anyone for security reasons.
+          </p>
+
+          <p style="color: #374151; font-size: 14px;">
+            If you did not request this verification, you can safely ignore this email.
+          </p>
+
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+
+          <p style="color: #6b7280; font-size: 12px;">
+            Need help? Contact our support team at 
+            <a href="mailto:support@hrms.com" style="color: #2563eb;">support@hrms.com</a>
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f9fafb; padding: 15px; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+            © ${new Date().getFullYear()} HRMS Dashboard. All rights reserved.
+          </p>
+        </div>
+
+      </div>
+    </div>
+    `;
+};
+
+export const generateOrganizationSuccessEmail = ({
+  name,
+  organizationName,
+  dashboardUrl = env.client_url,
+}) => {
+  return `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+      <div style="max-width: 620px; margin: auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.08);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #1e3a8a, #4f46e5); padding: 25px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 22px;">
+            HRMS Dashboard
+          </h1>
+          <p style="color: #e0e7ff; margin-top: 6px; font-size: 13px;">
+            Smart Workforce Management Starts Here
+          </p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 30px;">
+          <h2 style="color: #111827; margin-top: 0;">
+            Congratulations, ${name || "User"} 🎉
+          </h2>
+
+          <p style="color: #374151; font-size: 14px; line-height: 1.6;">
+            We’re delighted to inform you that your organization 
+            <strong>${organizationName}</strong> has been successfully registered on the 
+            <strong>HRMS Dashboard</strong>.
+          </p>
+
+          <p style="color: #374151; font-size: 14px; line-height: 1.6;">
+            You are now part of a growing ecosystem designed to streamline human resource operations, enhance productivity, and simplify workforce management with powerful tools and analytics.
+          </p>
+
+          <!-- Highlight Box -->
+          <div style="margin: 20px 0; padding: 18px; background: #eef2ff; border-left: 4px solid #4f46e5; border-radius: 6px;">
+            <p style="margin: 0; font-size: 14px; color: #1e3a8a;">
+              Your organization account is now active and ready to use.
+            </p>
+          </div>
+
+          <h3 style="color: #111827; font-size: 16px;">What You Can Do Next:</h3>
+
+          <ul style="color: #374151; font-size: 14px; line-height: 1.6; padding-left: 18px;">
+            <li>Set up your organization profile and preferences</li>
+            <li>Add and manage employees efficiently</li>
+            <li>Track attendance, leaves, and payroll</li>
+            <li>Leverage insights and reports for better decision-making</li>
+          </ul>
+
+          <p style="color: #374151; font-size: 14px; line-height: 1.6;">
+            We recommend logging in and completing your initial setup to fully unlock the capabilities of the platform.
+          </p>
+
+          <!-- CTA Button -->
+          <div style="text-align: center; margin: 25px 0;">
+            <a href=${dashboardUrl} 
+               style="background: linear-gradient(135deg, #2563eb, #4f46e5); color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: bold;">
+               Go to Dashboard
+            </a>
+          </div>
+
+          <p style="color: #374151; font-size: 14px; line-height: 1.6;">
+            If you have any questions or need assistance, our support team is always ready to help.
+          </p>
+
+          <p style="color: #374151; font-size: 14px;">
+            Welcome aboard, and we look forward to supporting your organization’s growth.
+          </p>
+
+          <p style="margin-top: 20px; font-size: 14px; color: #111827;">
+            Best Regards,<br/>
+            <strong>HRMS Dashboard Team</strong>
+          </p>
+
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+
+          <p style="font-size: 12px; color: #6b7280;">
+            Need help? Contact us at 
+            <a href="mailto:support@hrms.com" style="color: #2563eb;">support@hrms.com</a>
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: #f9fafb; padding: 15px; text-align: center;">
+          <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+            © ${new Date().getFullYear()} HRMS Dashboard. All rights reserved.
+          </p>
+        </div>
+
+      </div>
+    </div>
+    `;
+};

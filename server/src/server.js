@@ -69,7 +69,6 @@ io.on("connection", (socket) => {
 
 const startServer = async () => {
   await connectDB();
-
   // await syncDB();
 
   server.listen(env.port, () => {

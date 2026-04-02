@@ -3,11 +3,17 @@ import ExpressError from "../../utils/Error.utils.js";
 import {
   Organization,
   User,
+  OTP,
   OrganizationLegal,
   OrganizationProfile,
 } from "../../models/Associations.model.js";
 import { sequelize } from "../../config/db.js";
 import { generateHash } from "../../utils/hash.utils.js";
+import { generateOtp, sendMail } from "../../config/otpService.js";
+import {
+  generateOrganizationSuccessEmail,
+  generateOrgVerificationEmail,
+} from "../../utils/mailTemplate.utils.js";
 
 export const registerOrganization = async (data) => {
   const transaction = await sequelize.transaction();
@@ -100,16 +106,46 @@ export const registerOrganization = async (data) => {
     admin.tenantId = organization.id;
 
     await admin.save({ transaction });
-    await transaction.commit();
+
+    const otp = generateOtp();
+    const hash = await generateHash(otp);
+
+    await OTP.create(
+      {
+        email: admin.email,
+        otp: hash,
+        purpose: "SIGNUP",
+      },
+      { transaction },
+    );
+    // await transaction.commit();
+
+    const html = generateOrgVerificationEmail({
+      name: admin.first_name || admin.email.split("@")[0],
+      organizationName: organization.name,
+      otp,
+    });
+
+    const organizationRegiterMailHtml = generateOrganizationSuccessEmail({
+      name: admin.first_name || admin.email.split("@")[0],
+      organizationName: organization.name,
+    });
+
+    sendMail(
+      admin.email,
+      "Welcome to HRMS Dashboard – Organization Successfully Registered",
+      organizationRegiterMailHtml,
+    );
+
+    sendMail(
+      admin.email,
+      "Verify your email to complete organization registration",
+      html,
+    );
     return {
       success: true,
-      message: "Organization registered successfully",
-      data: {
-        organization,
-        admin,
-        profile,
-        legal,
-      },
+      message: "Please verify your email",
+      status: STATUS.CREATED,
     };
   } catch (error) {
     await transaction.rollback();
