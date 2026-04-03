@@ -4,11 +4,16 @@ import { useSelector } from "react-redux";
 import {
   Alert,
   Avatar,
+  Badge,
   Box,
   Button,
+  Divider,
   Chip,
   CircularProgress,
   Grid,
+  IconButton,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   Typography,
@@ -21,6 +26,7 @@ import {
   Login,
   Logout,
   NotificationsActive,
+  NotificationsNone,
   Payments,
   Person,
   ReceiptLong,
@@ -39,6 +45,7 @@ import {
 } from "../../services/UserService/userService";
 import { getAllAttendanceData as getManagerAttendanceData } from "../../services/ManagerService/attendanceService";
 import { getAllUserLeaveRequests } from "../../services/ManagerService/leaveService";
+import { getManagerInterviews } from "../../services/JobRecruitmentService/interviewService";
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -60,6 +67,16 @@ const formatMinutes = (value) => {
 const formatTime = (iso) =>
   iso
     ? new Date(iso).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "--";
+
+const formatDateTime = (iso) =>
+  iso
+    ? new Date(iso).toLocaleString([], {
+        day: "2-digit",
+        month: "short",
         hour: "2-digit",
         minute: "2-digit",
       })
@@ -228,10 +245,13 @@ export default function Dashboard() {
   const [managerAttendanceRequests, setManagerAttendanceRequests] = useState(
     [],
   );
+  const [managerInterviews, setManagerInterviews] = useState([]);
   const [attendanceStatus, setAttendanceStatus] = useState(null);
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
   const [liveSeconds, setLiveSeconds] = useState(0);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const [quickActionAnchorEl, setQuickActionAnchorEl] = useState(null);
   const isEmployee = user?.role === "employee";
   const isManager = user?.role === "manager";
 
@@ -259,10 +279,21 @@ export default function Dashboard() {
             status: "PENDING",
           }),
         );
+        requests.push(
+          getManagerInterviews({
+            page: 1,
+            limit: 10,
+          }),
+        );
       }
 
-      const [todayRes, attendanceRes, leaveBalanceRes, leaveRequestsRes] =
-        await Promise.all(requests);
+      const [
+        todayRes,
+        attendanceRes,
+        leaveBalanceRes,
+        leaveRequestsRes,
+        interviewsRes,
+      ] = await Promise.all(requests);
 
       setAttendanceStatus(todayRes?.success ? todayRes.data : null);
 
@@ -278,6 +309,7 @@ export default function Dashboard() {
         );
         setManagerAttendanceRequests([]);
         setManagerLeaveRequests([]);
+        setManagerInterviews([]);
       } else if (isManager) {
         setAttendanceRows([]);
         setLeaveBalance([]);
@@ -288,12 +320,16 @@ export default function Dashboard() {
         setManagerLeaveRequests(
           leaveBalanceRes?.success ? leaveBalanceRes.data || [] : [],
         );
+        setManagerInterviews(
+          interviewsRes?.success ? interviewsRes?.data?.rows || [] : [],
+        );
       } else {
         setAttendanceRows([]);
         setLeaveBalance([]);
         setLeaveRequests([]);
         setManagerAttendanceRequests([]);
         setManagerLeaveRequests([]);
+        setManagerInterviews([]);
       }
     } catch (error) {
       toast.error("Failed to load dashboard data");
@@ -405,11 +441,13 @@ export default function Dashboard() {
       items.push({
         type: "success",
         text: `You are punched in since ${formatTime(attendanceStatus.lastInAt)}.`,
+        path: null,
       });
-    } else {
+    } else if (isEmployee) {
       items.push({
         type: "info",
         text: "You are currently punched out. Start your day from the dashboard.",
+        path: null,
       });
     }
 
@@ -417,13 +455,13 @@ export default function Dashboard() {
       const pendingLeaves = leaveRequests.filter(
         (item) => item.status === "PENDING",
       ).length;
-      items.push({
-        type: pendingLeaves > 0 ? "warning" : "info",
-        text:
-          pendingLeaves > 0
-            ? `${pendingLeaves} leave request${pendingLeaves > 1 ? "s are" : " is"} pending approval.`
-            : "No pending leave requests right now.",
-      });
+      if (pendingLeaves > 0) {
+        items.push({
+          type: "warning",
+          text: `${pendingLeaves} leave request${pendingLeaves > 1 ? "s are" : " is"} pending approval.`,
+          path: "/user/leave-management",
+        });
+      }
     } else if (isManager) {
       const pendingLeaveApprovals = managerLeaveRequests.filter(
         (item) => item.status === "PENDING",
@@ -431,21 +469,47 @@ export default function Dashboard() {
       const pendingAttendanceApprovals = managerAttendanceRequests.filter(
         (item) => item.status === "PENDING",
       ).length;
+      const pendingInterviewConfirmations = managerInterviews.filter(
+        (item) => item.status === "PENDING_CONFIRMATION",
+      );
+      const upcomingInterviews = managerInterviews.filter((item) => {
+        if (!["SCHEDULED", "RESCHEDULED"].includes(item.status)) return false;
 
-      items.push({
-        type: pendingLeaveApprovals > 0 ? "warning" : "info",
-        text:
-          pendingLeaveApprovals > 0
-            ? `${pendingLeaveApprovals} leave request${pendingLeaveApprovals > 1 ? "s are" : " is"} waiting for your approval.`
-            : "No pending leave requests need your review.",
+        const scheduledTime = new Date(item.scheduledAt).getTime();
+        const now = Date.now();
+        return scheduledTime >= now && scheduledTime <= now + 86400000;
       });
 
-      items.push({
-        type: pendingAttendanceApprovals > 0 ? "warning" : "info",
-        text:
-          pendingAttendanceApprovals > 0
-            ? `${pendingAttendanceApprovals} attendance request${pendingAttendanceApprovals > 1 ? "s are" : " is"} waiting for your action.`
-            : "No pending attendance requests need your review.",
+      if (pendingLeaveApprovals > 0) {
+        items.push({
+          type: "warning",
+          text: `${pendingLeaveApprovals} leave request${pendingLeaveApprovals > 1 ? "s are" : " is"} waiting for your approval.`,
+          path: "/manager/leave-requests",
+        });
+      }
+
+      if (pendingAttendanceApprovals > 0) {
+        items.push({
+          type: "warning",
+          text: `${pendingAttendanceApprovals} attendance request${pendingAttendanceApprovals > 1 ? "s are" : " is"} waiting for your action.`,
+          path: "/manager/attendance/request",
+        });
+      }
+
+      pendingInterviewConfirmations.slice(0, 3).forEach((item) => {
+        items.push({
+          type: "info",
+          text: `Interview confirmation needed for ${item.application?.candidate?.firstName || "candidate"} on ${formatDateTime(item.scheduledAt)}.`,
+          path: "/manager/interviews",
+        });
+      });
+
+      upcomingInterviews.slice(0, 3).forEach((item) => {
+        items.push({
+          type: "success",
+          text: `Upcoming ${item.roundName || "interview"} with ${item.application?.candidate?.firstName || "candidate"} at ${formatDateTime(item.scheduledAt)}.`,
+          path: "/manager/interviews",
+        });
       });
     }
 
@@ -457,6 +521,7 @@ export default function Dashboard() {
     leaveRequests,
     managerLeaveRequests,
     managerAttendanceRequests,
+    managerInterviews,
   ]);
 
   const quickActions = [
@@ -487,6 +552,11 @@ export default function Dashboard() {
               label: "Leave Requests",
               icon: <ReceiptLong fontSize="small" />,
               path: "/manager/leave-requests",
+            },
+            {
+              label: "Interviews",
+              icon: <NotificationsActive fontSize="small" />,
+              path: "/manager/interviews",
             },
           ]
         : []
@@ -578,45 +648,99 @@ export default function Dashboard() {
                     Punch in at {formatTime(attendanceStatus?.lastInAt)}
                   </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: "rgba(255,255,255,0.18)" }}>
-                  <Person />
-                </Avatar>
+                <Stack spacing={1} alignItems="center">
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      opacity: 0.84,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.8,
+                    }}
+                  >
+                    Notification
+                  </Typography>
+                  <IconButton
+                    onClick={(event) =>
+                      setNotificationAnchorEl(event.currentTarget)
+                    }
+                    sx={{
+                      width: 54,
+                      height: 54,
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      bgcolor: "rgba(255,255,255,0.16)",
+                      color: "#fff",
+                      "&:hover": {
+                        bgcolor: "rgba(255,255,255,0.24)",
+                      },
+                    }}
+                  >
+                    <Badge
+                      badgeContent={notifications.length}
+                      color="error"
+                      max={99}
+                    >
+                      <NotificationsActive />
+                    </Badge>
+                  </IconButton>
+                </Stack>
               </Stack>
 
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handlePunch}
-                startIcon={
-                  attendanceStatus?.lastInAt &&
-                  !attendanceStatus?.punchOutAt ? (
-                    <Logout />
-                  ) : (
-                    <Login />
-                  )
-                }
-                sx={{
-                  mt: 2,
-                  bgcolor:
-                    attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
-                      ? "#ef4444"
-                      : "#22c55e",
-                  "&:hover": {
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 2 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handlePunch}
+                  startIcon={
+                    attendanceStatus?.lastInAt &&
+                    !attendanceStatus?.punchOutAt ? (
+                      <Logout />
+                    ) : (
+                      <Login />
+                    )
+                  }
+                  sx={{
                     bgcolor:
-                      attendanceStatus?.lastInAt &&
-                      !attendanceStatus?.punchOutAt
-                        ? "#dc2626"
-                        : "#16a34a",
-                  },
-                  py: 1.1,
-                  borderRadius: 2.5,
-                  fontWeight: 800,
-                }}
-              >
-                {attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
-                  ? "Punch Out"
-                  : "Punch In"}
-              </Button>
+                      attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
+                        ? "#ef4444"
+                        : "#22c55e",
+                    "&:hover": {
+                      bgcolor:
+                        attendanceStatus?.lastInAt &&
+                        !attendanceStatus?.punchOutAt
+                          ? "#dc2626"
+                          : "#16a34a",
+                    },
+                    py: 1.1,
+                    borderRadius: 2.5,
+                    fontWeight: 800,
+                  }}
+                >
+                  {attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
+                    ? "Punch Out"
+                    : "Punch In"}
+                </Button>
+
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  endIcon={<ArrowForward />}
+                  onClick={(event) => setQuickActionAnchorEl(event.currentTarget)}
+                  sx={{
+                    color: "#fff",
+                    borderColor: "rgba(255,255,255,0.28)",
+                    bgcolor: "rgba(255,255,255,0.08)",
+                    "&:hover": {
+                      borderColor: "rgba(255,255,255,0.45)",
+                      bgcolor: "rgba(255,255,255,0.14)",
+                    },
+                    py: 1.1,
+                    borderRadius: 2.5,
+                    fontWeight: 800,
+                  }}
+                >
+                  Quick Actions
+                </Button>
+              </Stack>
             </Paper>
           </Stack>
         </Paper>
@@ -661,7 +785,7 @@ export default function Dashboard() {
         </Grid>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} xl={8}>
+          <Grid item xs={12} lg={8}>
             <SectionCard
               title="Attendance Overview"
               subtitle="Monthly presence snapshot and approval status"
@@ -690,7 +814,7 @@ export default function Dashboard() {
             </SectionCard>
           </Grid>
 
-          <Grid item xs={12} md={6} xl={4}>
+          <Grid item xs={12} lg={4}>
             <SectionCard
               title="Current Project"
               subtitle="Assignment and workload status"
@@ -734,67 +858,182 @@ export default function Dashboard() {
             </SectionCard>
           </Grid>
 
-          <Grid item xs={12} lg={7}>
-            <SectionCard
-              title="Notifications"
-              subtitle="Operational updates you should not miss"
-              action={<NotificationsActive sx={{ color: "#2563eb" }} />}
-            >
-              <Stack spacing={1.5} sx={{ py: 1 }}>
-                {notifications.map((item, index) => (
-                  <Alert key={index} severity={item.type} variant="filled">
-                    {item.text}
-                  </Alert>
-                ))}
-              </Stack>
-            </SectionCard>
-          </Grid>
+        </Grid>
 
-          <Grid item xs={12} md={6} lg={5}>
-            <SectionCard
-              title="Quick Actions"
-              subtitle="Jump straight into common tasks"
+        <Menu
+          anchorEl={notificationAnchorEl}
+          open={Boolean(notificationAnchorEl)}
+          onClose={() => setNotificationAnchorEl(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              width: 400,
+              maxWidth: "calc(100vw - 32px)",
+              borderRadius: 3,
+              border: "1px solid #e2e8f0",
+              boxShadow: "0 20px 45px rgba(15, 23, 42, 0.14)",
+              overflow: "hidden",
+            },
+          }}
+        >
+          <Box sx={{ px: 2, py: 1.75, bgcolor: "#f8fafc" }}>
+            <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+              Notifications
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748b" }}>
+              {notifications.length > 0
+                ? `${notifications.length} update${notifications.length > 1 ? "s" : ""} available`
+                : "You're all caught up."}
+            </Typography>
+          </Box>
+          <Divider />
+          {notifications.length > 0 ? (
+            notifications.map((item, index) => (
+              <MenuItem
+                key={`${item.text}-${index}`}
+                onClick={() => {
+                  setNotificationAnchorEl(null);
+                  if (item.path) navigate(item.path);
+                }}
+                sx={{
+                  py: 1.75,
+                  px: 2,
+                  alignItems: "flex-start",
+                  whiteSpace: "normal",
+                  borderBottom:
+                    index === notifications.length - 1
+                      ? "none"
+                      : "1px solid #f1f5f9",
+                }}
+              >
+                <Stack spacing={0.75}>
+                  <Chip
+                    label={item.type.toUpperCase()}
+                    size="small"
+                    color={
+                      item.type === "warning"
+                        ? "warning"
+                        : item.type === "success"
+                          ? "success"
+                          : "info"
+                    }
+                    sx={{ width: "fit-content", fontWeight: 700 }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{ whiteSpace: "normal", color: "#0f172a", lineHeight: 1.5 }}
+                  >
+                    {item.text}
+                  </Typography>
+                </Stack>
+              </MenuItem>
+            ))
+          ) : (
+            <Box
+              sx={{
+                px: 2,
+                py: 3,
+                textAlign: "center",
+                color: "#64748b",
+              }}
             >
-              <Stack spacing={1.5} sx={{ py: 1 }}>
-                {quickActions.map((action) => (
+              <NotificationsNone sx={{ mb: 1, color: "#94a3b8" }} />
+              <Typography variant="body2">
+                No new notifications right now.
+              </Typography>
+            </Box>
+          )}
+        </Menu>
+
+        <Menu
+          anchorEl={quickActionAnchorEl}
+          open={Boolean(quickActionAnchorEl)}
+          onClose={() => setQuickActionAnchorEl(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              width: 420,
+              maxWidth: "calc(100vw - 32px)",
+              borderRadius: 4,
+              border: "1px solid #dbeafe",
+              boxShadow: "0 24px 60px rgba(37, 99, 235, 0.18)",
+              overflow: "hidden",
+            },
+          }}
+        >
+          <Box
+            sx={{
+              px: 2.25,
+              py: 2,
+              background:
+                "linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%)",
+            }}
+          >
+            <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+              Quick Actions
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#64748b" }}>
+              Open common manager and employee tasks from one place.
+            </Typography>
+          </Box>
+          <Box sx={{ p: 1.5 }}>
+            <Grid container spacing={1.5}>
+              {quickActions.map((action) => (
+                <Grid item xs={12} sm={6} key={action.label}>
                   <Paper
-                    key={action.label}
                     variant="outlined"
-                    onClick={() => navigate(action.path)}
+                    onClick={() => {
+                      setQuickActionAnchorEl(null);
+                      navigate(action.path);
+                    }}
                     sx={{
-                      px: 2.25,
-                      py: 1.75,
+                      p: 1.5,
                       borderRadius: 3,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
                       cursor: "pointer",
-                      transition: "all .15s ease",
-                      "&:hover": { bgcolor: "#f8fafc", borderColor: "#bfdbfe" },
+                      borderColor: "#e2e8f0",
+                      transition: "all .18s ease",
+                      "&:hover": {
+                        borderColor: "#93c5fd",
+                        bgcolor: "#f8fbff",
+                        transform: "translateY(-1px)",
+                      },
                     }}
                   >
                     <Stack direction="row" spacing={1.25} alignItems="center">
                       <Avatar
                         sx={{
-                          width: 36,
-                          height: 36,
+                          width: 40,
+                          height: 40,
                           bgcolor: "#eff6ff",
                           color: "#2563eb",
                         }}
                       >
                         {action.icon}
                       </Avatar>
-                      <Typography sx={{ fontWeight: 600, color: "#0f172a" }}>
-                        {action.label}
-                      </Typography>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          sx={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}
+                        >
+                          {action.label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#64748b" }}
+                        >
+                          Open now
+                        </Typography>
+                      </Box>
                     </Stack>
-                    <ArrowForward sx={{ color: "#64748b" }} />
                   </Paper>
-                ))}
-              </Stack>
-            </SectionCard>
-          </Grid>
-        </Grid>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        </Menu>
       </Box>
     </Box>
   );
