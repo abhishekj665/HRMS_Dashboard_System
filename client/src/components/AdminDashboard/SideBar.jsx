@@ -39,16 +39,13 @@ export default function Sidebar({ open, setOpen }) {
         pb-10
       `}
     >
-      
       <div className="px-5 py-4">
         <h1 className="text-lg font-semibold text-gray-800">
-          {user?.role?.toUpperCase()} PANEL
+          {user?.role?.toUpperCase()} DASHBOARD
         </h1>
       </div>
 
-      
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
-       
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             User Management

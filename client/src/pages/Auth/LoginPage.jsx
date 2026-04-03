@@ -66,11 +66,11 @@ function LoginPage() {
           toast.success(response.message);
           resetData();
         } else if (response?.user?.role === "manager") {
-          navigate("/manager/dashboard/users");
+          navigate("/manager/dashboard");
           toast.success("Welcome");
           resetData();
         } else {
-          navigate("/home");
+          navigate("/user/dashboard");
           toast.success(response.message);
           resetData();
         }

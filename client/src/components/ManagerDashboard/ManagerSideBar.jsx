@@ -7,7 +7,9 @@ import {
   RequestPage,
   CalendarMonth,
   WorkHistory,
+  
 } from "@mui/icons-material";
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { EventAvailable } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -37,11 +39,26 @@ export default function ManagerSidebar({ open, setOpen }) {
       {/* HEADER */}
       <div className="px-5 py-4 ">
         <h1 className="text-lg font-semibold text-gray-800">
-          {user?.role?.toUpperCase()} PANEL
+          {user?.role?.toUpperCase()} DASHBOARD
         </h1>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
+        {/* DASHBOARD */}
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Dashboard
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/manager/dashboard"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <DashboardIcon fontSize="small" /> Dashboard
+            </NavLink>
+          </div>
+        </div>
         {/* TEAM */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
@@ -49,7 +66,7 @@ export default function ManagerSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/manager/dashboard/users"
+              to="/manager/users"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -65,7 +82,7 @@ export default function ManagerSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/manager/dashboard/assets"
+              to="/manager/assets"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -73,7 +90,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/requests"
+              to="/manager/requests"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -81,7 +98,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/expenses"
+              to="/manager/expenses"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -97,7 +114,7 @@ export default function ManagerSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/manager/dashboard/attendance/request"
+              to="/manager/attendance/request"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -105,7 +122,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/attendance/me"
+              to="/manager/attendance/me"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -113,7 +130,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/leave/management"
+              to="/manager/leave/management"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -121,7 +138,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/leave-requests"
+              to="/manager/leave-requests"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -137,7 +154,7 @@ export default function ManagerSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/manager/dashboard/job-requisition"
+              to="/manager/job-requisition"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -145,7 +162,7 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/manager/dashboard/interviews"
+              to="/manager/interviews"
               onClick={() => setOpen(false)}
               className={linkClass}
             >

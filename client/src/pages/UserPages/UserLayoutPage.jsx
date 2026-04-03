@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
 
-const HomePage = () => {
+const UserLayoutPage = () => {
   const [open, setOpen] = useState(false);
   const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -46,4 +46,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default UserLayoutPage;

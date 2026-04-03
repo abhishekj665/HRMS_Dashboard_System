@@ -1,5 +1,6 @@
-import HomePage from "./pages/UserPages/UserLayoutPage";
+import UserLayoutPage from "./pages/UserPages/UserLayoutPage";
 import AdminUserPage from "./pages/AdminPages/User/AdminUserPage";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import LogInPage from "./pages/Auth/LoginPage";
 
 import "./App.css";
@@ -76,7 +77,8 @@ function App() {
             element={<OrganizationRegisterPage />}
           />
           <Route path="/login" element={<LogInPage />} />
-          <Route path="/home" element={<HomePage />}>
+          <Route path="/user" element={<UserLayoutPage />}>
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="asset" element={<UserAssetPage />}></Route>
             <Route path="expense" element={<UserExpensePage />}></Route>
             <Route path="attendance" element={<UserAttendanceData />}></Route>
@@ -103,7 +105,8 @@ function App() {
             />
           </Route>
 
-          <Route path="/manager/dashboard" element={<ManagerLayout />}>
+          <Route path="/manager" element={<ManagerLayout />}>
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="assets" element={<ManagerAsset />} />
             <Route path="users" element={<ManagerUserPage />} />
             <Route path="requests" element={<ManagerAssetRequest />} />
@@ -132,6 +135,7 @@ function App() {
           />
 
           <Route path="/" element={<LogInPage />}></Route>
+
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </BrowserRouter>

@@ -36,6 +36,7 @@ export const createAssetRequest = async (req, res, next) => {
 };
 
 export const getAssetRequest = async (req, res, next) => {
+  
   try {
     const userId = req.user.id;
     let response = await assestServices.getAssetRequestService(userId, req.user);

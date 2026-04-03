@@ -274,6 +274,7 @@ export default function ManagerInterviewsPage() {
                   <MenuItem value="SCHEDULED">Scheduled</MenuItem>
                   <MenuItem value="DECLINED">Declined</MenuItem>
                   <MenuItem value="RESCHEDULED">Reschedule</MenuItem>
+                  <MenuItem value="COMPLETED">Completed</MenuItem>
                 </Select>
               </Grid>
 

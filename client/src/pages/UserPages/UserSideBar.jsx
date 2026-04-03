@@ -8,6 +8,7 @@ import {
   CalendarMonth,
 } from "@mui/icons-material";
 import { useEffect } from "react";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 
 export default function UserSidebar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
@@ -42,12 +43,27 @@ export default function UserSidebar({ open, setOpen }) {
       {/* HEADER */}
       <div className="px-5 py-4">
         <h1 className="text-lg font-semibold text-gray-800">
-          {user?.role?.toUpperCase()} PANEL
+          {user?.role?.toUpperCase()} DASHBOARD
         </h1>
       </div>
 
       {/* CONTENT */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
+        {/* DASHBOARD */}
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Dashboard
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/user/dashboard"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <DashboardIcon fontSize="small" /> Dashboard
+            </NavLink>
+          </div>
+        </div>
         {/* ASSETS */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
@@ -55,7 +71,7 @@ export default function UserSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/home/asset"
+              to="/user/asset"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -71,7 +87,7 @@ export default function UserSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/home/expense"
+              to="/user/expense"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -87,7 +103,7 @@ export default function UserSidebar({ open, setOpen }) {
           </p>
           <div className="flex flex-col gap-1">
             <NavLink
-              to="/home/attendance"
+              to="/user/attendance"
               onClick={() => setOpen(false)}
               className={linkClass}
             >
@@ -95,7 +111,7 @@ export default function UserSidebar({ open, setOpen }) {
             </NavLink>
 
             <NavLink
-              to="/home/leave-management"
+              to="/user/leave-management"
               onClick={() => setOpen(false)}
               className={linkClass}
             >

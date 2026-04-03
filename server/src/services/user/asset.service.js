@@ -48,8 +48,6 @@ export const createAssetRequestService = async (data, user) => {
 
   const assetData = await Asset.findByPk(assetId);
 
-  
-
   const html = assetRequestMailTemplate({
     userName: userData.first_name || userData.email.split("@")[0],
     userEmail: userData.email,
@@ -92,6 +90,7 @@ export const getAssetRequestService = async (id, user) => {
 };
 
 export const getAvailableAssetsService = async (user) => {
+  
   let response = await Asset.findAll({
     where: {
       tenantId: requireTenantId(user),
