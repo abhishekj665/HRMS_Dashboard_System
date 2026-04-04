@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },
@@ -27,7 +27,6 @@
     "express": "^5.1.0",
     "express-rate-limit": "^7.4.0",
     "helmet": "^8.1.0",
-    "jest": "^30.3.0",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.1",
@@ -44,6 +43,11 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "jest": "^30.3.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
   }
 }
