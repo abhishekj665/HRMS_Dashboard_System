@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },

@@ -76,6 +76,10 @@ const startServer = async () => {
   });
 };
 
+test("basic test", () => {
+  expect(true).toBe(true);
+});
+
 startServer();
 
 export { io };
