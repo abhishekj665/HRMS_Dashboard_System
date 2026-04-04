@@ -84,6 +84,7 @@ export const approveAttendanceRequest = async (adminUser, id) => {
 
   try {
     const tenantId = requireTenantId(adminUser);
+    console.log(id + " " + tenantId + " " + adminUser.id);
     const attendanceData = await AttendanceRequest.findOne({
       where: {
         id: id,

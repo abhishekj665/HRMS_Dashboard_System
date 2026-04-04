@@ -40,6 +40,68 @@ const getActivePolicy = async (tenantId, date, transaction) => {
   });
 };
 
+const closePreviousOpenAttendance = async (authUser, transaction) => {
+  const oldAttendance = await Attendance.findOne({
+    where: {
+      userId: authUser.id,
+      tenantId: authUser.tenantId,
+      punchOutAt: null,
+      date: {
+        [Op.lt]: getToday,
+      },
+    },
+    order: [["date", "DESC"]],
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
+
+  if (!oldAttendance) {
+    return;
+  }
+
+  const lastLog = await AttendanceLog.findOne({
+    where: { attendanceId: oldAttendance.id, tenantId: authUser.tenantId },
+    order: [["punchTime", "DESC"]],
+    transaction,
+    lock: transaction.LOCK.UPDATE,
+  });
+
+  if (!lastLog || lastLog.punchType !== "IN") {
+    return;
+  }
+
+  const autoPunchOutTime = new Date(`${oldAttendance.date}T23:59:59`);
+
+  await AttendanceLog.create(
+    {
+      tenantId: authUser.tenantId,
+      userId: authUser.id,
+      attendanceId: oldAttendance.id,
+      punchType: "OUT",
+      punchTime: autoPunchOutTime,
+      source: "SYSTEM",
+      ipAddress: "AUTO_PUNCH_OUT",
+    },
+    { transaction },
+  );
+
+  const totalSeconds = await calculateWorkedSecondsFromLogs(
+    authUser.id,
+    oldAttendance.id,
+    transaction,
+  );
+
+  const workedMinutes = Math.floor(totalSeconds / 60);
+  const totalHours = Math.floor(workedMinutes / 60);
+
+  oldAttendance.workedMinutes = workedMinutes;
+  oldAttendance.punchOutAt = autoPunchOutTime;
+  oldAttendance.isHalfDay = totalHours >= 4 && totalHours < 8;
+  oldAttendance.isFullDay = totalHours >= 8;
+
+  await oldAttendance.save({ transaction });
+};
+
 export const registerInService = async (authUser, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
   let committed = false;
@@ -85,13 +147,19 @@ export const registerInService = async (authUser, { data }, ipAddress) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "Weekend not allowed");
     }
 
+    await closePreviousOpenAttendance(authUser, transaction);
+
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     const end = new Date();
     end.setHours(23, 59, 59, 999);
 
     let row = await Attendance.findOne({
-      where: { userId: authUser.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
+      where: {
+        userId: authUser.id,
+        tenantId,
+        punchInAt: { [Op.between]: [start, end] },
+      },
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
@@ -254,7 +322,11 @@ export const registerOutService = async (authUser, { data }, ipAddress) => {
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: { userId: authUser.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
+      where: {
+        userId: authUser.id,
+        tenantId,
+        punchInAt: { [Op.between]: [start, end] },
+      },
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
@@ -340,7 +412,11 @@ export const getTodayAttendanceService = async (user) => {
     end.setHours(23, 59, 59, 999);
 
     const row = await Attendance.findOne({
-      where: { userId: user.id, tenantId, punchInAt: { [Op.between]: [start, end] } },
+      where: {
+        userId: user.id,
+        tenantId,
+        punchInAt: { [Op.between]: [start, end] },
+      },
     });
 
     if (!row) {

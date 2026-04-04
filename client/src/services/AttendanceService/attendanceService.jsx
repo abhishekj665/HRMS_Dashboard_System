@@ -2,10 +2,16 @@ import { API } from "../AuthService/authService";
 
 export const punchIn = async (data) => {
   try {
-    const response = await API.post("/attendance/in", {
-      withCredentials: true,
-      data,
-    });
+    const response = await API.post(
+      "/attendance/in",
+      {
+        withCredentials: true,
+        data,
+      },
+      {
+        skipGlobalLoading: true,
+      },
+    );
 
     return response.data;
   } catch (error) {
@@ -21,10 +27,16 @@ export const punchIn = async (data) => {
 
 export const punchOut = async (data) => {
   try {
-    const response = await API.put("/attendance/out", {
-      withCredentials: true,
-      data,
-    });
+    const response = await API.put(
+      "/attendance/out",
+      {
+        withCredentials: true,
+        data,
+      },
+      {
+        skipGlobalLoading: true,
+      },
+    );
     return response.data;
   } catch (error) {
     return {
@@ -39,7 +51,9 @@ export const punchOut = async (data) => {
 
 export const getTodayAttendance = async () => {
   try {
-    const { data } = await API.get("/attendance/today");
+    const { data } = await API.get("/attendance/today", {
+      skipGlobalLoading: true,
+    });
     return data;
   } catch (e) {
     return {

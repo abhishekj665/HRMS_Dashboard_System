@@ -271,7 +271,7 @@ export const getAttendanceReceiver = async (user, transaction) => {
 
   if (user.role === "manager") {
     const admin = await User.findOne({
-      where: { role: "admin" },
+      where: { role: "admin", tenantId: user.tenantId },
       attributes: ["id"],
       order: [["id", "ASC"]],
       transaction,

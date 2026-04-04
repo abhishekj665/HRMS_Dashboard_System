@@ -238,6 +238,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const [loading, setLoading] = useState(true);
+  const [punchLoading, setPunchLoading] = useState(false);
   const [attendanceRows, setAttendanceRows] = useState([]);
   const [leaveBalance, setLeaveBalance] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -338,6 +339,11 @@ export default function Dashboard() {
     }
   };
 
+  const refreshTodayStatus = async () => {
+    const todayRes = await getTodayAttendance();
+    setAttendanceStatus(todayRes?.success ? todayRes.data : null);
+  };
+
   useEffect(() => {
     loadDashboard();
   }, [isEmployee, isManager]);
@@ -378,14 +384,19 @@ export default function Dashboard() {
         ? punchOut
         : punchIn;
 
-    const response = await action({ lat, lng });
-    if (!response?.success) {
-      toast.error(response?.message || "Unable to update attendance");
-      return;
-    }
+    setPunchLoading(true);
+    try {
+      const response = await action({ lat, lng });
+      if (!response?.success) {
+        toast.error(response?.message || "Unable to update attendance");
+        return;
+      }
 
-    toast.success(response.message);
-    loadDashboard();
+      toast.success(response.message);
+      await refreshTodayStatus();
+    } finally {
+      setPunchLoading(false);
+    }
   };
 
   const summary = useMemo(() => {
@@ -690,6 +701,7 @@ export default function Dashboard() {
                   fullWidth
                   variant="contained"
                   onClick={handlePunch}
+                  disabled={punchLoading}
                   startIcon={
                     attendanceStatus?.lastInAt &&
                     !attendanceStatus?.punchOutAt ? (
@@ -715,9 +727,11 @@ export default function Dashboard() {
                     fontWeight: 800,
                   }}
                 >
-                  {attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
-                    ? "Punch Out"
-                    : "Punch In"}
+                  {punchLoading
+                    ? "Please wait..."
+                    : attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
+                      ? "Punch Out"
+                      : "Punch In"}
                 </Button>
 
                 <Button

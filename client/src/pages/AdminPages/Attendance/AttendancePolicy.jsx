@@ -37,7 +37,7 @@ import {
   deleteAttendancePolicy,
 } from "../../../services/AttendanceService/attendanceService";
 
-const weekendDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekendDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const emptyForm = {
   shiftType: "SAMEDAY",
