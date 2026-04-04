@@ -19,6 +19,12 @@ export const createAssetService = async (data, adminUser) => {
     throw new ExpressError(400, "All required fields must be provided");
   }
 
+  const now = new Date();
+
+  if (expiresAt && new Date(expiresAt) <= now) {
+    throw new ExpressError(400, "Expiration date must be in the future");
+  }
+
   const tenantId = requireTenantId(adminUser);
   title.toLowerCase();
 
@@ -108,6 +114,12 @@ export const updateAssetService = async (id, data, adminUser) => {
   try {
     if (!id) {
       throw new ExpressError(400, "Asset ID is required");
+    }
+
+    const now = new Date();
+
+    if (data.expiresAt && new Date(data.expiresAt) <= now) {
+      throw new ExpressError(400, "Expiration date must be in the future");
     }
 
     const asset = await Asset.findOne({

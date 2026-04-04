@@ -220,6 +220,9 @@ const AdminAsset = () => {
                 type="date"
                 name="expiresAt"
                 label="Expiry Date"
+                inputProps={{
+                  min: new Date().toISOString().split("T")[0],
+                }}
                 InputLabelProps={{ shrink: true }}
                 value={formData.expiresAt}
                 onChange={handleChange}
@@ -278,10 +281,7 @@ const AdminAsset = () => {
       <div className="mt-10 ">
         <h2 className="text-xl font-semibold mb-4">All Assets</h2>
 
-        <TableContainer
-          
-          component={Paper}
-        >
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
