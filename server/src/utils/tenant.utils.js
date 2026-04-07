@@ -10,7 +10,7 @@ export const requireTenantId = (user) => {
   if (!tenantId) {
     throw new ExpressError(
       STATUS.BAD_REQUEST,
-      "Tenant context is missing for this user",
+      "Tenant is missing for this user",
     );
   }
 
