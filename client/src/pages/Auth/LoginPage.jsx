@@ -105,7 +105,7 @@ function LoginPage() {
         } else if (res?.user?.role === "manager") {
           navigate("/manager/dashboard");
         } else {
-          navigate("/home");
+          navigate("/user/dashboard");
         }
       } else {
         toast.error(response.message);
