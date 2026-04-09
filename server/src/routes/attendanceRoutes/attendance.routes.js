@@ -29,4 +29,10 @@ Router.route("/today").get(
   attendanceController.getTodayAttendance,
 );
 
+Router.route("/by-date").get(
+  allowRoles("manager", "employee", "admin"),
+  attendanceController.getAttendanceByDate,
+);
+
+
 export const attendanceRouter = Router;

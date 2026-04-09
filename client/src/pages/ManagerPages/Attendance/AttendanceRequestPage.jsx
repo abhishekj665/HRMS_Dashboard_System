@@ -74,7 +74,7 @@ export default function AttendanceData() {
       return rows.filter((r) => r.role === "employee" && r.status === "pending");
     }
 
-    return rows;
+    return rows.filter((r) => r.status !== "pending");
   }, [rows, tab]);
 
   const summary = useMemo(() => {
@@ -104,7 +104,7 @@ export default function AttendanceData() {
   };
 
   const toggleAll = () => {
-    const ids = rows.map((r) => r.id);
+    const ids = visibleRows.map((r) => r.id);
     const allSelected = ids.every((id) => selectedIds.includes(id));
     setSelectedIds(allSelected ? [] : ids);
   };
@@ -114,10 +114,11 @@ export default function AttendanceData() {
       const params = { page, limit };
 
       if (tab === 1) {
-        params.status = "pending";
+        params.statusGroup = "pending";
         params.role = "employee";
         params.requestedTo = currentUser?.id;
       } else {
+        params.statusGroup = "nonPending";
         if (statusFilter !== "all") params.status = statusFilter;
         if (roleFilter !== "all") params.role = roleFilter;
       }
@@ -209,6 +210,10 @@ export default function AttendanceData() {
   }, [roleFilter, statusFilter, page, limit, tab]);
 
   useEffect(() => {
+    setPage(1);
+  }, [tab, roleFilter, statusFilter]);
+
+  useEffect(() => {
     setSelectedIds([]);
   }, [tab, rows]);
 
@@ -298,19 +303,20 @@ export default function AttendanceData() {
           </Tabs>
 
           <Box className="flex gap-4 justify-end my-4 flex-wrap">
-            <FormControl size="small" className="min-w-40">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="approved">Approved</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            {tab === 0 && (
+              <FormControl size="small" className="min-w-40">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="approved">Approved</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <FormControl size="small" className="min-w-32">
               <InputLabel>Rows</InputLabel>
               <Select
@@ -390,7 +396,7 @@ export default function AttendanceData() {
               </TableHead>
 
               <TableBody>
-                {rows.map((row) => (
+                {visibleRows.map((row) => (
                   <TableRow key={row.id} hover>
                     {tab === 1 && (
                       <TableCell padding="checkbox">

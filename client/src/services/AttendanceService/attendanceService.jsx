@@ -63,6 +63,21 @@ export const getTodayAttendance = async () => {
   }
 };
 
+export const getAttendanceByDate = async (filters = {}) => {
+  try {
+    const params = new URLSearchParams(filters).toString();
+    const { data } = await API.get(`/attendance/by-date?${params}`, {
+      skipGlobalLoading: true,
+    });
+    return data;
+  } catch (e) {
+    return {
+      success: false,
+      message: e.response?.data?.message || "Attendance fetch failed",
+    };
+  }
+};
+
 export const registerAttendancePolicy = async (data) => {
   try {
     let response = await API.post("/attendance-policy", {

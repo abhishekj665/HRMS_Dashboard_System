@@ -12,6 +12,7 @@ import {
   CircularProgress,
   Grid,
   IconButton,
+  Tooltip,
   Menu,
   MenuItem,
   Paper,
@@ -22,24 +23,25 @@ import {
   AccessTime,
   ArrowForward,
   CalendarMonth,
+  ChevronLeft,
+  ChevronRight,
   EventAvailable,
   Login,
   Logout,
   NotificationsActive,
   NotificationsNone,
   Payments,
-  Person,
   ReceiptLong,
   WorkOutline,
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import {
+  getAttendanceByDate,
   getTodayAttendance,
   punchIn,
   punchOut,
 } from "../../services/AttendanceService/attendanceService";
 import {
-  getAllAttendanceData as getEmployeeAttendanceData,
   getLeaveBalance,
   getLeaveRequests,
 } from "../../services/UserService/userService";
@@ -160,10 +162,27 @@ function SectionCard({ title, subtitle, children, action }) {
   );
 }
 
-function MiniCalendar({ approvedDays }) {
+const formatDateInput = (value) => {
+  const date = new Date(value);
+  return date.toISOString().slice(0, 10);
+};
+
+const formatMonthLabel = (value) =>
+  value.toLocaleDateString([], {
+    month: "long",
+    year: "numeric",
+  });
+
+function MiniCalendar({
+  monthDate,
+  selectedDate,
+  attendanceMap,
+  onDateSelect,
+  onMonthChange,
+}) {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cells = [
@@ -173,6 +192,29 @@ function MiniCalendar({ approvedDays }) {
 
   return (
     <Box>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 1.75 }}
+      >
+        <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+          {formatMonthLabel(monthDate)}
+        </Typography>
+        <Stack direction="row" spacing={0.5}>
+          <Tooltip title="Previous month">
+            <IconButton size="small" onClick={() => onMonthChange(-1)}>
+              <ChevronLeft fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Next month">
+            <IconButton size="small" onClick={() => onMonthChange(1)}>
+              <ChevronRight fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+      </Stack>
+
       <Box
         sx={{
           display: "grid",
@@ -205,11 +247,33 @@ function MiniCalendar({ approvedDays }) {
           }
 
           const isToday = day === now.getDate();
-          const isApproved = approvedDays.has(day);
+          const cellDate = new Date(year, month, day);
+          const dateKey = formatDateInput(cellDate);
+          const attendance = attendanceMap[dateKey];
+          const status = attendance?.requestStatus;
+          const isApproved = status === "APPROVED";
+          const isPending = status === "PENDING";
+          const isRejected = status === "REJECTED";
+          const isSelected = selectedDate === dateKey;
+
+          let background = "#f8fafc";
+          let color = "#334155";
+
+          if (isApproved) {
+            background = "#dcfce7";
+            color = "#166534";
+          } else if (isPending) {
+            background = "#fef3c7";
+            color = "#92400e";
+          } else if (isRejected) {
+            background = "#fee2e2";
+            color = "#b91c1c";
+          }
 
           return (
             <Box
               key={day}
+              onClick={() => onDateSelect(dateKey)}
               sx={{
                 width: 36,
                 height: 36,
@@ -218,11 +282,16 @@ function MiniCalendar({ approvedDays }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: isApproved ? "#dcfce7" : "#f8fafc",
-                color: isApproved ? "#166534" : "#334155",
-                border: isToday ? "2px solid #2563eb" : "1px solid #e2e8f0",
-                fontWeight: isToday || isApproved ? 700 : 500,
+                bgcolor: background,
+                color,
+                border: isSelected
+                  ? "2px solid #0f172a"
+                  : isToday
+                    ? "2px solid #2563eb"
+                    : "1px solid #e2e8f0",
+                fontWeight: isToday || isApproved || isPending || isRejected ? 700 : 500,
                 fontSize: 12,
+                cursor: "pointer",
               }}
             >
               {day}
@@ -237,6 +306,7 @@ function MiniCalendar({ approvedDays }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
+  const today = useMemo(() => new Date(), []);
   const [loading, setLoading] = useState(true);
   const [punchLoading, setPunchLoading] = useState(false);
   const [attendanceRows, setAttendanceRows] = useState([]);
@@ -251,17 +321,71 @@ export default function Dashboard() {
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
   const [liveSeconds, setLiveSeconds] = useState(0);
+  const [calendarMonth, setCalendarMonth] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(
+    formatDateInput(today),
+  );
+  const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [quickActionAnchorEl, setQuickActionAnchorEl] = useState(null);
   const isEmployee = user?.role === "employee";
   const isManager = user?.role === "manager";
+
+  const loadCalendarAttendance = async (monthValue, selectedDateValue) => {
+    const startDate = new Date(
+      monthValue.getFullYear(),
+      monthValue.getMonth(),
+      1,
+    );
+    const endDate = new Date(
+      monthValue.getFullYear(),
+      monthValue.getMonth() + 1,
+      0,
+    );
+
+    const response = await getAttendanceByDate({
+      startDate: formatDateInput(startDate),
+      endDate: formatDateInput(endDate),
+    });
+
+    if (!response?.success || !Array.isArray(response.data)) {
+      setAttendanceRows([]);
+      setSelectedAttendance(null);
+      return;
+    }
+
+    const mappedRows = response.data.map((item) => {
+      const request = item.AttendanceRequests?.[0] || null;
+
+      return {
+        id: item.id,
+        date: item.date,
+        punchInAt: item.punchInAt,
+        punchOutAt: item.punchOutAt,
+        workedMinutes: Number(item.workedMinutes || 0),
+        breakMinutes: Number(item.breakMinutes || 0),
+        overtimeMinutes: Number(item.overtimeMinutes || 0),
+        isLate: Boolean(item.isLate),
+        isHalfDay: Boolean(item.isHalfDay),
+        isFullDay: Boolean(item.isFullDay),
+        requestStatus: request?.status || null,
+        requestType: request?.requestType || null,
+      };
+    });
+
+    setAttendanceRows(mappedRows);
+
+    const exactMatch = mappedRows.find((item) => item.date === selectedDateValue);
+    setSelectedAttendance(exactMatch || null);
+  };
 
   const loadDashboard = async () => {
     setLoading(true);
     try {
       const requests = [getTodayAttendance()];
       if (isEmployee) {
-        requests.push(getEmployeeAttendanceData({ page: 1, limit: 31 }));
         requests.push(getLeaveBalance());
         requests.push(getLeaveRequests());
       } else if (isManager) {
@@ -288,41 +412,33 @@ export default function Dashboard() {
         );
       }
 
-      const [
-        todayRes,
-        attendanceRes,
-        leaveBalanceRes,
-        leaveRequestsRes,
-        interviewsRes,
-      ] = await Promise.all(requests);
+      const [todayRes, firstRes, secondRes, thirdRes] = await Promise.all(
+        requests,
+      );
 
       setAttendanceStatus(todayRes?.success ? todayRes.data : null);
 
       if (isEmployee) {
-        setAttendanceRows(
-          attendanceRes?.success ? attendanceRes?.data?.data || [] : [],
-        );
         setLeaveBalance(
-          leaveBalanceRes?.success ? leaveBalanceRes.data || [] : [],
+          firstRes?.success ? firstRes.data || [] : [],
         );
         setLeaveRequests(
-          leaveRequestsRes?.success ? leaveRequestsRes.data || [] : [],
+          secondRes?.success ? secondRes.data || [] : [],
         );
         setManagerAttendanceRequests([]);
         setManagerLeaveRequests([]);
         setManagerInterviews([]);
       } else if (isManager) {
-        setAttendanceRows([]);
         setLeaveBalance([]);
         setLeaveRequests([]);
         setManagerAttendanceRequests(
-          attendanceRes?.success ? attendanceRes?.data?.data || [] : [],
+          firstRes?.success ? firstRes?.data?.data || [] : [],
         );
         setManagerLeaveRequests(
-          leaveBalanceRes?.success ? leaveBalanceRes.data || [] : [],
+          secondRes?.success ? secondRes.data || [] : [],
         );
         setManagerInterviews(
-          interviewsRes?.success ? interviewsRes?.data?.rows || [] : [],
+          thirdRes?.success ? thirdRes?.data?.rows || [] : [],
         );
       } else {
         setAttendanceRows([]);
@@ -347,6 +463,11 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboard();
   }, [isEmployee, isManager]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    loadCalendarAttendance(calendarMonth, selectedCalendarDate);
+  }, [user?.id, calendarMonth, selectedCalendarDate]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -400,8 +521,7 @@ export default function Dashboard() {
   };
 
   const summary = useMemo(() => {
-    const rows = attendanceRows.map((item) => item.Attendance).filter(Boolean);
-    const approvedDays = new Set();
+    const attendanceMap = {};
     let workedMinutes = 0;
     let breakMinutes = 0;
     let present = 0;
@@ -409,23 +529,18 @@ export default function Dashboard() {
     let rejected = 0;
 
     attendanceRows.forEach((item) => {
-      const date = item.Attendance?.punchInAt
-        ? new Date(item.Attendance.punchInAt).getDate()
-        : null;
+      attendanceMap[item.date] = item;
 
-      if (item.status === "APPROVED") {
+      if (item.requestStatus === "APPROVED") {
         present += 1;
-        if (date) approvedDays.add(date);
-      } else if (item.status === "PENDING") {
+      } else if (item.requestStatus === "PENDING") {
         pending += 1;
-      } else if (item.status === "REJECTED") {
+      } else if (item.requestStatus === "REJECTED") {
         rejected += 1;
       }
-    });
 
-    rows.forEach((row) => {
-      workedMinutes += Number(row.workedMinutes || 0);
-      breakMinutes += Number(row.breakMinutes || 0);
+      workedMinutes += Number(item.workedMinutes || 0);
+      breakMinutes += Number(item.breakMinutes || 0);
     });
 
     const leaveAvailable = leaveBalance.reduce(
@@ -434,8 +549,8 @@ export default function Dashboard() {
     );
 
     return {
-      approvedDays,
-      workingDays: rows.length,
+      attendanceMap,
+      workingDays: attendanceRows.length,
       present,
       pending,
       rejected,
@@ -535,6 +650,30 @@ export default function Dashboard() {
     managerInterviews,
   ]);
 
+  const selectedAttendanceInfo = useMemo(() => {
+    if (!selectedAttendance) {
+      return {
+        label: selectedCalendarDate,
+        status: "No attendance",
+        punchIn: "--",
+        punchOut: "--",
+        worked: "0h 0m",
+      };
+    }
+
+    return {
+      label: new Date(selectedAttendance.date).toLocaleDateString([], {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      status: selectedAttendance.requestStatus || "No request",
+      punchIn: formatTime(selectedAttendance.punchInAt),
+      punchOut: formatTime(selectedAttendance.punchOutAt),
+      worked: formatMinutes(selectedAttendance.workedMinutes),
+    };
+  }, [selectedAttendance, selectedCalendarDate]);
+
   const quickActions = [
     {
       label: "Attendance",
@@ -551,27 +690,25 @@ export default function Dashboard() {
       icon: <Payments fontSize="small" />,
       path: isEmployee ? "/user/expense" : "/manager/expenses",
     },
-    ...(
-      isManager
-        ? [
-            {
-              label: "Attendance Requests",
-              icon: <EventAvailable fontSize="small" />,
-              path: "/manager/attendance/request",
-            },
-            {
-              label: "Leave Requests",
-              icon: <ReceiptLong fontSize="small" />,
-              path: "/manager/leave-requests",
-            },
-            {
-              label: "Interviews",
-              icon: <NotificationsActive fontSize="small" />,
-              path: "/manager/interviews",
-            },
-          ]
-        : []
-    ),
+    ...(isManager
+      ? [
+          {
+            label: "Attendance Requests",
+            icon: <EventAvailable fontSize="small" />,
+            path: "/manager/attendance/request",
+          },
+          {
+            label: "Leave Requests",
+            icon: <ReceiptLong fontSize="small" />,
+            path: "/manager/leave-requests",
+          },
+          {
+            label: "Interviews",
+            icon: <NotificationsActive fontSize="small" />,
+            path: "/manager/interviews",
+          },
+        ]
+      : []),
   ];
 
   if (loading) {
@@ -696,7 +833,11 @@ export default function Dashboard() {
                 </Stack>
               </Stack>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ mt: 2 }}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={1.25}
+                sx={{ mt: 2 }}
+              >
                 <Button
                   fullWidth
                   variant="contained"
@@ -712,7 +853,8 @@ export default function Dashboard() {
                   }
                   sx={{
                     bgcolor:
-                      attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
+                      attendanceStatus?.lastInAt &&
+                      !attendanceStatus?.punchOutAt
                         ? "#ef4444"
                         : "#22c55e",
                     "&:hover": {
@@ -729,7 +871,8 @@ export default function Dashboard() {
                 >
                   {punchLoading
                     ? "Please wait..."
-                    : attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
+                    : attendanceStatus?.lastInAt &&
+                        !attendanceStatus?.punchOutAt
                       ? "Punch Out"
                       : "Punch In"}
                 </Button>
@@ -738,7 +881,9 @@ export default function Dashboard() {
                   fullWidth
                   variant="outlined"
                   endIcon={<ArrowForward />}
-                  onClick={(event) => setQuickActionAnchorEl(event.currentTarget)}
+                  onClick={(event) =>
+                    setQuickActionAnchorEl(event.currentTarget)
+                  }
                   sx={{
                     color: "#fff",
                     borderColor: "rgba(255,255,255,0.28)",
@@ -806,7 +951,21 @@ export default function Dashboard() {
             >
               <Grid container spacing={3}>
                 <Grid item xs={12} md={7}>
-                  <MiniCalendar approvedDays={summary.approvedDays} />
+                  <MiniCalendar
+                    monthDate={calendarMonth}
+                    selectedDate={selectedCalendarDate}
+                    attendanceMap={summary.attendanceMap}
+                    onDateSelect={setSelectedCalendarDate}
+                    onMonthChange={(step) => {
+                      const nextMonth = new Date(
+                        calendarMonth.getFullYear(),
+                        calendarMonth.getMonth() + step,
+                        1,
+                      );
+                      setCalendarMonth(nextMonth);
+                      setSelectedCalendarDate(formatDateInput(nextMonth));
+                    }}
+                  />
                 </Grid>
                 <Grid item xs={12} md={5}>
                   <Stack spacing={1.25}>
@@ -820,7 +979,14 @@ export default function Dashboard() {
                       Rejected: {summary.rejected}
                     </Alert>
                     <Alert severity="info" variant="outlined">
-                      Latest punch in: {formatTime(attendanceStatus?.lastInAt)}
+                      {selectedAttendanceInfo.label}: {selectedAttendanceInfo.status}
+                    </Alert>
+                    <Alert severity="info" variant="outlined">
+                      Punch In {selectedAttendanceInfo.punchIn} | Punch Out{" "}
+                      {selectedAttendanceInfo.punchOut}
+                    </Alert>
+                    <Alert severity="info" variant="outlined">
+                      Worked: {selectedAttendanceInfo.worked}
                     </Alert>
                   </Stack>
                 </Grid>
@@ -871,7 +1037,6 @@ export default function Dashboard() {
               </Box>
             </SectionCard>
           </Grid>
-
         </Grid>
 
         <Menu
@@ -937,7 +1102,11 @@ export default function Dashboard() {
                   />
                   <Typography
                     variant="body2"
-                    sx={{ whiteSpace: "normal", color: "#0f172a", lineHeight: 1.5 }}
+                    sx={{
+                      whiteSpace: "normal",
+                      color: "#0f172a",
+                      lineHeight: 1.5,
+                    }}
                   >
                     {item.text}
                   </Typography>
@@ -983,8 +1152,7 @@ export default function Dashboard() {
             sx={{
               px: 2.25,
               py: 2,
-              background:
-                "linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%)",
+              background: "linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%)",
             }}
           >
             <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
@@ -1030,14 +1198,15 @@ export default function Dashboard() {
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography
-                          sx={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}
+                          sx={{
+                            fontWeight: 700,
+                            color: "#0f172a",
+                            lineHeight: 1.2,
+                          }}
                         >
                           {action.label}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ color: "#64748b" }}
-                        >
+                        <Typography variant="caption" sx={{ color: "#64748b" }}>
                           Open now
                         </Typography>
                       </Box>

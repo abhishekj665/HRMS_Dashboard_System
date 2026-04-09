@@ -1,4 +1,5 @@
 import STATUS from "../../constants/Status.js";
+import { Op } from "sequelize";
 import {
   Attendance,
   AttendanceRequest,
@@ -19,10 +20,16 @@ import {
 export const getAttendance = async (filters = {}, adminUser) => {
   try {
     const tenantId = requireTenantId(adminUser);
-    const { status, role, requestedTo, page = 1, limit = 10 } = filters;
+    const { status, role, requestedTo, statusGroup, page = 1, limit = 10 } = filters;
 
     const where = { tenantId };
-    if (status) where.status = status.toUpperCase();
+    if (statusGroup === "pending") {
+      where.status = "PENDING";
+    } else if (statusGroup === "nonPending") {
+      where.status = { [Op.in]: ["APPROVED", "REJECTED"] };
+    } else if (status) {
+      where.status = status.toUpperCase();
+    }
     if (requestedTo) where.requestedTo = requestedTo;
 
     const requesterWhere = {};

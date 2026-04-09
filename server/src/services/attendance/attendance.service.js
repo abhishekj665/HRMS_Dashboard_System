@@ -500,3 +500,60 @@ export const getAttendanceSummary = async (user, month, year) => {
     throw error;
   }
 };
+
+export const getAttendanceByDate = async (user, query) => {
+  try {
+    const tenantId = requireTenantId(user);
+    const startDate = new Date(query.startDate);
+    const endDate = new Date(query.endDate);
+
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      throw new Error("Invalid date");
+    }
+
+    const start = startDate.toISOString().slice(0, 10);
+    const end = endDate.toISOString().slice(0, 10);
+
+    const row = await Attendance.findAll({
+      where: {
+        userId: user.id,
+        tenantId,
+        date: {
+          [Op.between]: [start, end],
+        },
+      },
+      attributes: [
+        "id",
+        "isLate",
+        "isHalfDay",
+        "isFullDay",
+        "workedMinutes",
+        "breakMinutes",
+        "overtimeMinutes",
+        "date",
+        "punchInAt",
+        "punchOutAt",
+      ],
+      include: [
+        {
+          model: AttendanceRequest,
+          attributes: [
+            "id",
+            "status",
+            "requestType",
+            "reviewedBy",
+            "createdAt",
+            "updatedAt",
+          ],
+        }
+      ],
+      order: [["date", "ASC"]],
+    });
+    return {
+      success: true,
+      data: row,
+    };
+  } catch (error) { 
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+}

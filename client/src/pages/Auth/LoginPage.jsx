@@ -58,8 +58,6 @@ function LoginPage() {
         return;
       }
 
-      console.log(response);
-
       if (response.success) {
         if (response?.user?.role === "admin") {
           navigate("/admin/dashboard");
@@ -175,7 +173,11 @@ function LoginPage() {
 
             <Typography variant="body2" sx={{ mt: 1 }}>
               Don’t have an account?{" "}
-              <Link component={RouterLink} to="/organization/register" underline="hover">
+              <Link
+                component={RouterLink}
+                to="/organization/register"
+                underline="hover"
+              >
                 Sign up
               </Link>
             </Typography>

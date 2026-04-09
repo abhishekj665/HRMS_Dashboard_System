@@ -1,6 +1,10 @@
 import ExpressError from "../../utils/Error.utils.js";
 import { Employee, UserIP } from "../../models/Associations.model.js";
-import { User, AttendancePolicy, Organization } from "../../models/Associations.model.js";
+import {
+  User,
+  AttendancePolicy,
+  Organization,
+} from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
@@ -40,7 +44,18 @@ export const getUsersService = async (page, limits, search, adminUser) => {
       distinct: true,
       col: "id",
       where: whereCondition,
-      attributes: { exclude: ["password"] },
+      attributes: {
+        exclude: [
+          "password",
+          "createdAt",
+          "updatedAt",
+          "contact",
+          "attendancePolicyId",
+          "login_At",
+          "leavePolicyId",
+          "deletedAt",
+        ],
+      },
       include: [
         {
           model: User,
@@ -51,6 +66,8 @@ export const getUsersService = async (page, limits, search, adminUser) => {
           model: UserIP,
           required: false,
           attributes: ["ipAddress", "isBlocked", "createdAt", "updatedAt"],
+          limit: 1,
+          order: [["createdAt", "DESC"]],
         },
       ],
     });
@@ -189,7 +206,7 @@ export const registerUserService = async ({ data }, adminUser) => {
     // }, { transaction }); // Pending cause of department dependency
 
     const organization = await Organization.findOne({
-      where: { id : tenantId },
+      where: { id: tenantId },
       transaction,
     });
 

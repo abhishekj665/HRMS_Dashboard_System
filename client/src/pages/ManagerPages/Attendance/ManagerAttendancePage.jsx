@@ -32,7 +32,6 @@ const statusColor = {
 
 export default function ManagerAttendancePage() {
   const [statusFilter, setStatusFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState(0);
   const [page, setPage] = useState(1);
@@ -60,11 +59,10 @@ export default function ManagerAttendancePage() {
   const fetchAttendanceData = async () => {
     try {
       const params = { page, limit };
+      params.statusGroup = "nonPending";
       if (statusFilter !== "all") params.status = statusFilter;
 
       const res = await getAttendanceData(params);
-
-      console.log("API:", res);
 
       const payload = res?.data;
 
@@ -85,6 +83,9 @@ export default function ManagerAttendancePage() {
           punchIn: fmtTime(a.punchInAt),
           punchOut: fmtTime(a.punchOutAt),
 
+          workedMinutes: a.workedMinutes || 0,
+          breakMinutes: a.breakMinutes || 0,
+          overtimeMinutes: a.overtimeMinutes || 0,
           worked: fmtMinutesToHM(a.workedMinutes),
           break: fmtMinutesToHM(a.breakMinutes),
           overtime: fmtMinutesToHM(a.overtimeMinutes),
@@ -107,10 +108,8 @@ export default function ManagerAttendancePage() {
       const params = {
         page,
         limit,
-        status: "PENDING",
+        statusGroup: "pending",
       };
-
-      console.log(params);
 
       const res = await getAttendanceData(params);
 
@@ -132,6 +131,9 @@ export default function ManagerAttendancePage() {
           requestDate: fmtDate(item.createdAt),
           punchIn: fmtTime(a.punchInAt),
           punchOut: fmtTime(a.punchOutAt),
+          workedMinutes: a.workedMinutes || 0,
+          breakMinutes: a.breakMinutes || 0,
+          overtimeMinutes: a.overtimeMinutes || 0,
           worked: fmtMinutesToHM(a.workedMinutes),
           break: fmtMinutesToHM(a.breakMinutes),
           overtime: fmtMinutesToHM(a.overtimeMinutes),
@@ -150,12 +152,6 @@ export default function ManagerAttendancePage() {
   const handleSwitch = (e, v) => {
     setTab(v);
     setPage(1);
-
-    if (v === 0) {
-      fetchAttendanceData();
-    } else if (v === 1) {
-      fetchRequestData();
-    }
   };
 
   useEffect(() => {
@@ -164,19 +160,19 @@ export default function ManagerAttendancePage() {
     } else {
       fetchRequestData();
     }
-  }, [statusFilter, roleFilter, page, limit, tab]);
+  }, [statusFilter, page, limit, tab]);
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, roleFilter, limit]);
+  }, [statusFilter, limit, tab]);
 
   const summary = useMemo(() => {
     const present = rows.filter((r) => r.status === "approved").length;
     const pending = rows.filter((r) => r.status === "pending").length;
     const rejected = rows.filter((r) => r.status === "rejected").length;
 
-    const totalWorked = rows.reduce((a, r) => a + r.worked, 0);
-    const totalBreak = rows.reduce((a, r) => a + r.break, 0);
+    const totalWorked = rows.reduce((a, r) => a + (r.workedMinutes || 0), 0);
+    const totalBreak = rows.reduce((a, r) => a + (r.breakMinutes || 0), 0);
 
     const uniqueDays = new Set(rows.map((r) => r.requestDate));
 
@@ -240,19 +236,20 @@ export default function ManagerAttendancePage() {
           </Tabs>
 
           <Box className="flex gap-4 justify-end my-4">
-            <FormControl size="small">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="approved">Approved</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            {tab === 0 && (
+              <FormControl size="small">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="approved">Approved</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
             <FormControl size="small">
               <InputLabel>Rows</InputLabel>
@@ -308,7 +305,7 @@ export default function ManagerAttendancePage() {
 
           <Box className="flex justify-end mt-4">
             <Pagination
-              count={Math.ceil(total / limit)}
+              count={Math.max(1, Math.ceil(total / limit))}
               page={page}
               onChange={(e, v) => setPage(v)}
             />

@@ -30,8 +30,6 @@ export const registerLeaveRequest = async (data, authUser) => {
       data.isHalfDay,
     );
 
-    
-
     data.daysRequested = dayRequested;
 
     const { leaveTypeId } = data;
@@ -65,8 +63,13 @@ export const registerLeaveRequest = async (data, authUser) => {
       ],
     });
 
-    if(user.role === "employee" && user.managerId === null){
-      throw new ExpressError(STATUS.BAD_REQUEST, "No manager assigned to your profile. Please contact Admin."
+    if (!user)
+      throw new ExpressError(STATUS.BAD_REQUEST, "Leave Data not found");
+
+    if (user.role === "employee" && user.managerId === null) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "No manager assigned to your profile. Please contact Admin.",
       );
     }
 
@@ -93,7 +96,6 @@ export const registerLeaveRequest = async (data, authUser) => {
         `Leave request must be within policy effective period (${policy.effectiveFrom} - ${policy.effectiveTo})`,
       );
     }
-    
 
     if (
       !user.leavePolicy.isActive ||
@@ -132,8 +134,6 @@ export const registerLeaveRequest = async (data, authUser) => {
       where: { id: leaveTypeId, tenantId },
     });
 
-    
-
     if (leaveType.requiresApproval && !user.manager) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
@@ -151,8 +151,6 @@ export const registerLeaveRequest = async (data, authUser) => {
       leaveBalance.balance -= data.daysRequested;
       await leaveBalance.save({ transaction });
     }
-
-    
 
     const leaveData = await LeaveRequest.create(
       {
@@ -173,8 +171,6 @@ export const registerLeaveRequest = async (data, authUser) => {
       { transaction },
     );
 
-
-    
     let admin = null;
 
     if (user.role === "manager") {
@@ -185,11 +181,7 @@ export const registerLeaveRequest = async (data, authUser) => {
       });
     }
 
-    
-
     await transaction.commit();
-
-  
 
     const html = getLeaveRequestCreatedTemplate({
       managerName:
@@ -205,8 +197,6 @@ export const registerLeaveRequest = async (data, authUser) => {
     if (admin) {
       sendMail(admin.email, "New Leave Request", html);
     } else sendMail(user.manager.email, "New Leave Request", html);
-
-    
 
     return {
       success: true,

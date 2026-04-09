@@ -97,3 +97,22 @@ export const getAttendanceSummary = async (req, res) => {
     });
   }
 };
+
+export const getAttendanceByDate = async (req, res, next) => {
+  try {
+
+    const response = await attendanceServices.getAttendanceByDate(
+      req.user,
+      req.query
+    );
+
+    if (response.success) {   
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) { 
+    next(error);
+  }
+};
+

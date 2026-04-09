@@ -73,12 +73,12 @@ export default function AttendanceTable() {
       const params = { page, limit };
 
       if (tab === 1) {
-        params.status = "pending";
+        params.statusGroup = "pending";
         params.role = "manager";
       } else {
+        params.statusGroup = "nonPending";
         if (statusFilter !== "all") params.status = statusFilter;
         if (roleFilter !== "all") params.role = roleFilter;
-        params.excludeManagerPending = true;
       }
 
       const res = await getAllAttendanceData(params);
@@ -120,16 +120,6 @@ export default function AttendanceTable() {
     }
   };
 
-  const params = { page, limit };
-
-  if (tab === 1) {
-    params.role = "manager";
-    params.status = "pending";
-  } else {
-    if (statusFilter !== "all") params.status = statusFilter;
-    if (roleFilter !== "all") params.role = roleFilter;
-  }
-
   const visibleRows = useMemo(() => {
     if (tab === 1) {
       return rows.filter((r) => r.status === "pending");
@@ -139,7 +129,7 @@ export default function AttendanceTable() {
   }, [rows, tab]);
 
   const toggleAll = () => {
-    const allIds = pagedRows.map((r) => r.id);
+    const allIds = visibleRows.map((r) => r.id);
 
     const allSelected = allIds.every((id) => selectedIds.includes(id));
     setSelectedIds(allSelected ? [] : allIds);
@@ -226,18 +216,13 @@ export default function AttendanceTable() {
     }
   };
 
-  const pagedRows = useMemo(() => {
-    const start = (page - 1) * limit;
-    return visibleRows.slice(start, start + limit);
-  }, [visibleRows, page, limit]);
-
   useEffect(() => {
     fetchAttendanceData();
   }, [statusFilter, roleFilter, page, limit, tab]);
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, roleFilter]);
+  }, [statusFilter, roleFilter, tab]);
 
   useEffect(() => {
     setSelectedIds([]);
@@ -337,19 +322,20 @@ export default function AttendanceTable() {
           </Tabs>
 
           <Box className="flex gap-4 justify-end my-4">
-            <FormControl size="small" className="min-w-40">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="approved">Approved</MenuItem>
-                <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            {tab === 0 && (
+              <FormControl size="small" className="min-w-40">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="approved">Approved</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
             {tab == 0 ? (
               <FormControl size="small" className="min-w-40">
@@ -420,12 +406,12 @@ export default function AttendanceTable() {
                     <TableCell padding="checkbox">
                       <Checkbox
                         checked={
-                          pagedRows.length > 0 &&
-                          pagedRows.every((r) => selectedIds.includes(r.id))
+                          visibleRows.length > 0 &&
+                          visibleRows.every((r) => selectedIds.includes(r.id))
                         }
                         indeterminate={
-                          pagedRows.some((r) => selectedIds.includes(r.id)) &&
-                          !pagedRows.every((r) => selectedIds.includes(r.id))
+                          visibleRows.some((r) => selectedIds.includes(r.id)) &&
+                          !visibleRows.every((r) => selectedIds.includes(r.id))
                         }
                         onChange={toggleAll}
                       />
@@ -446,7 +432,7 @@ export default function AttendanceTable() {
               </TableHead>
 
               <TableBody>
-                {pagedRows.map((row) => (
+                {visibleRows.map((row) => (
                   <TableRow key={row.id} hover>
                     {tab === 1 && (
                       <TableCell padding="checkbox">
@@ -521,7 +507,7 @@ export default function AttendanceTable() {
           </TableContainer>
           <Box className="flex justify-end mt-4">
             <Pagination
-              count={Math.max(1, Math.ceil(visibleRows.length / limit))}
+              count={Math.max(1, Math.ceil(total / limit))}
               page={page}
               onChange={(e, value) => setPage(value)}
               color="primary"

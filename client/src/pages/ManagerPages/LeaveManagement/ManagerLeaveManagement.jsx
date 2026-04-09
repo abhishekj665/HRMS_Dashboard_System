@@ -95,6 +95,7 @@ const ManagerLeaveManagement = () => {
     (sum, item) => sum + Number(item.balance || 0),
     0,
   );
+  const hasAvailableLeave = totalAvailable > 0;
 
   const pendingCount = leaveRequests?.filter(
     (leave) => leave.status === "PENDING",
@@ -174,6 +175,7 @@ const ManagerLeaveManagement = () => {
           <Button
             variant="contained"
             onClick={() => setOpen(true)}
+            disabled={!hasAvailableLeave}
             sx={{
               backgroundColor: "#ffffff20",
               backdropFilter: "blur(10px)",
@@ -183,6 +185,11 @@ const ManagerLeaveManagement = () => {
             Apply For Leave
           </Button>
         </Box>
+        {!hasAvailableLeave && (
+          <Typography variant="body2" sx={{ mt: 1, opacity: 0.9 }}>
+            Apply leave is disabled because no leave balance is available.
+          </Typography>
+        )}
       </Box>
 
       <Box
@@ -522,6 +529,7 @@ const ManagerLeaveManagement = () => {
 
           <Button
             variant="contained"
+            disabled={!hasAvailableLeave}
             sx={{
               textTransform: "none",
               borderRadius: 2,
