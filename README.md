@@ -14,7 +14,7 @@ This repository is focused on practical, production-style HR workflows:
 - asset allocation and request handling
 - expense submission and approval
 - recruitment pipelines from requisition to offer
-- realtime request updates using Socket.IO
+- realtime request updates using SocketIO
 
 ## Default Credentials
 
