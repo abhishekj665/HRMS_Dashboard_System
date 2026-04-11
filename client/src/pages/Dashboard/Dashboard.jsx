@@ -266,6 +266,9 @@ function MiniCalendar({
             background = "#fef3c7";
             color = "#92400e";
           } else if (isRejected) {
+            background = "#ff0000";
+            color = "#b91c1c";
+          } else {
             background = "#fee2e2";
             color = "#b91c1c";
           }
@@ -289,7 +292,8 @@ function MiniCalendar({
                   : isToday
                     ? "2px solid #2563eb"
                     : "1px solid #e2e8f0",
-                fontWeight: isToday || isApproved || isPending || isRejected ? 700 : 500,
+                fontWeight:
+                  isToday || isApproved || isPending || isRejected ? 700 : 500,
                 fontSize: 12,
                 cursor: "pointer",
               }}
@@ -377,7 +381,9 @@ export default function Dashboard() {
 
     setAttendanceRows(mappedRows);
 
-    const exactMatch = mappedRows.find((item) => item.date === selectedDateValue);
+    const exactMatch = mappedRows.find(
+      (item) => item.date === selectedDateValue,
+    );
     setSelectedAttendance(exactMatch || null);
   };
 
@@ -412,19 +418,14 @@ export default function Dashboard() {
         );
       }
 
-      const [todayRes, firstRes, secondRes, thirdRes] = await Promise.all(
-        requests,
-      );
+      const [todayRes, firstRes, secondRes, thirdRes] =
+        await Promise.all(requests);
 
       setAttendanceStatus(todayRes?.success ? todayRes.data : null);
 
       if (isEmployee) {
-        setLeaveBalance(
-          firstRes?.success ? firstRes.data || [] : [],
-        );
-        setLeaveRequests(
-          secondRes?.success ? secondRes.data || [] : [],
-        );
+        setLeaveBalance(firstRes?.success ? firstRes.data || [] : []);
+        setLeaveRequests(secondRes?.success ? secondRes.data || [] : []);
         setManagerAttendanceRequests([]);
         setManagerLeaveRequests([]);
         setManagerInterviews([]);
@@ -434,9 +435,7 @@ export default function Dashboard() {
         setManagerAttendanceRequests(
           firstRes?.success ? firstRes?.data?.data || [] : [],
         );
-        setManagerLeaveRequests(
-          secondRes?.success ? secondRes.data || [] : [],
-        );
+        setManagerLeaveRequests(secondRes?.success ? secondRes.data || [] : []);
         setManagerInterviews(
           thirdRes?.success ? thirdRes?.data?.rows || [] : [],
         );
@@ -979,7 +978,8 @@ export default function Dashboard() {
                       Rejected: {summary.rejected}
                     </Alert>
                     <Alert severity="info" variant="outlined">
-                      {selectedAttendanceInfo.label}: {selectedAttendanceInfo.status}
+                      {selectedAttendanceInfo.label}:{" "}
+                      {selectedAttendanceInfo.status}
                     </Alert>
                     <Alert severity="info" variant="outlined">
                       Punch In {selectedAttendanceInfo.punchIn} | Punch Out{" "}

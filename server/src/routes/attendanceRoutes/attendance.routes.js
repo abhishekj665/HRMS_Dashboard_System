@@ -7,8 +7,6 @@ import express from "express";
 
 const Router = express.Router();
 
-
-
 Router.use(userAuth);
 
 Router.route("/summary").get(
@@ -33,6 +31,5 @@ Router.route("/by-date").get(
   allowRoles("manager", "employee", "admin"),
   attendanceController.getAttendanceByDate,
 );
-
 
 export const attendanceRouter = Router;

@@ -5,7 +5,7 @@ export async function calculateWorkedSecondsFromLogs(
   attendanceId,
   transaction,
 ) {
-  console.log("Calculating worked seconds for userId:", userId, "attendanceId:", attendanceId);
+  
   const logs = await AttendanceLog.findAll({
     where: { userId, attendanceId, isValid: true },
     order: [["punchTime", "ASC"]],
