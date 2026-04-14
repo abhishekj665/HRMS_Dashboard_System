@@ -70,7 +70,7 @@ const AttendancePolicy = sequelize.define(
 
     effectiveTo: {
       type: DataTypes.DATEONLY,
-      allowNull: true, // null = open ended
+      allowNull: true, 
     },
   },
   {

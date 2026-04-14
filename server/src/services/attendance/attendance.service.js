@@ -30,6 +30,7 @@ const getActivePolicy = async (tenantId, date, transaction) => {
   return AttendancePolicy.findOne({
     where: {
       tenantId,
+      isDefault: true,
       effectiveFrom: { [Op.lte]: d },
       [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: d } }],
     },
