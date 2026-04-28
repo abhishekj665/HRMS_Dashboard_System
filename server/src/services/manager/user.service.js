@@ -1,10 +1,14 @@
 import ExpressError from "../../utils/Error.utils.js";
-import { AttendancePolicy, UserIP } from "../../models/Associations.model.js";
+import {
+  AttendancePolicy,
+  Employee,
+  UserIP,
+} from "../../models/Associations.model.js";
 import { User } from "../../models/Associations.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
 import STATUS from "../../constants/Status.js";
 import { generateHash } from "../../utils/hash.utils.js";
-import { Attendance } from "../../models/Associations.model.js";
+import { sequelize } from "../../config/db.js";
 import {
   getTenantOrGlobalWhere,
   requireTenantId,
@@ -42,8 +46,9 @@ export const getUsersService = async (page, limits, user) => {
 };
 
 export const registerUserService = async ({ data }, manager) => {
+  const transaction = await sequelize.transaction();
   try {
-    if (!data.email || !data.password) {
+    if (!data.email || !data.password || !data.departmentId) {
       return {
         success: false,
         message: "All fields are required",
@@ -58,13 +63,28 @@ export const registerUserService = async ({ data }, manager) => {
       order: [["tenantId", "DESC"]],
     });
 
-    const userData = await User.create({
-      ...data,
-      tenantId,
-      managerId: manager.id,
-      password: hashedPassword,
-      attendancePolicyId: attendancePolicy?.id || null,
-    });
+    const userData = await User.create(
+      {
+        ...data,
+        tenantId,
+        managerId: manager.id,
+        password: hashedPassword,
+        attendancePolicyId: attendancePolicy?.id || null,
+      },
+      { transaction },
+    );
+
+    await Employee.create(
+      {
+        userId: userData.id,
+        tenantId,
+        departmentId: data.departmentId,
+        role: "employee",
+      },
+      { transaction },
+    );
+
+    await transaction.commit();
 
     return {
       success: true,
@@ -72,6 +92,7 @@ export const registerUserService = async ({ data }, manager) => {
       message: "User Registered Successfully",
     };
   } catch (error) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

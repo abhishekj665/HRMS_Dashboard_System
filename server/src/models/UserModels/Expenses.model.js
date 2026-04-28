@@ -1,4 +1,4 @@
-import {sequelize} from "../../config/db.js";
+import { sequelize } from "../../config/db.js";
 import { DataTypes } from "sequelize";
 
 const Expense = sequelize.define(
@@ -10,7 +10,7 @@ const Expense = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-    tenantId : {
+    tenantId: {
       type: DataTypes.UUID,
       allowNull: true,
     },
@@ -59,17 +59,16 @@ const Expense = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    approvedAmount : {
-      type : DataTypes.DECIMAL(10,2),
-      allowNull : true,
-      defaultValue : 0
-    }
+    approvedAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "expenses",
     timestamps: true,
-    
-  }
+  },
 );
 
 export default Expense;

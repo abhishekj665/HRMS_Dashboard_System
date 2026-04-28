@@ -8,6 +8,8 @@ import {
   Candidate,
   User,
   JobRequisition,
+  Department,
+  Employee,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import { sequelize } from "../../config/db.js";
@@ -34,6 +36,19 @@ export const createOffer = async (applicationId, data, userId) => {
         {
           model: JobPosting,
           as: "jobPosting",
+          include: [
+            {
+              model: JobRequisition,
+              as: "requisition",
+              include: [
+                {
+                  model: Department,
+                  as: "department",
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
         },
         {
           model: Candidate,
@@ -221,6 +236,22 @@ export const validateOfferToken = async (token) => {
       );
     }
 
+    const jobRequisition = offer.application.jobPosting.requisition;
+
+    if (jobRequisition.headCount <= 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "No open positions available for this job requisition",
+      );
+    }
+
+    await jobRequisition.update(
+      {
+        headCount: jobRequisition.headCount - 1,
+      },
+      { transaction },
+    );
+
     await offer.update(
       {
         tokenUsed: true,
@@ -234,15 +265,6 @@ export const validateOfferToken = async (token) => {
     await offer.application.update(
       {
         status: "HIRED",
-      },
-      { transaction },
-    );
-
-    const jobRequisition = offer.application.jobPosting.requisition;
-
-    await jobRequisition.update(
-      {
-        headCount: jobRequisition.headCount - 1,
       },
       { transaction },
     );
@@ -276,8 +298,6 @@ export const validateOfferToken = async (token) => {
 
       await transaction.commit();
 
-    
-
       return {
         success: true,
         message: "Offer accepted successfully",
@@ -292,9 +312,12 @@ export const validateOfferToken = async (token) => {
     const newUser = await User.create(
       {
         email: offer.application.candidate.email,
+        tenantId: offer.application.jobPosting.tenantId,
+        firstName: offer.application.candidate.firstName,
+        lastName: offer.application.candidate.lastName,
         password: hashPassword,
         role: "employee",
-        isVerified: true,
+        isVerified: false,
       },
       { transaction },
     );
@@ -309,6 +332,18 @@ export const validateOfferToken = async (token) => {
         toStageId: offer.application.currentStage.id,
         changedBy: newUser.id,
         changedByType: "CANDIDATE",
+      },
+      { transaction },
+    );
+
+    const employee = await Employee.create(
+      {
+        userId: newUser.id,
+        tenantId: offer.application.tenantId,
+        departmentId: offer.application.jobPosting.requisition.departmentId,
+        role: "employee",
+        joiningDate: offer.joiningDate,
+        isActive: false,
       },
       { transaction },
     );

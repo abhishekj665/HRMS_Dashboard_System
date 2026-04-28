@@ -1,5 +1,6 @@
 import {
   AttendancePolicy,
+  Employee,
   User,
   UserIP,
 } from "../models/Associations.model.js";
@@ -8,6 +9,7 @@ import bcrypt from "bcrypt";
 import ExpressError from "../utils/Error.utils.js";
 import { nanoid } from "nanoid";
 import { LeavePolicy } from "../models/Associations.model.js";
+import { sequelize } from "../config/db.js";
 
 import jwtSign, { jwtAccessSign } from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
@@ -130,58 +132,75 @@ export const logInService = async ({ email, password }) => {
 };
 
 export const verifyOtpService = async (email, otp, purpose) => {
-  const otpData = await findOtpData(email, purpose);
+  const transaction = await sequelize.transaction();
+  try {
+    const otpData = await findOtpData(email, purpose);
 
-  if (!otpData) {
-    return {
-      success: false,
-      message: "OTP not found",
-    };
-  }
+    if (!otpData) {
+      return {
+        success: false,
+        message: "OTP not found",
+      };
+    }
 
-  if (otpData.expiresAt < new Date()) {
-    return {
-      success: false,
-      message: "OTP expired",
-    };
-  }
+    if (otpData.expiresAt < new Date()) {
+      return {
+        success: false,
+        message: "OTP expired",
+      };
+    }
 
-  const valid = await bcrypt.compare(otp, otpData.otp);
-  if (!valid) {
-    return {
-      success: false,
-      message: "Invalid OTP",
-    };
-  }
+    const valid = await bcrypt.compare(otp, otpData.otp);
+    if (!valid) {
+      return {
+        success: false,
+        message: "Invalid OTP",
+      };
+    }
 
-  otpData.isUsed = true;
-  await otpData.save();
+    otpData.isUsed = true;
+    await otpData.save({ transaction });
 
-  let user = await User.findOne({
-    where: {
-      email,
-    },
-  });
+    let user = await User.findOne({
+      where: {
+        email,
+      },
+    });
 
-  user.isVerified = true;
-  await user.save();
+    await Employee.update(
+      { isActive: true },
+      { where: { userId: user.id }, transaction },
+    );
 
-  const leavePolicy = await LeavePolicy.findOne({
-    where: getTenantOrGlobalWhere(user.tenantId, { isActive: true }),
-    order: [["tenantId", "DESC"]],
-  });
+    user.isVerified = true;
+    await user.save({ transaction });
 
-  if (leavePolicy) {
-    user.leavePolicyId = leavePolicy.id;
-  }
+    await transaction.commit();
 
-  if (purpose === "SIGNUP") {
-    await User.update({ isVerified: true }, { where: { email } });
-    return { success: true, message: "Account verified successfully" };
-  }
+    const leavePolicy = await LeavePolicy.findOne({
+      where: getTenantOrGlobalWhere(user.tenantId, { isActive: true }),
+      order: [["tenantId", "DESC"]],
+    });
 
-  if (purpose === "LOGIN") {
-    return { success: true, message: "Login OTP verified" };
+    if (leavePolicy) {
+      user.leavePolicyId = leavePolicy.id;
+    }
+
+    if (purpose === "SIGNUP") {
+      await User.update(
+        { isVerified: true },
+        { where: { email }, transaction },
+      );
+      await transaction.commit();
+      return { success: true, message: "Account verified successfully" };
+    }
+
+    if (purpose === "LOGIN") {
+      return { success: true, message: "Login OTP verified" };
+    }
+  } catch (error) {
+    await transaction.rollback();
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
 
@@ -226,7 +245,7 @@ export const me = async (userId) => {
         isVerified: userData.isVerified,
       },
     };
-  } catch (error){
+  } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

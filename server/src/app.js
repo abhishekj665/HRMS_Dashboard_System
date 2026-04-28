@@ -11,6 +11,7 @@ import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePoli
 import { LMSRouter } from "./routes/lms/lms.route.js";
 import { RecruitmentRouter } from "./routes/recruitment/recruitment.route.js";
 import { OrganizationRouter } from "./routes/organization/organization.route.js";
+import { DepartmentRouter } from "./routes/department/department.route.js";
 
 import cors from "cors";
 import path from "path";
@@ -50,6 +51,9 @@ app.use("/lms", LMSRouter);
 app.use("/recruitment", RecruitmentRouter);
 
 app.use("/organization", OrganizationRouter);
+
+app.use("/department", DepartmentRouter);
+
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

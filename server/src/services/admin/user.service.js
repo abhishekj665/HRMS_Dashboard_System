@@ -18,6 +18,7 @@ import {
   requireTenantId,
 } from "../../utils/tenant.utils.js";
 import { getInviteEmailTemplate } from "../../utils/mailTemplate.utils.js";
+import { join } from "path";
 
 export const getUsersService = async (page, limits, search, adminUser) => {
   try {
@@ -95,7 +96,7 @@ export const getUsersService = async (page, limits, search, adminUser) => {
 export const blockUserService = async (id, adminUser) => {
   try {
     const user = await User.findOne({
-      where: getScopedWhere(adminUser, { id }),
+      where: { tenantId: adminUser.tenantId, id },
     });
     if (!user) {
       return { success: false, message: "User not found" };
@@ -115,7 +116,7 @@ export const blockUserService = async (id, adminUser) => {
 export const unblockUserService = async (userId, adminUser) => {
   try {
     const user = await User.findOne({
-      where: getScopedWhere(adminUser, { id: userId }),
+      where: { tenantId: adminUser.tenantId, id: userId },
     });
     if (!user) {
       return { success: false, message: "User not found" };
@@ -132,7 +133,7 @@ export const blockIPService = async (ip, adminUser) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: true },
-      { where: getScopedWhere(adminUser, { ipAddress: ip }) },
+      { where: { tenantId: adminUser.tenantId, ipAddress: ip } },
     );
 
     if (updatedCount === 0) {
@@ -152,7 +153,7 @@ export const unblockIPService = async (ip, adminUser) => {
   try {
     const [updatedCount] = await UserIP.update(
       { isBlocked: false },
-      { where: getScopedWhere(adminUser, { ipAddress: ip }) },
+      { where: { tenantId: adminUser.tenantId, ipAddress: ip } },
     );
 
     if (updatedCount === 0) {
@@ -200,10 +201,17 @@ export const registerUserService = async ({ data }, adminUser) => {
       { transaction },
     );
 
-    // const employee = await Employee.create({
-    //   userId: userData.id,
-    //   tenantId,
-    // }, { transaction }); // Pending cause of department dependency
+    const employee = await Employee.create(
+      {
+        userId: userData.id,
+        tenantId,
+        departmentId: data.departmentId,
+        joiningDate: new Date(),
+        isActive: false,
+        role: "employee",
+      },
+      { transaction },
+    ); // Pending cause of department dependency
 
     const organization = await Organization.findOne({
       where: { id: tenantId },

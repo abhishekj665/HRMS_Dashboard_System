@@ -5,6 +5,8 @@ import {
   JobPosting,
   HiringStage,
   User,
+  Employee,
+  Department,
 } from "../../models/Associations.model.js";
 import { sequelize } from "../../config/db.js";
 import { stages } from "../../utils/hiringStages.utils.js";
@@ -15,10 +17,7 @@ import {
 } from "../../utils/mailTemplate.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import { getNumber } from "../../utils/calaculateTime.utils.js";
-import {
-  getScopedWhere,
-  requireTenantId,
-} from "../../utils/tenant.utils.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
 export const registerJobRequisition = async (data, user) => {
   try {
@@ -40,8 +39,19 @@ export const registerJobRequisition = async (data, user) => {
         "You have to send valid job requisition data",
       );
 
-    data.departmentId =
-      data.departmentId || "1b3f4a5c-6d7e-8f9a-b0c1-d2e3f4a5b6c7";
+    const departmentId = await Employee.findOne({
+      where: { userId: user.id },
+      attributes: ["departmentId"],
+      raw: true,
+    });
+
+    data.departmentId = departmentId.departmentId;
+
+    if (!data.departmentId)
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You are not assigned to any department",
+      );
 
     const jobRequisition = await JobRequisition.create({
       tenantId,
@@ -77,9 +87,7 @@ export const getJobRequisitions = async (user) => {
   try {
     const tenantId = requireTenantId(user);
     const whereClause =
-      user.role === "admin"
-        ? { tenantId }
-        : { tenantId, createdBy: user.id };
+      user.role === "admin" ? { tenantId } : { tenantId, createdBy: user.id };
 
     const jobRequisitions = await JobRequisition.findAll({
       where: whereClause,
@@ -94,6 +102,11 @@ export const getJobRequisitions = async (user) => {
           model: User,
           as: "approver",
           attributes: ["id", "email"],
+        },
+        {
+          model: Department,
+          as: "department",
+          attributes: ["id", "name"],
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -189,6 +202,7 @@ export const approveJobRequisition = async (id, user) => {
       {
         tenantId: jobRequisition.tenantId,
         requisitionId: jobRequisition.id,
+        departmentId: jobRequisition.departmentId,
         title: jobRequisition.title,
         description: jobRequisition.jobDescription,
         visibility: "INTERNAL",
@@ -230,8 +244,6 @@ export const approveJobRequisition = async (id, user) => {
       creator: jobRequisition.creator.email,
       requisitionId: jobRequisition.id,
     });
-
-    
 
     sendMail(jobRequisition.creator.email, "Job requisition approved", html);
 

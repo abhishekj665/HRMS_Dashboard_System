@@ -32,6 +32,7 @@ import {
 } from "../../../services/JobRecruitmentService/jobPostService";
 
 import { toast } from "react-toastify";
+import { Apartment } from "@mui/icons-material";
 
 export default function AdminJobPostsPage() {
   const [jobPosts, setJobPosts] = useState([]);
@@ -196,6 +197,12 @@ export default function AdminJobPostsPage() {
                     label="Slug"
                     value={job.slug || "Not Generated"}
                     icon={<LinkIcon fontSize="small" />}
+                  />
+
+                  <Detail
+                    label="Department"
+                    value={job.requisition?.department?.name || "Not Assigned"}
+                    icon={<Apartment fontSize="small" />}
                   />
 
                   <Detail

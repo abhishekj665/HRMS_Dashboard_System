@@ -18,9 +18,9 @@ export const registerUser = async (req, res, next) => {
 
 export const blockUserController = async (req, res, next) => {
   try {
-    const userId = req.params.id;
+    
 
-    const result = await userServices.blockUserService(userId, req.user);
+    const result = await userServices.blockUserService(req.params.id, req.user);
 
     if (!result.success) {
       return errorResponse(res, result.message, STATUS.BAD_REQUEST);

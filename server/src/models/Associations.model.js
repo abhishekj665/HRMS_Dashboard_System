@@ -33,12 +33,14 @@ import Holiday from "./AttendanceModels/Holiday.model.js";
 import Organization from "./Organizations/Organization.model.js";
 import OrganizationProfile from "./Organizations/OraganizationProfile.model.js";
 import OrganizationLegal from "./Organizations/OrganizationLegal.model.js";
+import Department from "./Department/Department.model.js";
 
 import "./associations/organization.associations.js";
 import "./associations/user.associations.js";
 import "./associations/attendance.associations.js";
 import "./associations/leave.associations.js";
 import "./associations/recruitment.associations.js";
+import "./associations/department.associations.js";
 
 export {
   User,
@@ -76,4 +78,5 @@ export {
   Organization,
   OrganizationProfile,
   OrganizationLegal,
+  Department
 };

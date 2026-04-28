@@ -17,9 +17,11 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 
 import { registerUser } from "../../../services/ManagerService/userService";
+import { getDepartments } from "../../../services/DepartmentService/departmentService";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -50,7 +52,9 @@ const ManagerUserPage = () => {
     last_name: "",
     email: "",
     password: "",
+    departmentId: "",
   });
+  const [departments, setDepartments] = useState([]);
 
   const fetchUsers = async (currentPage = page) => {
     try {
@@ -69,8 +73,8 @@ const ManagerUserPage = () => {
   };
 
   const handleCreateUser = async () => {
-    if (!userForm.email || !userForm.password) {
-      return toast.error("Email and password required");
+    if (!userForm.email || !userForm.password || !userForm.departmentId) {
+      return toast.error("Email, password and department are required");
     }
 
     try {
@@ -83,6 +87,7 @@ const ManagerUserPage = () => {
           last_name: "",
           email: "",
           password: "",
+          departmentId: "",
         });
         setOpenCreateUser(false);
         fetchUsers(1);
@@ -97,7 +102,21 @@ const ManagerUserPage = () => {
         last_name: "",
         email: "",
         password: "",
+        departmentId: "",
       });
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await getDepartments();
+      if (response.success) {
+        setDepartments(response.data || []);
+      } else {
+        toast.error(response.message || "Failed to fetch departments");
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to fetch departments");
     }
   };
 
@@ -117,6 +136,10 @@ const ManagerUserPage = () => {
   useEffect(() => {
     fetchUsers(page);
   }, [page]);
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
 
   return (
     <div className="p-3 max-w-full mx-auto mt-10">
@@ -166,6 +189,28 @@ const ManagerUserPage = () => {
             onChange={(e) =>
               setUserForm({ ...userForm, password: e.target.value })
             }
+          />
+          <Autocomplete
+            size="small"
+            options={departments}
+            getOptionLabel={(option) => option?.name || ""}
+            value={
+              departments.find((d) => d.id === userForm.departmentId) || null
+            }
+            onChange={(event, selectedDepartment) =>
+              setUserForm({
+                ...userForm,
+                departmentId: selectedDepartment?.id || "",
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Department"
+                required
+                placeholder="Search or select department"
+              />
+            )}
           />
         </DialogContent>
 

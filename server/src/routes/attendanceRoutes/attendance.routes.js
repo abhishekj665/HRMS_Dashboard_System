@@ -15,10 +15,14 @@ Router.route("/summary").get(
 );
 
 Router.route("/in").post(
+  refreshAuth,
+  userAuth,
   allowRoles("manager", "employee", "admin"),
   attendanceController.registerInController,
 );
 Router.route("/out").put(
+  refreshAuth,
+  userAuth,
   allowRoles("manager", "employee", "admin"),
   attendanceController.registerOutController,
 );

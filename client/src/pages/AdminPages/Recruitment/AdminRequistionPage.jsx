@@ -32,6 +32,7 @@ import {
 } from "../../../services/JobRecruitmentService/jobRequisitionService";
 
 import { toast } from "react-toastify";
+import { Apartment } from "@mui/icons-material";
 
 export default function AdminRequisitionPage() {
   const [requisitions, setRequisitions] = useState([]);
@@ -256,6 +257,12 @@ export default function AdminRequisitionPage() {
                     label="Employment Type"
                     value={req.employmentType}
                     icon={<WorkOutlineIcon fontSize="small" />}
+                  />
+
+                  <Detail
+                    label="Department"
+                    value={req.department?.name || "N/A"}
+                    icon={<Apartment fontSize="small" />}
                   />
 
                   <Detail

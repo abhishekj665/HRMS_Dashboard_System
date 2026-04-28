@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { useState } from "react";
 import HomeIcon from "@mui/icons-material/Home";
+
 export default function CareersPage() {
   const navigate = useNavigate();
 
@@ -22,6 +23,7 @@ export default function CareersPage() {
       toast.error(error.message);
     }
   };
+
   useEffect(() => {
     fetchAllJobs();
   }, []);
@@ -53,7 +55,7 @@ export default function CareersPage() {
           </Box>
         </Container>
       </div>
-      {/* HERO */}
+
       <div className="relative h-112.5 flex items-center">
         <img
           src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d"
@@ -65,7 +67,7 @@ export default function CareersPage() {
 
         <Container maxWidth="lg" className="relative z-10">
           <Typography variant="h3" className="font-light leading-tight">
-            Let’s find you the right job
+            Let's find you the right job
           </Typography>
 
           <Typography className="mt-6 text-gray-700 text-lg max-w-xl ">
@@ -78,7 +80,6 @@ export default function CareersPage() {
         </Container>
       </div>
 
-      {/* INTRO TEXT SECTION */}
       <Container maxWidth="lg" className="py-16">
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div>
@@ -106,34 +107,38 @@ export default function CareersPage() {
         </div>
       </Container>
 
-      {/* JOB LIST */}
       <Container maxWidth="lg" className="py-16">
         <div id="jobs" className="space-y-10">
-          {jobs.map((job) => (
-            <Box
-              key={job.id}
-              onClick={() => navigate(`/careers/${job.orgSlug}/${job.slug}`)}
-              className="cursor-pointer border-b pb-8 hover:border-black transition"
-            >
-              <div className="flex items-start gap-4">
-                <span className="text-blue-600 text-xl mt-1">→</span>
+          {jobs.length === 0 ? (
+            <Typography className="text-gray-500 text-center py-10">
+              No active job position
+            </Typography>
+          ) : (
+            jobs.map((job) => (
+              <Box
+                key={job.id}
+                onClick={() => navigate(`/careers/${job.orgSlug}/${job.slug}`)}
+                className="cursor-pointer border-b pb-8 hover:border-black transition"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="text-blue-600 text-xl mt-1">?</span>
 
-                <div>
-                  <Typography className="text-sm text-gray-500 mb-2">
-                    {job?.requisition?.location} •{" "}
-                    {job?.requisition?.employmentType}
-                  </Typography>
+                  <div>
+                    <Typography className="text-sm text-gray-500 mb-2">
+                      {job?.requisition?.location} � {job?.requisition?.employmentType}
+                    </Typography>
 
-                  <Typography
-                    variant="h6"
-                    className="font-medium hover:underline"
-                  >
-                    {job.title}
-                  </Typography>
+                    <Typography
+                      variant="h6"
+                      className="font-medium hover:underline"
+                    >
+                      {job.title}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-            </Box>
-          ))}
+              </Box>
+            ))
+          )}
         </div>
       </Container>
     </div>

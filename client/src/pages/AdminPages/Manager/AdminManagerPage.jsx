@@ -9,6 +9,7 @@ import {
   registerNewManager,
 } from "../../../services/AdminService/managerService";
 import { getUser } from "../../../services/AdminService/userService";
+import { getDepartments } from "../../../services/DepartmentService/departmentService";
 
 import {
   Dialog,
@@ -39,17 +40,16 @@ export default function AdminManagersPage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   const [searchInputs, setSearchInputs] = useState({});
-
-  const [userScrolled, setUserScrolled] = useState(false);
-
-  const [showUserList, setShowUserList] = useState(false);
+  const [activeManagerId, setActiveManagerId] = useState(null);
 
   const [managerForm, setManagerForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     password: "",
+    departmentId: "",
   });
+  const [departments, setDepartments] = useState([]);
 
   const fetchUsers = async (currentPage = 1, searchValue = "") => {
     if (loadingUsers) return;
@@ -84,6 +84,19 @@ export default function AdminManagersPage() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await getDepartments();
+      if (response.success) {
+        setDepartments(response.data || []);
+      } else {
+        toast.error(response.message || "Failed to load departments");
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to load departments");
+    }
+  };
+
   const handleAssign = async (managerId) => {
     const workerIds = selectedUsers[managerId];
     if (!workerIds || workerIds.length === 0) {
@@ -110,8 +123,12 @@ export default function AdminManagersPage() {
   };
 
   const handleCreateManager = async () => {
-    if (!managerForm.email || !managerForm.password) {
-      return toast.error("Email and password required");
+    if (
+      !managerForm.email ||
+      !managerForm.password ||
+      !managerForm.departmentId
+    ) {
+      return toast.error("Email, password and department are required");
     }
 
     try {
@@ -124,6 +141,7 @@ export default function AdminManagersPage() {
           last_name: "",
           email: "",
           password: "",
+          departmentId: "",
         });
         setOpenCreate(false);
         fetchData();
@@ -153,12 +171,28 @@ export default function AdminManagersPage() {
     }
   };
 
+  const getDisplayName = (user) => {
+    const fullName = `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
+    if (fullName) return fullName;
+    return user?.email?.split("@")[0] || "Unknown User";
+  };
+
   useEffect(() => {
     fetchUsers(1);
   }, []);
 
   useEffect(() => {
     fetchData();
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = () => {
+      setActiveManagerId(null);
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    return () => document.removeEventListener("click", handleDocumentClick);
   }, []);
 
   return (
@@ -204,6 +238,9 @@ export default function AdminManagersPage() {
                   const filteredUsers = users.filter(
                     (u) =>
                       !m.workers.some((w) => w.id === u.id) &&
+                      (m.departmentId && u.departmentId
+                        ? m.departmentId === u.departmentId
+                        : true) &&
                       u.email
                         .toLowerCase()
                         .includes((searchInputs[m.id] || "").toLowerCase()),
@@ -220,85 +257,76 @@ export default function AdminManagersPage() {
                       <TableCell>{m.workers.length}</TableCell>
 
                       <TableCell>
-                        <TextField
-                          size="small"
-                          placeholder="Search users..."
-                          value={searchInputs[m.id] || ""}
-                          onChange={(e) => {
-                            setSearchInputs((prev) => ({
-                              ...prev,
-                              [m.id]: e.target.value,
-                            }));
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              if (search.trim() !== "") {
-                                setShowUserList(true);
-                                setUsers([]);
-                                setPage(1);
-                                setHasNext(true);
-                                fetchUsers(1, searchInputs[m.id]);
-                              }
-                            }
-                          }}
-                          fullWidth
-                        />
-
-                        {(searchInputs[m.id] || "").trim() !== "" && (
-                          <Paper
-                            sx={{
-                              mt: 1,
-                              maxHeight: 150,
-                              overflowY: "auto",
-                              border: "1px solid #ddd",
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <TextField
+                            size="small"
+                            placeholder="Search users..."
+                            value={searchInputs[m.id] || ""}
+                            onFocus={() => setActiveManagerId(m.id)}
+                            onClick={() => setActiveManagerId(m.id)}
+                            onChange={(e) => {
+                              setSearchInputs((prev) => ({
+                                ...prev,
+                                [m.id]: e.target.value,
+                              }));
                             }}
-                            onWheel={() => setUserScrolled(true)}
-                            onScroll={handleUserDropdownScroll}
-                          >
-                            {filteredUsers.map((u) => {
-                              const checked = selectedUsers[m.id]?.includes(
-                                u.id,
-                              );
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                fetchUsers(1, searchInputs[m.id] || "");
+                              }
+                            }}
+                            fullWidth
+                          />
 
-                              return (
-                                <MenuItem
-                                  key={u.id}
-                                  onClick={() =>
-                                    setSelectedUsers((prev) => {
-                                      const prevSelected = prev[m.id] || [];
+                          {activeManagerId === m.id && (
+                            <Paper
+                              sx={{
+                                mt: 1,
+                                maxHeight: 180,
+                                overflowY: "auto",
+                                border: "1px solid #ddd",
+                              }}
+                              onScroll={handleUserDropdownScroll}
+                            >
+                              {filteredUsers.map((u) => {
+                                const checked = selectedUsers[m.id]?.includes(u.id);
 
-                                      return {
-                                        ...prev,
-                                        [m.id]: checked
-                                          ? prevSelected.filter(
-                                              (id) => id !== u.id,
-                                            )
-                                          : [...prevSelected, u.id],
-                                      };
-                                    })
-                                  }
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    readOnly
-                                    style={{ marginRight: 8 }}
-                                  />
-                                  {u.email.split("@")[0]}
-                                </MenuItem>
-                              );
-                            })}
+                                return (
+                                  <MenuItem
+                                    key={u.id}
+                                    onClick={() =>
+                                      setSelectedUsers((prev) => {
+                                        const prevSelected = prev[m.id] || [];
 
-                            {loadingUsers && (
-                              <MenuItem disabled>Loading...</MenuItem>
-                            )}
+                                        return {
+                                          ...prev,
+                                          [m.id]: checked
+                                            ? prevSelected.filter((id) => id !== u.id)
+                                            : [...prevSelected, u.id],
+                                        };
+                                      })
+                                    }
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      readOnly
+                                      style={{ marginRight: 8 }}
+                                    />
+                                    {getDisplayName(u)}
+                                  </MenuItem>
+                                );
+                              })}
 
-                            {!loadingUsers && filteredUsers.length === 0 && (
-                              <MenuItem disabled>No users found</MenuItem>
-                            )}
-                          </Paper>
-                        )}
+                              {loadingUsers && <MenuItem disabled>Loading...</MenuItem>}
+
+                              {!loadingUsers && filteredUsers.length === 0 && (
+                                <MenuItem disabled>No users found</MenuItem>
+                              )}
+                            </Paper>
+                          )}
+                        </div>
 
                         <div style={{ fontSize: 12, marginTop: 4 }}>
                           Selected: {selectedUsers[m.id]?.length || 0}
@@ -368,6 +396,29 @@ export default function AdminManagersPage() {
               onChange={(e) =>
                 setManagerForm({ ...managerForm, password: e.target.value })
               }
+            />
+            <Autocomplete
+              size="small"
+              options={departments}
+              getOptionLabel={(option) => option?.name || ""}
+              value={
+                departments.find((d) => d.id === managerForm.departmentId) ||
+                null
+              }
+              onChange={(event, selectedDepartment) =>
+                setManagerForm({
+                  ...managerForm,
+                  departmentId: selectedDepartment?.id || "",
+                })
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Department"
+                  required
+                  placeholder="Search or select department"
+                />
+              )}
             />
           </DialogContent>
 

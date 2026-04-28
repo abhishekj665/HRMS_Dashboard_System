@@ -1,6 +1,7 @@
 import ExpressError from "../../utils/Error.utils.js";
 import { sequelize } from "../../config/db.js";
 import {
+  Department,
   HiringStage,
   JobPosting,
   JobRequisition,
@@ -24,8 +25,11 @@ export const updateJobPosting = async (id, data, user) => {
     if (!jobPosting)
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
 
-    if(data.expiresAt && new Date(data.expiresAt) < new Date()){
-      throw new ExpressError(STATUS.BAD_REQUEST, "Expiration date cannot be in the past");
+    if (data.expiresAt && new Date(data.expiresAt) < new Date()) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Expiration date cannot be in the past",
+      );
     }
 
     await jobPosting.update({ ...data, editedBy: user.id }, { transaction });
@@ -45,9 +49,19 @@ export const updateJobPosting = async (id, data, user) => {
 
 export const getJobPosting = async (id, user) => {
   try {
-    
+    console.log("user", user);
     const jobPosting = await JobPosting.findOne({
       where: getScopedWhere(user, { id }),
+      include: [
+        {
+          model: JobRequisition,
+          as: "requisition",
+          attributes: ["id"],
+          include: [
+            { model: Department, as: "department", attributes: ["id", "name"] },
+          ],
+        },
+      ],
     });
 
     if (!jobPosting)
@@ -67,10 +81,23 @@ export const getJobPostings = async (user) => {
   try {
     const jobPostings = await JobPosting.findAll({
       where: { tenantId: requireTenantId(user) },
+      include: [
+        {
+          model: JobRequisition,
+          as: "requisition",
+          where: { headCount: { [Op.gt]: 0 } },
+          attributes: ["id", "title"],
+          include: [
+            { model: Department, as: "department", attributes: ["id", "name"] },
+          ],
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
     if (!jobPostings)
       throw new ExpressError(STATUS.NOT_FOUND, "No job postings found");
+
+    console.log(jobPostings.requisition);
 
     return {
       success: true,
@@ -135,6 +162,7 @@ export const getJobs = async () => {
         {
           model: JobRequisition,
           as: "requisition",
+          where: { headCount: { [Op.gt]: 0 } },
           attributes: [
             "employmentType",
             "location",
@@ -206,6 +234,7 @@ export const getJob = async (orgSlug, slug) => {
         {
           model: JobRequisition,
           as: "requisition",
+          where: { headCount: { [Op.gt]: 0 } },
           attributes: [
             "id",
             "employmentType",

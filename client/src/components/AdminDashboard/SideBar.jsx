@@ -12,6 +12,7 @@ import {
   WorkHistory,
   WorkOutline,
   LockPerson,
+  Apartment,
 } from "@mui/icons-material";
 
 import { useSelector } from "react-redux";
@@ -65,6 +66,14 @@ export default function Sidebar({ open, setOpen }) {
               className={linkClass}
             >
               <ManageAccounts fontSize="small" /> Managers
+            </NavLink>
+
+            <NavLink
+              to="/admin/departments"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <Apartment fontSize="small" /> Departments
             </NavLink>
 
             <NavLink

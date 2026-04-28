@@ -100,19 +100,17 @@ export const getAttendanceSummary = async (req, res) => {
 
 export const getAttendanceByDate = async (req, res, next) => {
   try {
-
     const response = await attendanceServices.getAttendanceByDate(
       req.user,
-      req.query
+      req.query,
     );
 
-    if (response.success) {   
+    if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {
       return errorResponse(res, response.message);
     }
-  } catch (error) { 
+  } catch (error) {
     next(error);
   }
 };
-

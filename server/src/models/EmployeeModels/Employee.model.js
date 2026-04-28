@@ -10,7 +10,7 @@ const Employee = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-    tenantId : {
+    tenantId: {
       type: DataTypes.UUID,
       allowNull: true,
     },
@@ -22,16 +22,20 @@ const Employee = sequelize.define(
       type: DataTypes.UUID,
       allowNull: true,
     },
-    department: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     departmentId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    role: {
+      type: DataTypes.ENUM("employee", "manager"),
+      allowNull: false,
+    },
     joiningDate: {
       type: DataTypes.DATE,
+      allowNull: false,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
   },

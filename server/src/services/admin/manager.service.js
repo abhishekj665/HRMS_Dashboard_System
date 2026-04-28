@@ -16,6 +16,7 @@ import {
 import { getInviteEmailTemplate } from "../../utils/mailTemplate.utils.js";
 import { env } from "../../config/env.js";
 import { sendMail } from "../../config/otpService.js";
+import { join } from "path";
 
 export const getAllManagers = async (adminUser) => {
   try {
@@ -82,11 +83,17 @@ export const registerManagerService = async (data, adminUser) => {
       { transaction },
     );
 
-    // const employee = await Employee.create({
-    //   userId: managerData.id,
-    //   tenantId,
-    //   role: "manager",
-    // }, { transaction });
+    const employee = await Employee.create(
+      {
+        userId: managerData.id,
+        tenantId,
+        role: "manager",
+        joiningDate: new Date(),
+        isActive: false,
+        departmentId: data.departmentId,
+      },
+      { transaction },
+    );
 
     const organization = await Organization.findOne({
       where: { id: tenantId },

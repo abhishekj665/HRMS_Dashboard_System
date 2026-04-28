@@ -5,6 +5,7 @@ import * as requestServices from "../../services/admin/request.service.js";
 import { io } from "../../server.js";
 import {
   getAdminRoom,
+  getManagerRoom,
   getUserRoom,
 } from "../../utils/socketRooms.utils.js";
 
@@ -36,6 +37,7 @@ export const approveRequest = async (req, res, next) => {
 
     if (response.success) {
       io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated");
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestUpdated");
 
       io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 
@@ -60,6 +62,7 @@ export const rejectRequest = async (req, res, next) => {
 
     if (response.success) {
       io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated");
+      io.to(getManagerRoom(req.user.tenantId)).emit("requestUpdated");
 
       io.to(getUserRoom(response.userId, req.user.tenantId)).emit("requestUpdated");
 

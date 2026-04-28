@@ -99,8 +99,8 @@ export const createAssetRequest = async (req, res, next) => {
       io.to(getManagerRoom(req.user.tenantId)).emit("requestCreated", {
         message: "New request created",
       });
-      io.to(getAdminRoom(req.user.tenantId)).emit("requestUpdated", {
-        message: "Request status updated",
+      io.to(getAdminRoom(req.user.tenantId)).emit("requestCreated", {
+        message: "New request created",
       });
 
       return successResponse(res, response, response.message, STATUS.CREATED);

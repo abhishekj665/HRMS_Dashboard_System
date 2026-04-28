@@ -1,5 +1,6 @@
 import UserLayoutPage from "./pages/UserPages/UserLayoutPage";
 import AdminUserPage from "./pages/AdminPages/User/AdminUserPage";
+import AdminDepartmentPage from "./pages/AdminPages/Department/AdminDepartmentPage";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import LogInPage from "./pages/Auth/LoginPage";
 
@@ -25,8 +26,9 @@ import ManagerLayout from "./pages/ManagerPages/ManagerLayoutPage";
 import ManagerUserPage from "./pages/ManagerPages/User/ManagerUserPage";
 import ManagerAssetRequest from "./pages/ManagerPages/AssetPage/ManagerRequest";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "./redux/auth/authThunk";
+import { socket } from "./socket";
 import AttendancePolicy from "./pages/AdminPages/Attendance/AttendancePolicy";
 import AttendanceTable from "./pages/AdminPages/Attendance/AttendanceDataPage";
 import AttendanceData from "./pages/ManagerPages/Attendance/AttendanceRequestPage";
@@ -51,6 +53,7 @@ import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterP
 
 function App() {
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   useEffect(() => {
     const pathname = window.location.pathname;
     const isPublicRoute =
@@ -66,6 +69,16 @@ function App() {
 
     dispatch(fetchUser());
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      if (!socket.connected) {
+        socket.connect();
+      }
+    } else if (socket.connected) {
+      socket.disconnect();
+    }
+  }, [user?.id]);
 
   return (
     <>
@@ -92,6 +105,7 @@ function App() {
             <Route path="asset" element={<AdminAsset />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="manager" element={<ManagerPage />} />
+            <Route path="departments" element={<AdminDepartmentPage />} />
             <Route path="attendance-policy" element={<AttendancePolicy />} />
             <Route path="attendance" element={<AttendanceTable />} />
             <Route path="leave-requests" element={<AdminLeaveDashboard />} />

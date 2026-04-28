@@ -50,6 +50,7 @@ const ManagerRequest = () => {
     assetId: "",
     description: "",
     title: "",
+    quantity: 1,
   });
 
   const role = user.role;
@@ -73,7 +74,6 @@ const ManagerRequest = () => {
       if (response.success) {
         toast.success("Request Approved");
         fetchRequestsData();
-        socket.emit("requestUpdated");
       } else {
         toast.error(response.message);
       }
@@ -123,10 +123,9 @@ const ManagerRequest = () => {
 
       if (res.success) {
         toast.success("Request created successfully");
-        setFormData({ assetId: "", description: "", title: "" });
+        setFormData({ assetId: "", description: "", title: "", quantity: 1 });
         setOpenForm(false);
         fetchRequestsData();
-        socket.emit("requestCreated");
       } else {
         toast.error(res.message);
       }
@@ -321,7 +320,12 @@ const ManagerRequest = () => {
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 onChange={(e, newValue) => {
                   if (!newValue) {
-                    setFormData({ assetId: "", description: "", title: "" });
+                    setFormData({
+                      assetId: "",
+                      description: "",
+                      title: "",
+                      quantity: 1,
+                    });
                     return;
                   }
 

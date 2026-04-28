@@ -17,9 +17,11 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 
 import { registerUser } from "../../../services/AdminService/userService";
+import { getDepartments } from "../../../services/DepartmentService/departmentService";
 
 import { toast } from "react-toastify";
 
@@ -45,11 +47,14 @@ const AdminUserPage = () => {
 
   const [openCreateUser, setOpenCreateUser] = useState(false);
 
+  const [departments, setDeparments] = useState([]);
+
   const [userForm, setUserForm] = useState({
     first_name: "",
     last_name: "",
     email: "",
     password: "",
+    departmentId: "",
   });
 
   const fetchUsers = async (currentPage = page) => {
@@ -89,8 +94,8 @@ const AdminUserPage = () => {
   };
 
   const handleCreateUser = async () => {
-    if (!userForm.email || !userForm.password) {
-      return toast.error("Email and password required");
+    if (!userForm.email || !userForm.password || !userForm.departmentId) {
+      return toast.error("Email, password and department are required");
     }
 
     try {
@@ -103,6 +108,7 @@ const AdminUserPage = () => {
           last_name: "",
           email: "",
           password: "",
+          departmentId: "",
         });
         setOpenCreateUser(false);
         fetchUsers(1);
@@ -117,6 +123,7 @@ const AdminUserPage = () => {
         last_name: "",
         email: "",
         password: "",
+        departmentId: "",
       });
     }
   };
@@ -129,9 +136,23 @@ const AdminUserPage = () => {
     if (page < totalPages) setPage((p) => p + 1);
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await getDepartments();
+      if (response.success) {
+        setDeparments(response?.data);
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchUsers(page);
-  }, [page, limit]);
+    fetchDepartments();
+  }, [page, limit, openCreateUser]);
 
   return (
     <div className="max-w-full mx-auto mt-10 px-2">
@@ -181,6 +202,29 @@ const AdminUserPage = () => {
             onChange={(e) =>
               setUserForm({ ...userForm, password: e.target.value })
             }
+          />
+
+          <Autocomplete
+            size="small"
+            options={departments}
+            getOptionLabel={(option) => option?.name || ""}
+            value={
+              departments.find((d) => d.id === userForm.departmentId) || null
+            }
+            onChange={(event, selectedDepartment) =>
+              setUserForm({
+                ...userForm,
+                departmentId: selectedDepartment?.id || "",
+              })
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Department"
+                required
+                placeholder="Search or select department"
+              />
+            )}
           />
         </DialogContent>
 
