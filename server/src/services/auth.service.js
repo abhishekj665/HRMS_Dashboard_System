@@ -15,6 +15,7 @@ import jwtSign, { jwtAccessSign } from "../utils/jwt.utils.js";
 import { createOTP } from "../config/otpService.js";
 import { findOtpData } from "../config/otpService.js";
 import { getTenantOrGlobalWhere } from "../utils/tenant.utils.js";
+import STATUS from "../constants/Status.js";
 
 export const signUpService = async ({ first_name, email, password }) => {
   if (!email || !password) {
@@ -265,5 +266,148 @@ export const getAccessToken = async (refreshToken) => {
     };
   } catch (error) {
     throw new AppError(400, error.message);
+  }
+};
+
+export const forgetPasswordService = async (email) => {
+  try {
+    if (!email) {
+      return {
+        success: false,
+        message: "Email is required",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+        status: STATUS.NOT_FOUND,
+      };
+    }
+
+    const otp = generateOtp();
+    await createOTP(email, otp, "FORGOT_PASSWORD");
+
+    return {
+      success: true,
+      message: "OTP sent to your email",
+      status: STATUS.OK,
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const resetPasswordService = async ({
+  email,
+  purpose,
+  otp,
+  newPassword,
+  confirmPassword,
+}) => {
+  try {
+    const normalizedPurpose = (purpose || "FORGOT_PASSWORD").toUpperCase();
+
+    if (!email || !otp || !newPassword || !confirmPassword) {
+      return {
+        success: false,
+        message: "Email, OTP, new password and confirm password are required",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return {
+        success: false,
+        message: "Passwords do not match",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+    const otpData = await findOtpData(email, normalizedPurpose);
+
+    if (!otpData) {
+      return {
+        success: false,
+        message: "OTP not found",
+        status: STATUS.NOT_FOUND,
+      };
+    }
+
+    if (otpData.expiresAt < new Date()) {
+      return {
+        success: false,
+        message: "OTP expired",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+    const valid = await bcrypt.compare(otp, otpData.otp);
+    if (!valid) {
+      return {
+        success: false,
+        message: "Invalid OTP",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+        status: STATUS.NOT_FOUND,
+      };
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.update({ password: hashedPassword }, { where: { email } });
+
+    otpData.isUsed = true;
+    await otpData.save();
+
+    return {
+      success: true,
+      message: "Password reset successfully",
+      status: STATUS.OK,
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const resendOtpService = async (email, purpose) => {
+  try {
+    const normalizedPurpose = (purpose || "FORGOT_PASSWORD").toUpperCase();
+
+    if (!email) {
+      return {
+        success: false,
+        message: "Email is required",
+        status: STATUS.BAD_REQUEST,
+      };
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+        status: STATUS.NOT_FOUND,
+      };
+    }
+
+    const otp = generateOtp();
+    await createOTP(email, otp, normalizedPurpose);
+
+    return {
+      success: true,
+      message: "OTP resent to your email",
+      status: STATUS.OK,
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

@@ -13,7 +13,12 @@ const OTP = sequelize.define(
       allowNull: false,
     },
     purpose: {
-      type: DataTypes.ENUM("SIGNUP", "LOGIN"),
+      type: DataTypes.ENUM(
+        "SIGNUP",
+        "LOGIN",
+        "PASSWORD_RESET",
+        "FORGOT_PASSWORD",
+      ),
       allowNull: false,
     },
     isUsed: {

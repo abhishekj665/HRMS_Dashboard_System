@@ -50,6 +50,7 @@ import AdminJobApplicationsPage from "./pages/AdminPages/Recruitment/JobApplicat
 import ManagerInterviewsPage from "./pages/ManagerPages/JobRecruitment/interviewPage";
 import { OfferPage } from "./pages/CareerPages/OfferPage";
 import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterPage";
+import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -59,6 +60,7 @@ function App() {
     const isPublicRoute =
       pathname === "/" ||
       pathname === "/login" ||
+      pathname === "/forgot" ||
       pathname === "/organization/register" ||
       pathname.startsWith("/careers") ||
       pathname.startsWith("/offer/");
@@ -90,6 +92,7 @@ function App() {
             element={<OrganizationRegisterPage />}
           />
           <Route path="/login" element={<LogInPage />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/user" element={<UserLayoutPage />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="asset" element={<UserAssetPage />}></Route>

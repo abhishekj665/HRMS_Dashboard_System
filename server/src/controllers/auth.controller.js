@@ -26,11 +26,10 @@ export const verifyOtp = async (req, res, next) => {
   try {
     let { email, otp, purpose } = req.body;
 
-    if (purpose != undefined || otp != undefined || email != undefined) {
-      purpose = purpose.toUpperCase();
-    } else {
+    if (!purpose || !otp || !email) {
       throw new AppError(403, "Email or Purpose or OTP is required");
     }
+    purpose = purpose.toUpperCase();
 
     const result = await authServices.verifyOtpService(email, otp, purpose);
 
@@ -140,6 +139,66 @@ export const getAccessToken = async (req, res, next) => {
       );
     } else {
       return errorResponse(res, response.message, STATUS.UNAUTHORIZED);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgetPassword = async (req, res, next) => {
+  try {
+    const response = await authServices.forgetPasswordService(req.body.email);
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        response.status,
+      );
+    } else {
+      return errorResponse(res, response.message, response.status);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const response = await authServices.resetPasswordService(req.body);
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        response.status,
+      );
+    } else {
+      return errorResponse(res, response.message, response.status);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOtp = async (req, res, next) => {
+  try {
+    const response = await authServices.resendOtpService(
+      req.body.email,
+      req.body.purpose,
+    );
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        response.status,
+      );
+    } else {
+      return errorResponse(res, response.message, response.status);
     }
   } catch (error) {
     next(error);
