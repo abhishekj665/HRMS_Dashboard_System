@@ -104,3 +104,18 @@ export const logOut = async () => {
   const response = await API.post("/auth/logout");
   return response.data;
 };
+
+export const forgotPassword = async (email) => {
+  const response = await publicAPI.post("/auth/forgot_password", { email });
+  return response.data;
+};
+
+export const resendOtp = async (email, purpose = "FORGOT_PASSWORD") => {
+  const response = await publicAPI.post("/auth/resend_otp", { email, purpose });
+  return response.data;
+};
+
+export const resetPassword = async (payload) => {
+  const response = await publicAPI.post("/auth/reset_password", payload);
+  return response.data;
+};
