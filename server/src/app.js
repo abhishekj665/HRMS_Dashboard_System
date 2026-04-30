@@ -21,7 +21,11 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-const allowedOrigins = ["http://localhost:5173", env.client_url?.trim()];
+const allowedOrigins = [
+  "http://localhost:5173",
+  env.client_url?.trim(),
+  env.domain_url?.trim(),
+];
 
 app.use(
   cors({
@@ -53,7 +57,6 @@ app.use("/recruitment", RecruitmentRouter);
 app.use("/organization", OrganizationRouter);
 
 app.use("/department", DepartmentRouter);
-
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

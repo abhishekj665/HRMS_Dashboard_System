@@ -20,4 +20,5 @@ export const env = {
   client_url: process.env.CLIENT_URL,
   brevo_api_key: process.env.BREVO_API_KEY,
   offer_url: process.env.OFFER_URL,
+  domain_url: process.env.DOMAIN_URL,
 };
