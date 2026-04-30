@@ -42,7 +42,7 @@ export async function sendMail(to, subject, html, attachments = []) {
     mail.htmlContent = html;
 
     mail.sender = {
-      name: "Dashboard System",
+      name: "HRMS Dashboard System",
       email: env.mail_user,
     };
 
