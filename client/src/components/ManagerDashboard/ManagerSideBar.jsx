@@ -3,11 +3,11 @@ import {
   Inventory2Outlined,
   CurrencyExchange,
   PersonAdd,
-  AccessTime,
-  RequestPage,
-  CalendarMonth,
-  WorkHistory,
-  
+  AccessTimeFilled,
+  Approval,
+  EventNote,
+  AssignmentTurnedIn,
+  Assignment,
 } from "@mui/icons-material";
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { EventAvailable } from "@mui/icons-material";
@@ -118,7 +118,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <RequestPage fontSize="small" /> Attendance Request
+              <Approval fontSize="small" /> Attendance Request
             </NavLink>
 
             <NavLink
@@ -126,7 +126,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <AccessTime fontSize="small" /> Attendance
+              <AccessTimeFilled fontSize="small" /> Attendance
             </NavLink>
 
             <NavLink
@@ -134,7 +134,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Management
+              <EventNote fontSize="small" /> Leave Management
             </NavLink>
 
             <NavLink
@@ -142,7 +142,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Requests
+              <AssignmentTurnedIn fontSize="small" /> Leave Requests
             </NavLink>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <WorkHistory fontSize="small" /> Job Requisition
+              <Assignment fontSize="small" /> Job Requisition
             </NavLink>
 
             <NavLink

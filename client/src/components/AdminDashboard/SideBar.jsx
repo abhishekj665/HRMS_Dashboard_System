@@ -6,12 +6,14 @@ import {
   PersonAdd,
   Accessibility,
   LocalMall,
-  ManageHistory,
-  AccessTime,
-  CalendarMonth,
-  WorkHistory,
-  WorkOutline,
-  LockPerson,
+  FactCheck,
+  AccessTimeFilled,
+  Category,
+  Policy,
+  AssignmentTurnedIn,
+  Assignment,
+  Campaign,
+  HowToReg,
   Apartment,
 } from "@mui/icons-material";
 
@@ -127,7 +129,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <ManageHistory fontSize="small" /> Attendance Policy
+              <FactCheck fontSize="small" /> Attendance Policy
             </NavLink>
 
             <NavLink
@@ -135,7 +137,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <AccessTime fontSize="small" /> Attendance Data
+              <AccessTimeFilled fontSize="small" /> Attendance Data
             </NavLink>
 
             <NavLink
@@ -143,7 +145,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Types
+              <Category fontSize="small" /> Leave Types
             </NavLink>
 
             <NavLink
@@ -151,7 +153,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Policy
+              <Policy fontSize="small" /> Leave Policy
             </NavLink>
 
             <NavLink
@@ -159,7 +161,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Requests
+              <AssignmentTurnedIn fontSize="small" /> Leave Requests
             </NavLink>
           </div>
         </div>
@@ -174,7 +176,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <WorkHistory fontSize="small" /> Job Requisition
+              <Assignment fontSize="small" /> Job Requisition
             </NavLink>
 
             <NavLink
@@ -182,7 +184,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <WorkOutline fontSize="small" /> Job Posts
+              <Campaign fontSize="small" /> Job Posts
             </NavLink>
 
             <NavLink
@@ -190,7 +192,7 @@ export default function Sidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <LockPerson fontSize="small" /> Job Applications
+              <HowToReg fontSize="small" /> Job Applications
             </NavLink>
           </div>
         </div>

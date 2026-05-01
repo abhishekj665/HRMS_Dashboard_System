@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import {
   PendingActionsRounded,
   CurrencyExchange,
-  AccessTime,
-  CalendarMonth,
+  AccessTimeFilled,
+  EventNote,
 } from "@mui/icons-material";
 import { useEffect } from "react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -107,7 +107,7 @@ export default function UserSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <AccessTime fontSize="small" /> Attendance
+              <AccessTimeFilled fontSize="small" /> Attendance
             </NavLink>
 
             <NavLink
@@ -115,7 +115,7 @@ export default function UserSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <CalendarMonth fontSize="small" /> Leave Management
+              <EventNote fontSize="small" /> Leave Management
             </NavLink>
           </div>
         </div>
