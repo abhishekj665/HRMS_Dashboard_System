@@ -48,7 +48,7 @@ export default function UserSidebar({ open, setOpen }) {
     <aside
       className={`
         fixed md:static top-0 left-0 z-50
-        h-screen w-64 bg-white border-r
+        h-[100dvh] md:h-screen w-64 bg-white border-r overflow-hidden
         flex flex-col
         transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full"}
@@ -136,7 +136,7 @@ export default function UserSidebar({ open, setOpen }) {
         </div>
       </div>
 
-      <div className="border-t px-4 py-3 bg-white">
+      <div className="border-t px-4 py-3 bg-white shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 grid place-items-center font-semibold">
             {initials}
@@ -156,7 +156,7 @@ export default function UserSidebar({ open, setOpen }) {
         <button
           type="button"
           onClick={handleLogOut}
-          style={{ cursor: "pointer", marginBottom: "0.75rem" }}
+          style={{ cursor: "pointer" }}
           className="w-full h-11  text-gray-800 font-semibold text-base flex items-center justify-start px-4 gap-2 hover:bg-gray-50"
 
         >
