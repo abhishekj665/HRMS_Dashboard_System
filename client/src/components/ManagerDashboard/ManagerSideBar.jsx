@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Inventory2Outlined,
   CurrencyExchange,
@@ -8,14 +8,19 @@ import {
   EventNote,
   AssignmentTurnedIn,
   Assignment,
+  LogoutOutlined,
 } from "@mui/icons-material";
-import DashboardIcon from '@mui/icons-material/Dashboard';
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { EventAvailable } from "@mui/icons-material";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logOutUser } from "../../redux/auth/authThunk";
+import { toast } from "react-toastify";
 
 export default function ManagerSidebar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all
@@ -24,6 +29,19 @@ export default function ManagerSidebar({ open, setOpen }) {
          ? "bg-blue-50 text-blue-600 font-medium"
          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
      }`;
+
+  const handleLogOut = async () => {
+    try {
+      await dispatch(logOutUser()).unwrap();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error(error || "Logout failed");
+    }
+  };
+
+  const initials =
+    `${user?.firstName?.[0] || user?.name?.[0] || "M"}`.toUpperCase();
 
   return (
     <aside
@@ -36,7 +54,6 @@ export default function ManagerSidebar({ open, setOpen }) {
         md:translate-x-0
       `}
     >
-      {/* HEADER */}
       <div className="px-5 py-4 ">
         <h1 className="text-lg font-semibold text-gray-800">
           {user?.role?.toUpperCase()} DASHBOARD
@@ -44,7 +61,6 @@ export default function ManagerSidebar({ open, setOpen }) {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
-        {/* DASHBOARD */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             Dashboard
@@ -59,7 +75,6 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
           </div>
         </div>
-        {/* TEAM */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             Team
@@ -75,7 +90,6 @@ export default function ManagerSidebar({ open, setOpen }) {
           </div>
         </div>
 
-        {/* ASSETS & EXPENSES */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             Assets & Finance
@@ -107,7 +121,6 @@ export default function ManagerSidebar({ open, setOpen }) {
           </div>
         </div>
 
-        {/* ATTENDANCE & LEAVE */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             Attendance & Leave
@@ -147,7 +160,6 @@ export default function ManagerSidebar({ open, setOpen }) {
           </div>
         </div>
 
-        {/* HIRING */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
             Hiring
@@ -170,6 +182,33 @@ export default function ManagerSidebar({ open, setOpen }) {
             </NavLink>
           </div>
         </div>
+      </div>
+
+      <div className="border-t px-4 py-3 bg-white">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 grid place-items-center font-semibold">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <div className="text-base font-semibold text-gray-900 truncate">
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : user?.name || "Manager"}
+            </div>
+            <div className="text-sm text-gray-600 capitalize">
+              {user?.role || "manager"}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleLogOut}
+          style={{ cursor: "pointer" }}
+          className="w-full h-11  text-gray-800 font-semibold text-base flex items-center justify-start px-4 gap-2 hover:bg-gray-50"
+        >
+          <LogoutOutlined fontSize="small" /> Log Out
+        </button>
       </div>
     </aside>
   );

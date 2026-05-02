@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Inventory2Outlined,
   CurrencyExchange,
@@ -15,12 +15,17 @@ import {
   Campaign,
   HowToReg,
   Apartment,
+  LogoutOutlined,
 } from "@mui/icons-material";
 
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logOutUser } from "../../redux/auth/authThunk";
+import { toast } from "react-toastify";
 
 export default function Sidebar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all
@@ -29,6 +34,19 @@ export default function Sidebar({ open, setOpen }) {
          ? "bg-blue-50 text-blue-600 font-medium"
          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
      }`;
+
+  const handleLogOut = async () => {
+    try {
+      await dispatch(logOutUser()).unwrap();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error(error || "Logout failed");
+    }
+  };
+
+  const initials =
+    `${user?.firstName?.[0] || user?.name?.[0] || "A"}`.toUpperCase();
 
   return (
     <aside
@@ -39,7 +57,7 @@ export default function Sidebar({ open, setOpen }) {
         transition-transform duration-300
         ${open ? "translate-x-0" : "-translate-x-full"}
         md:translate-x-0
-        pb-10
+        pb-2
       `}
     >
       <div className="px-5 py-4">
@@ -196,6 +214,33 @@ export default function Sidebar({ open, setOpen }) {
             </NavLink>
           </div>
         </div>
+      </div>
+
+      <div className="border-t px-4 py-3 bg-white">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 grid place-items-center font-semibold">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <div className="text-base font-semibold text-gray-900 truncate">
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : user?.name || "Admin"}
+            </div>
+            <div className="text-sm text-gray-600 capitalize">
+              {user?.role || "admin"}
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleLogOut}
+          style={{cursor : "pointer"}}
+          className="w-full h-11  text-gray-800 font-semibold text-base flex items-center justify-start px-4 gap-2 hover:bg-gray-50"
+        >
+          <LogoutOutlined fontSize="small" /> Log Out
+        </button>
       </div>
     </aside>
   );
