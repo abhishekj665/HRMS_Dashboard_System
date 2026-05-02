@@ -204,7 +204,7 @@ export default function ManagerSidebar({ open, setOpen }) {
         <button
           type="button"
           onClick={handleLogOut}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: "pointer" , marginBottom: "0.75rem" }}
           className="w-full h-11  text-gray-800 font-semibold text-base flex items-center justify-start px-4 gap-2 hover:bg-gray-50"
         >
           <LogoutOutlined fontSize="small" /> Log Out
