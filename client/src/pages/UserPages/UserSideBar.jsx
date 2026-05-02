@@ -63,7 +63,7 @@ export default function UserSidebar({ open, setOpen }) {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-6 sidebar-scroll">
         {/* DASHBOARD */}
         <div>
           <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
