@@ -27,7 +27,7 @@ For testing purposes, the following default user accounts are available:
 
 ### Manager
 
-- Email: `manager@orvane.com`
+- Email: `manager1@orvane.com`
 - Password: `Manager@123`
 
 ### Employee
