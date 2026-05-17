@@ -55,6 +55,7 @@ When a new organization is registered through the organization onboarding flow, 
 - [API Summary](#api-summary)
 - [Environment Variables](#environment-variables)
 - [Local Development Setup](#local-development-setup)
+- [Database Notes](#database-notes)
 - [Available Scripts](#available-scripts)
 - [Authentication and Security](#authentication-and-security)
 - [Realtime Communication](#realtime-communication)
@@ -397,6 +398,7 @@ Major backend route groups mounted in `server/src/app.js`:
 - `/lms`
 - `/recruitment`
 - `/organization`
+- `/department`
 
 ### Module Breakdown
 
@@ -427,6 +429,10 @@ Handles requisitions, job postings, applications, candidates, interviews, interv
 #### Organization Module
 
 Handles public organization registration and onboarding.
+
+#### Department Module
+
+Handles department CRUD and department-level organization structure management.
 
 ## API Summary
 
@@ -503,6 +509,15 @@ Base path: `/recruitment`
 - offer generation
 - offer acceptance
 
+### Department Examples
+
+Base path: `/department`
+
+- create department
+- update department
+- list departments for the current tenant
+- remove department
+
 ## Environment Variables
 
 ### Server `.env`
@@ -527,6 +542,7 @@ CLOUD_SECRET=your_cloudinary_secret
 CLIENT_URL=http://localhost:5173
 BREVO_API_KEY=your_brevo_api_key
 OFFER_URL=http://localhost:5173/offer
+DOMAIN_URL=http://localhost:5173
 ```
 
 ### Client `.env`
@@ -583,6 +599,12 @@ npm run dev
 4. Create managers and employees under that organization.
 5. Verify that attendance, leave, expenses, assets, and recruitment data stay isolated to that organization.
 
+## Database Notes
+
+- the Sequelize config in `server/src/config/db.js` currently enforces SSL (`dialectOptions.ssl.require=true`)
+- for some local MySQL instances, SSL may need to be enabled in MySQL or adjusted in backend config for local-only development
+- table sync (`sequelize.sync`) is present but not enabled by default in `server/src/server.js`
+
 ## Available Scripts
 
 ### Client
@@ -603,6 +625,7 @@ From `server/package.json`:
 ```bash
 npm run dev
 npm start
+npm test
 ```
 
 ## Authentication and Security
