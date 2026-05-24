@@ -41,3 +41,24 @@ export const uploadResume = multer({
   fileFilter: resumeFileFilter,
   limits: { fileSize: 3 * 1024 * 1024 },
 });
+
+const organizationDocsFileFilter = (req, file, cb) => {
+  const allowed = [
+    "image/png",
+    "image/jpg",
+    "image/jpeg",
+    "application/pdf",
+  ];
+
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only images and PDFs are allowed"));
+  }
+};
+
+export const uploadOrganizationDocs = multer({
+  storage,
+  fileFilter: organizationDocsFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
