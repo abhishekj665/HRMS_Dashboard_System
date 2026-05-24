@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link, UNSAFE_ErrorResponseImpl, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import { registerOrganization } from "../../services/OrganizationService/organizationService";
@@ -54,42 +54,6 @@ const stepFields = [
   ],
 ];
 
-const countries = [
-  "India",
-  "USA",
-  "UK",
-  "Canada",
-  "Australia",
-  "Germany",
-  "France",
-  "Other",
-];
-
-const stateOptions = {
-  India: [
-    "Andhra Pradesh",
-    "Delhi",
-    "Gujarat",
-    "Karnataka",
-    "Maharashtra",
-    "Tamil Nadu",
-    "Telangana",
-    "West Bengal",
-  ],
-  USA: ["California", "Florida", "New York", "Texas", "Washington"],
-  UK: ["England", "Scotland", "Wales", "Northern Ireland"],
-  Canada: ["Alberta", "British Columbia", "Ontario", "Quebec"],
-  Australia: ["New South Wales", "Queensland", "Victoria", "Western Australia"],
-  Germany: ["Bavaria", "Berlin", "Hamburg", "Hesse"],
-  France: [
-    "Ile-de-France",
-    "Normandy",
-    "Occitanie",
-    "Provence-Alpes-Cote d'Azur",
-  ],
-  Other: ["Other"],
-};
-
 const quotes = [
   {
     text: "Chase the vision, not the money; the money will end up following you.",
@@ -116,11 +80,62 @@ function OrganizationRegisterPage() {
   const [openDocuments, setOpenDocuments] = useState(true);
   const [verified, setVerified] = useState(true);
   const [otp, setOtp] = useState("");
-  const [showCheckbox, setShowCheckbox] = useState(false);
+  const [countries, setCountries] = useState([]);
+  const [stateOptions, setStateOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await fetch("https://countriesnow.space/api/v0.1/countries/positions");
+        const result = await response.json();
+
+        if (!result.error && Array.isArray(result.data)) {
+          setCountries(result.data.map((item) => item.name).sort((a, b) => a.localeCompare(b)));
+        }
+      } catch (error) {
+        toast.error("Unable to load countries. Please refresh and try again.");
+      }
+    };
+
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      if (!formData.country) {
+        setStateOptions([]);
+        return;
+      }
+
+      try {
+        const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country: formData.country }),
+        });
+
+        const result = await response.json();
+
+        if (!result.error && Array.isArray(result.data?.states)) {
+          setStateOptions(
+            result.data.states
+              .map((item) => item.name)
+              .sort((a, b) => a.localeCompare(b)),
+          );
+        } else {
+          setStateOptions([]);
+        }
+      } catch (error) {
+        setStateOptions([]);
+      }
+    };
+
+    fetchStates();
+  }, [formData.country]);
 
   const currentStates = useMemo(
-    () => stateOptions[formData.country] || [],
-    [formData.country],
+    () => stateOptions,
+    [stateOptions],
   );
 
   const quote = quotes[activeStep] || quotes[0];
@@ -208,7 +223,20 @@ function OrganizationRegisterPage() {
       },
     };
 
-    const response = await registerOrganization(payload);
+    const formPayload = new FormData();
+    formPayload.append("payload", JSON.stringify(payload));
+
+    if (formData.gstFileInput) {
+      formPayload.append("gstFile", formData.gstFileInput);
+    }
+    if (formData.panFileInput) {
+      formPayload.append("panFile", formData.panFileInput);
+    }
+    if (formData.logoInput) {
+      formPayload.append("logoFile", formData.logoInput);
+    }
+
+    const response = await registerOrganization(formPayload);
 
     if (response.success) {
       setVerified(false);
