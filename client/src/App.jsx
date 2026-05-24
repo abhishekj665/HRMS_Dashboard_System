@@ -51,6 +51,8 @@ import ManagerInterviewsPage from "./pages/ManagerPages/JobRecruitment/interview
 import { OfferPage } from "./pages/CareerPages/OfferPage";
 import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterPage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
+import AdminSubscriptionProfilePage from "./pages/AdminPages/Subscription/AdminSubscriptionProfilePage";
+import AdminSubscriptionPaymentPage from "./pages/AdminPages/Subscription/AdminSubscriptionPaymentPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -119,6 +121,11 @@ function App() {
             <Route
               path="job-applications"
               element={<AdminJobApplicationsPage />}
+            />
+            <Route path="profile" element={<AdminSubscriptionProfilePage />} />
+            <Route
+              path="subscription/payment"
+              element={<AdminSubscriptionPaymentPage />}
             />
           </Route>
 

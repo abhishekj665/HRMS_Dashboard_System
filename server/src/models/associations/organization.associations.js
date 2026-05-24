@@ -30,6 +30,8 @@ import Employee from "../EmployeeModels/Employee.model.js";
 import Organization from "../Organizations/Organization.model.js";
 import OrganizationProfile from "../Organizations/OraganizationProfile.model.js";
 import OrganizationLegal from "../Organizations/OrganizationLegal.model.js";
+import Subscription from "../Subscription/Subscription.model.js";
+
 
 User.hasMany(Organization, {
   foreignKey: "ownerId",
@@ -220,3 +222,11 @@ Referral.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" })
 
 Organization.hasMany(Employee, { foreignKey: "tenantId", as: "employees" });
 Employee.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+
+Organization.hasMany(Subscription, {
+  foreignKey: "tenantId",
+  as: "subscriptions",
+  onUpdate: "CASCADE",
+});
+Subscription.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+
