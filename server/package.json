@@ -7,7 +7,8 @@
   "scripts": {
     "test": "jest --passWithNoTests",
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "seed:plans": "node src/scripts/seedPlans.js"
   },
   "keywords": [],
   "author": "",
@@ -37,14 +38,15 @@
     "nodemailer": "^7.0.11",
     "puppeteer": "^24.38.0",
     "puppeteer-core": "^24.38.0",
+    "razorpay": "^2.9.6",
     "recharts": "^3.7.0",
     "redux-persist": "^6.0.0",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
-    "jest": "^30.3.0"
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.10"
   },
   "jest": {
     "testEnvironment": "node",

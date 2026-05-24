@@ -18,6 +18,8 @@ import {
 export const registerOrganization = async (data) => {
   const transaction = await sequelize.transaction();
   try {
+
+    
     const organizationData = data.organization;
     const organizationProfileData = data.profile;
     const legalData = data.legal;

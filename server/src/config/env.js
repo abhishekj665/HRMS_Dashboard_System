@@ -21,4 +21,7 @@ export const env = {
   brevo_api_key: process.env.BREVO_API_KEY,
   offer_url: process.env.OFFER_URL,
   domain_url: process.env.DOMAIN_URL,
+  razorpay_key_id: process.env.RAZORPAY_KEY_ID,
+  razorpay_key_secret: process.env.RAZORPAY_KEY_SECRET,
+  razorpay_webhook_secret : process.env.RAZORPAY_WEBHOOK_SECRET
 };

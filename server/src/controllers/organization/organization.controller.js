@@ -18,6 +18,7 @@ const uploadToCloudinary = async (file, folder) => {
 
 export const registerOrganization = async (req, res, next) => {
   try {
+    
     const bodyData = req.body?.payload ? JSON.parse(req.body.payload) : req.body;
 
     const gstFile = req.files?.gstFile?.[0];

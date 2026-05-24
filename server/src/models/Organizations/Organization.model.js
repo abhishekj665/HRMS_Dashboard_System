@@ -39,6 +39,10 @@ const Organization = sequelize.define(
         type: DataTypes.ENUM("Active", "Inactive"),
         allowNull: false,
         defaultValue: "Active",
+    },
+    subscriptionId : {
+        type: DataTypes.UUID,
+        allowNull : true,
     }
     
   },

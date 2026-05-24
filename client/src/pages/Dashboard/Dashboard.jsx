@@ -181,6 +181,7 @@ function MiniCalendar({
   onMonthChange,
 }) {
   const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -246,8 +247,12 @@ function MiniCalendar({
             return <Box key={`empty-${index}`} />;
           }
 
-          const isToday = day === now.getDate();
           const cellDate = new Date(year, month, day);
+          const isToday =
+            day === now.getDate() &&
+            month === now.getMonth() &&
+            year === now.getFullYear();
+          const isFuture = cellDate > todayStart;
           const dateKey = formatDateInput(cellDate);
           const attendance = attendanceMap[dateKey];
           const status = attendance?.requestStatus;
@@ -259,7 +264,10 @@ function MiniCalendar({
           let background = "#f8fafc";
           let color = "#334155";
 
-          if (isApproved) {
+          if (isFuture) {
+            background = "#f8fafc";
+            color = "#334155";
+          } else if (isApproved) {
             background = "#dcfce7";
             color = "#166534";
           } else if (isPending) {

@@ -12,6 +12,8 @@ import { LMSRouter } from "./routes/lms/lms.route.js";
 import { RecruitmentRouter } from "./routes/recruitment/recruitment.route.js";
 import { OrganizationRouter } from "./routes/organization/organization.route.js";
 import { DepartmentRouter } from "./routes/department/department.route.js";
+import { PaymentRouter } from "./routes/payment/payment.route.js";
+import { subscriptionRouter } from "./routes/subsciption/subscription.route.js";
 
 import cors from "cors";
 import path from "path";
@@ -59,6 +61,12 @@ app.use("/organization", OrganizationRouter);
 app.use("/department", DepartmentRouter);
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+app.use("/payment", PaymentRouter);
+
+app.use("/subscription", subscriptionRouter);
+
+
 
 app.use(globalErrorHandler);
 
