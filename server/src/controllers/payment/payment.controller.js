@@ -21,7 +21,7 @@ export const createOrder = async (req, res, next) => {
 
 export const validateWebHook = async (req, res, next) => {
     try{
-        const webHookSignature = req.get["X-Razorpay-Signature"];
+        const webHookSignature = req.get("X-Razorpay-Signature");
         const response = await paymentServices.validateWebHook(webHookSignature, req.body);
 
         if(response.success){
