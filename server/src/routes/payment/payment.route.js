@@ -6,7 +6,7 @@ import { userAuth } from "../../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.post("/order/create",userAuth, paymentController.createOrder);
-router.post("/webhook", paymentController.validateWebHook);
+router.post("/webhook", express.raw({ type: "application/json" }), paymentController.validateWebHook);
 
 export const PaymentRouter = router;
 

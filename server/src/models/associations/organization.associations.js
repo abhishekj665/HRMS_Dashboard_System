@@ -32,7 +32,6 @@ import OrganizationProfile from "../Organizations/OraganizationProfile.model.js"
 import OrganizationLegal from "../Organizations/OrganizationLegal.model.js";
 import Subscription from "../Subscription/Subscription.model.js";
 
-
 User.hasMany(Organization, {
   foreignKey: "ownerId",
   as: "ownedOrganizations",
@@ -77,7 +76,10 @@ Organization.hasMany(Account, { foreignKey: "tenantId", as: "accounts" });
 Account.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
 
 Organization.hasMany(Expenses, { foreignKey: "tenantId", as: "expenses" });
-Expenses.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Expenses.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(Asset, { foreignKey: "tenantId", as: "assets" });
 Asset.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
@@ -92,10 +94,16 @@ AssetRequest.belongsTo(Organization, {
 });
 
 Organization.hasMany(UserAsset, { foreignKey: "tenantId", as: "userAssets" });
-UserAsset.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+UserAsset.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(Attendance, { foreignKey: "tenantId", as: "attendances" });
-Attendance.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Attendance.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(AttendancePolicy, {
   foreignKey: "tenantId",
@@ -127,20 +135,29 @@ AttendanceLog.belongsTo(Organization, {
 Organization.hasMany(Holiday, { foreignKey: "tenantId", as: "holidays" });
 Holiday.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
 
-Organization.hasMany(LeaveRequest, { foreignKey: "tenantId", as: "leaveRequests" });
+Organization.hasMany(LeaveRequest, {
+  foreignKey: "tenantId",
+  as: "leaveRequests",
+});
 LeaveRequest.belongsTo(Organization, {
   foreignKey: "tenantId",
   as: "organization",
 });
 
-Organization.hasMany(LeaveBalance, { foreignKey: "tenantId", as: "leaveBalances" });
+Organization.hasMany(LeaveBalance, {
+  foreignKey: "tenantId",
+  as: "leaveBalances",
+});
 LeaveBalance.belongsTo(Organization, {
   foreignKey: "tenantId",
   as: "organization",
 });
 
 Organization.hasMany(LeaveType, { foreignKey: "tenantId", as: "leaveTypes" });
-LeaveType.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+LeaveType.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(LeaveAuditLog, {
   foreignKey: "tenantId",
@@ -151,7 +168,10 @@ LeaveAuditLog.belongsTo(Organization, {
   as: "organization",
 });
 
-Organization.hasMany(LeavePolicy, { foreignKey: "tenantId", as: "leavePolicies" });
+Organization.hasMany(LeavePolicy, {
+  foreignKey: "tenantId",
+  as: "leavePolicies",
+});
 LeavePolicy.belongsTo(Organization, {
   foreignKey: "tenantId",
   as: "organization",
@@ -167,9 +187,15 @@ LeavePolicyRule.belongsTo(Organization, {
 });
 
 Organization.hasMany(Candidate, { foreignKey: "tenantId", as: "candidates" });
-Candidate.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Candidate.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
-Organization.hasMany(Application, { foreignKey: "tenantId", as: "applications" });
+Organization.hasMany(Application, {
+  foreignKey: "tenantId",
+  as: "applications",
+});
 Application.belongsTo(Organization, {
   foreignKey: "tenantId",
   as: "organization",
@@ -184,14 +210,20 @@ ApplicationStageLog.belongsTo(Organization, {
   as: "organization",
 });
 
-Organization.hasMany(HiringStage, { foreignKey: "tenantId", as: "hiringStages" });
+Organization.hasMany(HiringStage, {
+  foreignKey: "tenantId",
+  as: "hiringStages",
+});
 HiringStage.belongsTo(Organization, {
   foreignKey: "tenantId",
   as: "organization",
 });
 
 Organization.hasMany(JobPosting, { foreignKey: "tenantId", as: "jobPostings" });
-JobPosting.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+JobPosting.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(JobRequisition, {
   foreignKey: "tenantId",
@@ -203,7 +235,10 @@ JobRequisition.belongsTo(Organization, {
 });
 
 Organization.hasMany(Interview, { foreignKey: "tenantId", as: "interviews" });
-Interview.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Interview.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(InterviewAuditLog, {
   foreignKey: "tenantId",
@@ -218,15 +253,28 @@ Organization.hasMany(Offer, { foreignKey: "tenantId", as: "offers" });
 Offer.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
 
 Organization.hasMany(Referral, { foreignKey: "tenantId", as: "referrals" });
-Referral.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Referral.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
 
 Organization.hasMany(Employee, { foreignKey: "tenantId", as: "employees" });
-Employee.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
+Employee.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});
+
+Organization.belongsTo(Subscription, {
+  foreignKey: "subscriptionId",
+  as: "subscription",
+});
 
 Organization.hasMany(Subscription, {
   foreignKey: "tenantId",
   as: "subscriptions",
   onUpdate: "CASCADE",
 });
-Subscription.belongsTo(Organization, { foreignKey: "tenantId", as: "organization" });
-
+Subscription.belongsTo(Organization, {
+  foreignKey: "tenantId",
+  as: "organization",
+});

@@ -135,6 +135,7 @@ export const logInService = async ({ email, password }) => {
 export const verifyOtpService = async (email, otp, purpose) => {
   const transaction = await sequelize.transaction();
   try {
+    
     const otpData = await findOtpData(email, purpose);
 
     if (!otpData) {
@@ -176,7 +177,6 @@ export const verifyOtpService = async (email, otp, purpose) => {
     user.isVerified = true;
     await user.save({ transaction });
 
-    await transaction.commit();
 
     const leavePolicy = await LeavePolicy.findOne({
       where: getTenantOrGlobalWhere(user.tenantId, { isActive: true }),
@@ -197,6 +197,7 @@ export const verifyOtpService = async (email, otp, purpose) => {
     }
 
     if (purpose === "LOGIN") {
+      await transaction.commit();
       return { success: true, message: "Login OTP verified" };
     }
   } catch (error) {

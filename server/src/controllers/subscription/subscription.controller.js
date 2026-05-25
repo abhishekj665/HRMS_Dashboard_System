@@ -17,3 +17,20 @@ export const getSubscription = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getPlans = async (req, res, next) => {
+  try {
+    const response = await subscriptionServices.getPlans();
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        response.status,
+      );
+    }
+    return errorResponse(res, response.message, response.status);
+  } catch (error) {
+    next(error);
+  }
+};

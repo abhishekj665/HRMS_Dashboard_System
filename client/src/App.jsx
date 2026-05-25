@@ -53,6 +53,7 @@ import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterP
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import AdminSubscriptionProfilePage from "./pages/AdminPages/Subscription/AdminSubscriptionProfilePage";
 import AdminSubscriptionPaymentPage from "./pages/AdminPages/Subscription/AdminSubscriptionPaymentPage";
+import AdminSubscriptionThankYouPage from "./pages/AdminPages/Subscription/AdminSubscriptionThankYouPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -126,6 +127,10 @@ function App() {
             <Route
               path="subscription/payment"
               element={<AdminSubscriptionPaymentPage />}
+            />
+            <Route
+              path="subscription/thank-you"
+              element={<AdminSubscriptionThankYouPage />}
             />
           </Route>
 

@@ -10,32 +10,32 @@ export const getSubscription = async (userId) => {
   try {
     const organization = await Organization.findOne({
       where: { ownerId: userId },
+      include: [
+        {
+          model: Subscription,
+          as: "subscription",
+          where: { isActive: true },
+          attributes: { exclude: ["deletedAt"] },
+          include: [
+            {
+              model: Plans,
+              as: "plan",
+              attributes: { exclude: ["deletedAt"] },
+            },
+          ],
+        },
+      ],
       order: [["createdAt", "DESC"]],
     });
 
-    if (!organization) {
-      throw new ExpressError(STATUS.NOT_FOUND, "Organization not found");
-    }
-
-    let subscription = null;
-
-    if (organization.subscriptionId) {
-      subscription = await Subscription.findOne({
-        where: { id: organization.subscriptionId, tenantId: organization.id },
-        include: [{ model: Plans, attributes: { exclude: ["deletedAt"] } }],
-      });
-    }
+    const subscription = organization?.subscription;
 
     if (!subscription) {
-      subscription = await Subscription.findOne({
-        where: { tenantId: organization.id },
-        order: [["createdAt", "DESC"]],
-        include: [{ model: Plans, attributes: { exclude: ["deletedAt"] } }],
-      });
-    }
-
-    if (!subscription) {
-      throw new ExpressError(STATUS.NOT_FOUND, "Subscription not found");
+      return {
+        success: false,
+        message: "Subscription not found",
+        status: STATUS.NOT_FOUND, 
+      }
     }
 
     return {
@@ -55,6 +55,25 @@ export const getSubscription = async (userId) => {
     if (error instanceof ExpressError) {
       throw error;
     }
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getPlans = async () => {
+  try {
+    const plans = await Plans.findAll({
+      where: { status: "ACTIVE" },
+      order: [["price", "ASC"]],
+      attributes: { exclude: ["deletedAt"] },
+    });
+
+    return {
+      success: true,
+      data: plans,
+      message: "Plans found",
+      status: STATUS.OK,
+    };
+  } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

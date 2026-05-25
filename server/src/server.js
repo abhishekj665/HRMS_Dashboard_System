@@ -16,7 +16,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [env.client_url?.trim(), env.domain_url?.trim(), "http://localhost:5173"],
+    origin: [
+      env.client_url?.trim(),
+      env.domain_url?.trim(),
+      "http://localhost:5173",
+    ],
     credentials: true,
   },
 });

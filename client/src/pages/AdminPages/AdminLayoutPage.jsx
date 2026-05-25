@@ -4,12 +4,16 @@ import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { getCurrentSubscription } from "../../services/SubscriptionService/subscriptionDetailsService";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
+  const [subscriptionChecked, setSubscriptionChecked] = useState(false);
 
   const { user, loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!loading && user?.role !== "admin") {
@@ -17,12 +21,40 @@ export default function AdminLayout() {
     }
   }, [user, loading, navigate]);
 
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (loading || user?.role !== "admin") return;
+
+      const allowedWithoutSubscription = [
+        "/admin/profile",
+        "/admin/subscription/payment",
+        "/admin/subscription/thank-you",
+      ];
+
+      const response = await getCurrentSubscription();
+      const hasSubscription = response?.success;
+
+      if (!hasSubscription && !allowedWithoutSubscription.includes(location.pathname)) {
+        navigate("/admin/subscription/payment");
+        return;
+      }
+
+      setSubscriptionChecked(true);
+    };
+
+    checkSubscription();
+  }, [loading, user?.role, location.pathname, navigate]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   if (user?.role !== "admin") {
     return null;
+  }
+
+  if (!subscriptionChecked) {
+    return <div>Loading...</div>;
   }
 
   return (
