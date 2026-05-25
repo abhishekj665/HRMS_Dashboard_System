@@ -15,8 +15,9 @@ import LanguageIcon from "@mui/icons-material/Language";
 import { toast } from "react-toastify";
 import Hero from "../../components/Hero/Hero";
 import { useDispatch } from "react-redux";
-import { loginUser } from "../../redux/auth/authThunk";
+import { loginUser, logOutUser } from "../../redux/auth/authThunk";
 import { verify } from "../../services/AuthService/authService";
+import { getCurrentSubscription } from "../../services/SubscriptionService/subscriptionDetailsService";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -30,6 +31,34 @@ function LoginPage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const handlePostLogin = async (response) => {
+    const role = response?.user?.role;
+
+    if (role === "admin") {
+      const subscriptionRes = await getCurrentSubscription();
+      if (subscriptionRes?.success) {
+        toast.success(response.message || "Welcome");
+        navigate("/admin/dashboard");
+      } else {
+        toast.info("Please choose a subscription plan to continue.");
+        navigate("/admin/subscription/payment");
+      }
+      resetData();
+      return;
+    }
+
+    if (role === "manager" || role === "employee") {
+      toast.error("Please contact your admin for subscription access.");
+      await dispatch(logOutUser());
+      navigate("/login");
+      resetData();
+      return;
+    }
+
+    navigate("/login");
+    resetData();
+  };
 
   const handleChange = (e) => {
     setOtp("");
@@ -59,19 +88,7 @@ function LoginPage() {
       }
 
       if (response.success) {
-        if (response?.user?.role === "admin") {
-          navigate("/admin/dashboard");
-          toast.success(response.message);
-          resetData();
-        } else if (response?.user?.role === "manager") {
-          navigate("/manager/dashboard");
-          toast.success("Welcome");
-          resetData();
-        } else {
-          navigate("/user/dashboard");
-          toast.success(response.message);
-          resetData();
-        }
+        await handlePostLogin(response);
       } else {
         toast.error(response.message);
         resetData();
@@ -98,13 +115,7 @@ function LoginPage() {
         const res = await dispatch(loginUser(formData)).unwrap();
         setFormData({ email: "", password: "" });
         setOtp("");
-        if (res?.user?.role === "admin") {
-          navigate("/admin/dashboard");
-        } else if (res?.user?.role === "manager") {
-          navigate("/manager/dashboard");
-        } else {
-          navigate("/user/dashboard");
-        }
+        await handlePostLogin(res);
       } else {
         toast.error(response.message);
       }

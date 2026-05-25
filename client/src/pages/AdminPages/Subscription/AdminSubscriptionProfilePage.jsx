@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import {
   Avatar,
   Button,
@@ -14,13 +15,41 @@ import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRou
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CorporateFareRoundedIcon from "@mui/icons-material/CorporateFareRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
-import { SUBSCRIPTION_PLANS } from "./subscriptionPlans";
+import { getCurrentSubscription } from "../../../services/SubscriptionService/subscriptionDetailsService";
 
 const safe = (v) => (v ? String(v) : "Not available");
 
 export default function AdminSubscriptionProfilePage() {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
+  const [currentPlan, setCurrentPlan] = useState(null);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const response = await getCurrentSubscription();
+      if (response?.success) {
+        const subscription = response?.data?.subscription;
+        const plan = subscription?.plan;
+        if (subscription && plan) {
+          setCurrentPlan({
+            name: plan.name,
+            billing: plan.durationType === "YEAR" ? "Yearly" : "Monthly",
+            amount: Number(plan.price),
+            employeeLimit: plan.employmentLimit,
+            durationMonths:
+              plan.durationType === "YEAR" ? plan.duration * 12 : plan.duration,
+          });
+          return;
+        }
+      }
+      setCurrentPlan(null);
+      if (response?.message && response.status !== 404) {
+        toast.error(response.message);
+      }
+    };
+
+    fetchSubscription();
+  }, []);
 
   const fullName = useMemo(() => {
     const first = user?.firstName || user?.first_name || "";
@@ -42,11 +71,6 @@ export default function AdminSubscriptionProfilePage() {
   const org = user?.organization || {};
   const legal = user?.organizationLegal || user?.legal || {};
   const profile = user?.organizationProfile || user?.profile || {};
-
-  const planName = user?.subscription?.name || null;
-  const currentPlan = planName
-    ? SUBSCRIPTION_PLANS.find((plan) => plan.name === planName) || null
-    : null;
 
   const identityRows = [
     { label: "Full Name", value: fullName },

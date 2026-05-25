@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Button, Chip, CircularProgress } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { createPaymentOrder } from "../../../services/PaymentService/paymentService";
-import { SUBSCRIPTION_PLANS } from "./subscriptionPlans";
+import { getSubscriptionPlans } from "../../../services/SubscriptionService/subscriptionService";
 
 const getRazorpayKey = () => import.meta.env.VITE_RAZORPAY_KEY_ID || "";
 
@@ -24,15 +25,52 @@ const loadRazorpayScript = () =>
 
 export default function AdminSubscriptionPaymentPage() {
   const user = useSelector((state) => state.auth.user);
-  const [selectedPlanId, setSelectedPlanId] = useState(SUBSCRIPTION_PLANS[0].id);
+  const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   const [paying, setPaying] = useState(false);
 
+  useEffect(() => {
+    const fetchPlans = async () => {
+      setLoadingPlans(true);
+      const response = await getSubscriptionPlans();
+
+      if (response?.success && Array.isArray(response.data) && response.data.length > 0) {
+        const mappedPlans = response.data.map((plan) => ({
+          id: plan.id,
+          name: plan.name,
+          billing: plan.durationType === "YEAR" ? "Yearly" : "Monthly",
+          durationMonths: plan.durationType === "YEAR" ? plan.duration * 12 : plan.duration,
+          amount: Number(plan.price),
+          employeeLimit: plan.employmentLimit,
+          features: Array.isArray(plan.features) ? plan.features : [],
+        }));
+        setPlans(mappedPlans);
+        setSelectedPlanId(mappedPlans[0].id);
+      } else {
+        setPlans([]);
+        setSelectedPlanId(null);
+        toast.error(response?.message || "No active plans found");
+      }
+
+      setLoadingPlans(false);
+    };
+
+    fetchPlans();
+  }, []);
+
   const selectedPlan = useMemo(
-    () => SUBSCRIPTION_PLANS.find((item) => item.id === selectedPlanId) || SUBSCRIPTION_PLANS[0],
-    [selectedPlanId],
+    () => plans.find((item) => item.id === selectedPlanId) || plans[0],
+    [plans, selectedPlanId],
   );
 
   const handleCheckout = async () => {
+    if (!selectedPlan) {
+      toast.error("Please select a plan");
+      return;
+    }
+
     setPaying(true);
     try {
       const sdkLoaded = await loadRazorpayScript();
@@ -44,6 +82,7 @@ export default function AdminSubscriptionPaymentPage() {
       const orderRes = await createPaymentOrder({
         amount: selectedPlan.amount,
         receipt: `subscription_${selectedPlan.id}_${Date.now()}`,
+        planId: selectedPlan.id,
       });
 
       if (!orderRes?.success) {
@@ -78,6 +117,9 @@ export default function AdminSubscriptionPaymentPage() {
         },
         handler: () => {
           toast.success("Payment completed successfully");
+          navigate("/admin/subscription/thank-you", {
+            state: { plan: selectedPlan },
+          });
         },
       });
 
@@ -110,7 +152,7 @@ export default function AdminSubscriptionPaymentPage() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-5">
-          {SUBSCRIPTION_PLANS.map((plan) => {
+          {plans.map((plan) => {
             const selected = selectedPlanId === plan.id;
             return (
               <button
@@ -127,7 +169,7 @@ export default function AdminSubscriptionPaymentPage() {
                   <h2 className="text-lg font-bold text-slate-900">{plan.name}</h2>
                   <Chip label={plan.billing} size="small" color={selected ? "primary" : "default"} />
                 </div>
-                <p className="mt-2 text-2xl font-bold text-slate-900">₹{plan.amount}</p>
+                <p className="mt-2 text-2xl font-bold text-slate-900">Rs. {plan.amount}</p>
                 <p className="text-sm text-slate-600">Up to {plan.employeeLimit} employees</p>
                 <div className="mt-4 space-y-2">
                   {plan.features.map((feature) => (
@@ -145,13 +187,15 @@ export default function AdminSubscriptionPaymentPage() {
         <div className="rounded-2xl bg-white border border-slate-200 p-5 md:p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-sm text-slate-500">Selected Plan</p>
-            <p className="text-xl font-bold text-slate-900">{selectedPlan.name} - ₹{selectedPlan.amount}</p>
-            <p className="text-sm text-slate-600">{selectedPlan.durationMonths} month{selectedPlan.durationMonths > 1 ? "s" : ""} billing cycle</p>
+            <p className="text-xl font-bold text-slate-900">{selectedPlan?.name} - Rs. {selectedPlan?.amount}</p>
+            <p className="text-sm text-slate-600">
+              {selectedPlan?.durationMonths} month{selectedPlan?.durationMonths > 1 ? "s" : ""} billing cycle
+            </p>
           </div>
           <Button
             variant="contained"
             onClick={handleCheckout}
-            disabled={paying}
+            disabled={paying || loadingPlans || !selectedPlan}
             sx={{ px: 4, py: 1.3, borderRadius: "12px", fontWeight: 700 }}
           >
             {paying ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : "Proceed to Payment"}

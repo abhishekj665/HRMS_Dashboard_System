@@ -49,7 +49,7 @@ export const updateJobPosting = async (id, data, user) => {
 
 export const getJobPosting = async (id, user) => {
   try {
-    console.log("user", user);
+    
     const jobPosting = await JobPosting.findOne({
       where: getScopedWhere(user, { id }),
       include: [
@@ -97,7 +97,6 @@ export const getJobPostings = async (user) => {
     if (!jobPostings)
       throw new ExpressError(STATUS.NOT_FOUND, "No job postings found");
 
-    console.log(jobPostings.requisition);
 
     return {
       success: true,

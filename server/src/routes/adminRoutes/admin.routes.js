@@ -1,5 +1,6 @@
 import express from "express";
 import { adminAuth, refreshAuth } from "../../middlewares/auth.middleware.js";
+import { requireAdminSubscription } from "../../middlewares/subscription.middleware.js";
 import { assetRouter } from "./asset.route.js";
 import { requestRouter } from "./request.route.js";
 import { attendanceRouter } from "./attendance.route.js";
@@ -11,6 +12,7 @@ import { leaveRequestRouter } from "./leaveRequest.route.js";
 const Router = express.Router();
 
 Router.use(adminAuth);
+Router.use(requireAdminSubscription);
 Router.use(assetRouter);
 Router.use(requestRouter);
 Router.use(attendanceRouter);

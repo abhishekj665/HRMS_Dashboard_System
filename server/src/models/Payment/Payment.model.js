@@ -18,7 +18,7 @@ const Payment = sequelize.define(
     },
     planId : {
         type : DataTypes.UUID,
-        allowNull : true
+        allowNull : false
     },
     amount: {
       type: DataTypes.DECIMAL(10, 2),
