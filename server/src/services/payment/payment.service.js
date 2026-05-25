@@ -1,7 +1,7 @@
 import ExpressError from "../../utils/Error.utils.js";
 import razorpayInstance from "../../utils/razorpay.utils.js";
 import { sequelize } from "../../config/db.js";
-import { Organization, Payment } from "../../models/Associations.model.js";
+import { Organization, Payment, Subscription } from "../../models/Associations.model.js";
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils.js";
 import { env } from "../../config/env.js";
 import STATUS from "../../constants/Status.js";
