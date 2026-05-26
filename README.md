@@ -59,6 +59,7 @@ When a new organization is registered through the organization onboarding flow, 
 - [Available Scripts](#available-scripts)
 - [Authentication and Security](#authentication-and-security)
 - [Realtime Communication](#realtime-communication)
+- [Recent Project Updates](#recent-project-updates)
 - [Deployment Notes](#deployment-notes)
 - [Current Limitations](#current-limitations)
 - [Roadmap](#roadmap)
@@ -665,6 +666,14 @@ Supported events in the current implementation include:
 
 - `requestCreated`
 - `requestUpdated`
+
+## Recent Project Updates
+
+- added payment module endpoints under `/payment` (including webhook handling)
+- added subscription module endpoints under `/subscription`
+- expanded recruitment tracking with `Referral` and `InterviewAuditLog` entities
+- continued tenant-aware modeling with `tenantId` on latest recruitment entities
+- maintained organization-scoped realtime and API access patterns across new modules
 
 ## Deployment Notes
 
