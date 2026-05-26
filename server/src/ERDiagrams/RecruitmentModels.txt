@@ -109,3 +109,35 @@
 |     resumeUrl        |
 |     source           |
 +----------------------+
+
+
+==================== UPDATE: NEW RECRUITMENT TABLES ====================
+
+NOTE: New recruitment entities are also tenant-aware (`tenantId`).
+
++----------------------+
+|       REFERRAL       |
++----------------------+
+| PK  id               |
+|     tenantId         |
+| FK  candidateId ----> CANDIDATE.id
+| FK  referredById ---> USER.id
+|     bonusAmount      |
+|     status           |
+|     paidAt           |
+|     remarks          |
++----------------------+
+
++------------------------------+
+|     INTERVIEW_AUDIT_LOG      |
++------------------------------+
+| PK  id                       |
+|     tenantId                 |
+| FK  interviewId -----------> INTERVIEW.id
+| FK  interviewerId ---------> USER.id
+|     action                   |
+|     performedBy              |
+|     oldScheduledAt           |
+|     newScheduledAt           |
+|     remark                   |
++------------------------------+
