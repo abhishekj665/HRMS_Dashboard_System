@@ -8,9 +8,9 @@ import { userLMSRouter } from "./leave.route.js";
 
 const Router = express.Router();
 
-
-Router.use(expenseRouter);
+Router.use(userAuth);
 Router.use(infoRouter);
+Router.use(expenseRouter);
 Router.use(attendanceRouter);
 Router.use(assetRouter);
 Router.use(userLMSRouter);

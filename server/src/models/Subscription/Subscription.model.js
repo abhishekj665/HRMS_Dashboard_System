@@ -27,6 +27,10 @@ const Subscription = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    validTill: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   },
   {
     timestamps: true,

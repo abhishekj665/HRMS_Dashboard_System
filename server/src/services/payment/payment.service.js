@@ -1,10 +1,12 @@
 import ExpressError from "../../utils/Error.utils.js";
 import razorpayInstance from "../../utils/razorpay.utils.js";
+import {Op} from "sequelize";
 import { sequelize } from "../../config/db.js";
 import {
   Organization,
   Payment,
   Subscription,
+  Plans
 } from "../../models/Associations.model.js";
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils.js";
 import { env } from "../../config/env.js";
@@ -52,6 +54,18 @@ const paymentSuccess = async (orderId) => {
       };
     }
 
+
+    const duration = await Plans.findOne({
+      where: { id: payment.planId },
+      attributes: ["duration", "durationType"],
+    });
+
+    const validTill = new Date();
+    if (duration.durationType === "MONTH") {
+      validTill.setMonth(validTill.getMonth() + duration.duration);
+    } else if (duration.durationType === "YEAR") {
+      validTill.setFullYear(validTill.getFullYear() + duration.duration);
+    }
     
 
     const subscription = await Subscription.create(
@@ -59,15 +73,20 @@ const paymentSuccess = async (orderId) => {
         name: organization.name,
         tenantId: organization.id,
         planId: payment.planId,
+        validTill: validTill,
         isActive: true,
       },
       { transaction },
     );
 
+    console.log(validTill);
+
     
 
     organization.subscriptionId = subscription.id;
     await organization.save({ transaction });
+
+    console.log("Subscription created successfully");
 
     await transaction.commit();
 
@@ -211,6 +230,8 @@ export const validateWebHook = async (webHookSignature, rawBody) => {
         status: STATUS.BAD_REQUEST,
       };
     }
+
+
 
     if (data.event === "payment.captured") {
       await paymentSuccess(paymentDetails.order_id);

@@ -24,6 +24,9 @@ export default function Topbar({ open, setOpen }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = useState(null);
+  const role = (user?.role || "admin").toLowerCase();
+  const basePath =
+    role === "manager" ? "/manager" : role === "employee" || role === "user" ? "/user" : "/admin";
 
   const fullName = useMemo(() => {
     const first = user?.firstName || user?.first_name || "";
@@ -101,21 +104,23 @@ export default function Topbar({ open, setOpen }) {
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
-            navigate("/admin/profile");
+            navigate(`${basePath}/profile`);
           }}
         >
           <AccountCircleOutlinedIcon sx={{ mr: 1.2, fontSize: 20, color: "#334155" }} />
           Profile
         </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            navigate("/admin/subscription/payment");
-          }}
-        >
-          <WorkspacePremiumOutlinedIcon sx={{ mr: 1.2, fontSize: 20, color: "#334155" }} />
-          Subscription
-        </MenuItem>
+        {role === "admin" ? (
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+              navigate("/admin/subscription/payment");
+            }}
+          >
+            <WorkspacePremiumOutlinedIcon sx={{ mr: 1.2, fontSize: 20, color: "#334155" }} />
+            Subscription
+          </MenuItem>
+        ) : null}
         <MenuItem
           onClick={async () => {
             setAnchorEl(null);

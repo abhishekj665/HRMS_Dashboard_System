@@ -15,16 +15,29 @@ import WorkspacePremiumRoundedIcon from "@mui/icons-material/WorkspacePremiumRou
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CorporateFareRoundedIcon from "@mui/icons-material/CorporateFareRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
-import { getCurrentSubscription } from "../../../services/SubscriptionService/subscriptionDetailsService";
+import { getCurrentSubscription } from "../../services/SubscriptionService/subscriptionDetailsService";
 
 const safe = (v) => (v ? String(v) : "Not available");
 
-export default function AdminSubscriptionProfilePage() {
+export default function ProfilePage() {
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
   const [currentPlan, setCurrentPlan] = useState(null);
+  const role = (user?.role || "admin").toLowerCase();
+  const isAdmin = role === "admin";
+  const paymentPath =
+    role === "manager"
+      ? "/manager/subscription/payment"
+      : role === "user"
+        ? "/user/subscription/payment"
+        : "/admin/subscription/payment";
 
   useEffect(() => {
+    if (!isAdmin) {
+      setCurrentPlan(null);
+      return;
+    }
+
     const fetchSubscription = async () => {
       const response = await getCurrentSubscription();
       if (response?.success) {
@@ -49,7 +62,7 @@ export default function AdminSubscriptionProfilePage() {
     };
 
     fetchSubscription();
-  }, []);
+  }, [isAdmin]);
 
   const fullName = useMemo(() => {
     const first = user?.firstName || user?.first_name || "";
@@ -130,24 +143,26 @@ export default function AdminSubscriptionProfilePage() {
                 </Typography>
               </div>
             </Stack>
-            <Button
-              variant="contained"
-              endIcon={<ArrowForwardRoundedIcon />}
-              onClick={() => navigate("/admin/subscription/payment")}
-              sx={{
-                bgcolor: "#fff",
-                color: "#0f172a",
-                fontWeight: 700,
-                borderRadius: 2.5,
-                "&:hover": { bgcolor: "#e2e8f0" },
-              }}
-            >
-              Manage Subscription
-            </Button>
+            {isAdmin ? (
+              <Button
+                variant="contained"
+                endIcon={<ArrowForwardRoundedIcon />}
+                onClick={() => navigate(paymentPath)}
+                sx={{
+                  bgcolor: "#fff",
+                  color: "#0f172a",
+                  fontWeight: 700,
+                  borderRadius: 2.5,
+                  "&:hover": { bgcolor: "#e2e8f0" },
+                }}
+              >
+                Manage Subscription
+              </Button>
+            ) : null}
           </Stack>
         </Paper>
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+        <div className={`grid grid-cols-1 gap-5 ${isAdmin ? "xl:grid-cols-3" : ""}`}>
           <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: "1px solid #dbe4f0" }}>
             <Stack direction="row" spacing={1.2} alignItems="center" sx={{ mb: 2 }}>
               <CorporateFareRoundedIcon sx={{ color: "#1d4ed8" }} />
@@ -171,49 +186,51 @@ export default function AdminSubscriptionProfilePage() {
             </div>
           </Paper>
 
-          <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: "1px solid #dbe4f0" }}>
-            <Stack direction="row" spacing={1.2} alignItems="center" sx={{ mb: 1.5 }}>
-              <WorkspacePremiumRoundedIcon sx={{ color: "#d97706" }} />
-              <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
-                Current Plan
-              </Typography>
-            </Stack>
-            {currentPlan ? (
-              <>
-                <Chip
-                  label={currentPlan.billing}
-                  color="primary"
-                  size="small"
-                  sx={{ mb: 1.5 }}
-                />
-                <Typography sx={{ fontSize: 28, fontWeight: 900, color: "#0f172a", lineHeight: 1.1 }}>
-                  {currentPlan.name}
+          {isAdmin ? (
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: "1px solid #dbe4f0" }}>
+              <Stack direction="row" spacing={1.2} alignItems="center" sx={{ mb: 1.5 }}>
+                <WorkspacePremiumRoundedIcon sx={{ color: "#d97706" }} />
+                <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+                  Current Plan
                 </Typography>
-                <Typography sx={{ mt: 0.5, color: "#475569" }}>
-                  ₹{currentPlan.amount} / {currentPlan.billing.toLowerCase()}
-                </Typography>
-                <Divider sx={{ my: 2 }} />
-                <Stack spacing={1}>
-                  <Typography variant="body2" sx={{ color: "#334155" }}>
-                    Employee Limit: {currentPlan.employeeLimit}
+              </Stack>
+              {currentPlan ? (
+                <>
+                  <Chip
+                    label={currentPlan.billing}
+                    color="primary"
+                    size="small"
+                    sx={{ mb: 1.5 }}
+                  />
+                  <Typography sx={{ fontSize: 28, fontWeight: 900, color: "#0f172a", lineHeight: 1.1 }}>
+                    {currentPlan.name}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: "#334155" }}>
-                    Duration: {currentPlan.durationMonths} month{currentPlan.durationMonths > 1 ? "s" : ""}
+                  <Typography sx={{ mt: 0.5, color: "#475569" }}>
+                    Rs. {currentPlan.amount} / {currentPlan.billing.toLowerCase()}
                   </Typography>
-                </Stack>
-              </>
-            ) : (
-              <>
-                <Chip label="Inactive" size="small" sx={{ mb: 1.5 }} />
-                <Typography sx={{ fontSize: 22, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                  No active subscription
-                </Typography>
-                <Typography sx={{ mt: 0.75, color: "#475569" }}>
-                  This organization has no active plan yet.
-                </Typography>
-              </>
-            )}
-          </Paper>
+                  <Divider sx={{ my: 2 }} />
+                  <Stack spacing={1}>
+                    <Typography variant="body2" sx={{ color: "#334155" }}>
+                      Employee Limit: {currentPlan.employeeLimit}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#334155" }}>
+                      Duration: {currentPlan.durationMonths} month{currentPlan.durationMonths > 1 ? "s" : ""}
+                    </Typography>
+                  </Stack>
+                </>
+              ) : (
+                <>
+                  <Chip label="Inactive" size="small" sx={{ mb: 1.5 }} />
+                  <Typography sx={{ fontSize: 22, fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
+                    No active subscription
+                  </Typography>
+                  <Typography sx={{ mt: 0.75, color: "#475569" }}>
+                    This organization has no active plan yet.
+                  </Typography>
+                </>
+              )}
+            </Paper>
+          ) : null}
         </div>
 
         <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: "1px solid #dbe4f0" }}>

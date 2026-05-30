@@ -15,7 +15,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 import { toast } from "react-toastify";
 import Hero from "../../components/Hero/Hero";
 import { useDispatch } from "react-redux";
-import { loginUser, logOutUser } from "../../redux/auth/authThunk";
+import { loginUser } from "../../redux/auth/authThunk";
 import { verify } from "../../services/AuthService/authService";
 import { getCurrentSubscription } from "../../services/SubscriptionService/subscriptionDetailsService";
 
@@ -48,10 +48,16 @@ function LoginPage() {
       return;
     }
 
-    if (role === "manager" || role === "employee") {
-      toast.error("Please contact your admin for subscription access.");
-      await dispatch(logOutUser());
-      navigate("/login");
+    if (role === "manager") {
+      toast.success(response.message || "Welcome");
+      navigate("/manager/dashboard");
+      resetData();
+      return;
+    }
+
+    if (role === "employee" || role === "user") {
+      toast.success(response.message || "Welcome");
+      navigate("/user/dashboard");
       resetData();
       return;
     }

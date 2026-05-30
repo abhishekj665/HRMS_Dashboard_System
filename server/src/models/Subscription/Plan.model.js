@@ -4,11 +4,11 @@ import { DataTypes } from "sequelize";
 const Plans = sequelize.define(
   "Plans",
   {
-    id : {
-        type : DataTypes.UUID,
-        defaultValue : DataTypes.UUIDV4,
-        primaryKey : true,
-        allowNull : false,
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING,

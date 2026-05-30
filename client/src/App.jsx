@@ -51,7 +51,7 @@ import ManagerInterviewsPage from "./pages/ManagerPages/JobRecruitment/interview
 import { OfferPage } from "./pages/CareerPages/OfferPage";
 import OrganizationRegisterPage from "./pages/organization/OrganizationRegisterPage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
-import AdminSubscriptionProfilePage from "./pages/AdminPages/Subscription/AdminSubscriptionProfilePage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import AdminSubscriptionPaymentPage from "./pages/AdminPages/Subscription/AdminSubscriptionPaymentPage";
 import AdminSubscriptionThankYouPage from "./pages/AdminPages/Subscription/AdminSubscriptionThankYouPage";
 
@@ -102,6 +102,7 @@ function App() {
             <Route path="expense" element={<UserExpensePage />}></Route>
             <Route path="attendance" element={<UserAttendanceData />}></Route>
             <Route path="leave-management" element={<LeaveManagement />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
           <Route path="/admin" element={<AdminLayoutPage />}>
@@ -123,7 +124,7 @@ function App() {
               path="job-applications"
               element={<AdminJobApplicationsPage />}
             />
-            <Route path="profile" element={<AdminSubscriptionProfilePage />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route
               path="subscription/payment"
               element={<AdminSubscriptionPaymentPage />}
@@ -152,6 +153,7 @@ function App() {
               element={<ManagerLeaveManagement />}
             />
             <Route path="interviews" element={<ManagerInterviewsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
           <Route path="/offer/:token" element={<OfferPage />} />
