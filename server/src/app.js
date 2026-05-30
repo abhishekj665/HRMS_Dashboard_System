@@ -67,8 +67,6 @@ app.use("/payment", PaymentRouter);
 
 app.use("/subscription", subscriptionRouter);
 
-
-
 app.use(globalErrorHandler);
 
 export default app;
