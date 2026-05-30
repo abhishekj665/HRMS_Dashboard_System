@@ -1,18 +1,27 @@
-import { Subscription } from "../models/Associations.model.js";
+import { Subscription, Plans } from "../models/Associations.model.js";
+import { Op } from "sequelize";
 
-export const requireAdminSubscription = async (req, res, next) => {
+export const isSubscribed = async (req, res, next) => {
   try {
-    if (req.user?.role !== "admin") {
+    const role = req.user?.role;
+    const tenantId = req.user?.tenantId;
+
+    if (role !== "admin") {
       return next();
     }
 
-    const tenantId = req.user?.tenantId;
     if (!tenantId) {
-      return res.status(403).json({ message: "Tenant not found for admin user" });
+      return res.status(403).json({
+        message: "Tenant not found for this user",
+        code: "TENANT_NOT_FOUND",
+      });
     }
 
+    const now = new Date();
+
     const activeSubscription = await Subscription.findOne({
-      where: { tenantId, isActive: true },
+      where: { tenantId, isActive: true, validTill: { [Op.gt]: now } },
+
       order: [["createdAt", "DESC"]],
     });
 
@@ -25,6 +34,8 @@ export const requireAdminSubscription = async (req, res, next) => {
 
     return next();
   } catch (error) {
-    return res.status(500).json({ message: error.message || "Subscription check failed" });
+    return res
+      .status(500)
+      .json({ message: error.message || "Subscription check failed" });
   }
 };
