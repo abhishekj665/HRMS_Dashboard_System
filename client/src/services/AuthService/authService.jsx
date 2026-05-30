@@ -1,9 +1,7 @@
 import axios from "axios";
 import { loadingRef } from "../../loadingContext";
 
-// const baseURL = import.meta.env.VITE_BASE_URL;
-
-const baseURL = "http://localhost:3000";
+const baseURL = import.meta.env.VITE_BASE_URL;
 
 export const API = axios.create({
   baseURL,
