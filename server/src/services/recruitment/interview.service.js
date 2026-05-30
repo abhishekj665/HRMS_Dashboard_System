@@ -315,8 +315,9 @@ export const confirmInterview = async (id) => {
   const transaction = await sequelize.transaction();
 
   try {
+    console.log("Confirming interview with ID:", id); // Debug log
     const interview = await Interview.findOne({
-      where: { id },
+      where: { id : id},
       include: [
         {
           model: Application,
@@ -341,9 +342,9 @@ export const confirmInterview = async (id) => {
         },
       ],
       transaction,
-      lock: true,
     });
 
+    console.log("Interview found:", interview ? "Yes" : "No"); // Debug log
     if (!interview)
       throw new ExpressError(STATUS.NOT_FOUND, "Interview not found");
 
@@ -357,6 +358,11 @@ export const confirmInterview = async (id) => {
         isRejectStage: { [Op.not]: true },
       },
     });
+
+    console.log(
+      "Next stage found:",
+      nextStage ? nextStage.name : "No next stage",
+    ); // Debug log
 
     const application = interview.application;
 
@@ -397,6 +403,11 @@ export const confirmInterview = async (id) => {
       lock: true,
     });
 
+    console.log(
+      "Already confirmed interview found:",
+      alreadyConfirmed ? "Yes" : "No",
+    ); // Debug log
+
     if (alreadyConfirmed) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
@@ -405,6 +416,8 @@ export const confirmInterview = async (id) => {
     }
 
     await interview.update({ status: "SCHEDULED" }, { transaction });
+
+    console.log("Interview status updated to SCHEDULED"); // Debug log
 
     await transaction.commit();
 
@@ -444,7 +457,7 @@ export const declineAssignedInterview = async (id, remark, userId) => {
 
   try {
     const interview = await Interview.findOne({
-      where: { id },
+      where: { id : id },
       include: [
         {
           model: Application,
@@ -575,7 +588,7 @@ export const rescheduleInterview = async (id, data, userId) => {
   try {
     const interview = await Interview.findOne({
       where: {
-        id,
+        id : id,
         status: "PENDING_CONFIRMATION",
         interviewerId: userId,
       },
