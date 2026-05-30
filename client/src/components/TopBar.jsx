@@ -31,7 +31,9 @@ export default function Topbar({ open, setOpen }) {
   const fullName = useMemo(() => {
     const first = user?.firstName || user?.first_name || "";
     const last = user?.lastName || user?.last_name || "";
-    return `${first} ${last}`.trim() || user?.name || "Admin User";
+    const fromNames = `${first} ${last}`.trim();
+    const fromEmail = user?.email ? user.email.split("@")[0] : "";
+    return fromNames || user?.name || fromEmail || "User";
   }, [user]);
 
   const initials = useMemo(() => {
@@ -76,7 +78,15 @@ export default function Topbar({ open, setOpen }) {
         className="flex items-center gap-2 rounded-xl border border-slate-200 px-2.5 py-1.5 hover:bg-slate-50 transition"
       >
         <Avatar sx={{ width: 32, height: 32, bgcolor: "#dbeafe", color: "#1d4ed8", fontSize: 13, fontWeight: 700 }}>
-          {initials}
+          {user?.profile?.profileUrl ? (
+            <img
+              src={user.profile.profileUrl}
+              alt={fullName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            initials
+          )}
         </Avatar>
         <div className="hidden sm:block text-left">
           <p className="text-sm font-semibold text-slate-900 leading-4">{fullName}</p>

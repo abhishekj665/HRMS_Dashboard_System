@@ -7,6 +7,7 @@ import UserAsset from "../AssetModels/UserAsset.model.js";
 import Expenses from "../UserModels/Expenses.model.js";
 import Account from "../UserModels/Account.model.js";
 import Employee from "../EmployeeModels/Employee.model.js";
+import Profile from "../Profile/Profile.model.js";
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -78,4 +79,16 @@ User.hasOne(Employee, {
 
 Employee.belongsTo(User, {
   foreignKey: "userId",
+});
+
+User.hasOne(Profile, {
+  foreignKey: "userId",
+  as: "profile",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+Profile.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
 });

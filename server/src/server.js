@@ -11,6 +11,7 @@ import {
   getManagerRoom,
   getUserRoom,
 } from "./utils/socketRooms.utils.js";
+import "./models/Associations.model.js";
 
 const server = http.createServer(app);
 
