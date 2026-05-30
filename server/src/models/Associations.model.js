@@ -37,8 +37,7 @@ import Department from "./Department/Department.model.js";
 import Subscription from "./Subscription/Subscription.model.js";
 import Plans from "./Subscription/Plan.model.js";
 import Payment from "./Payment/Payment.model.js";
-
-
+import Profile from "./Profile/Profile.model.js";
 
 import "./associations/organization.associations.js";
 import "./associations/user.associations.js";
@@ -88,5 +87,6 @@ export {
   Department,
   Subscription,
   Plans,
-  Payment
+  Payment,
+  Profile,
 };

@@ -8,7 +8,8 @@
     "test": "jest --passWithNoTests",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed:plans": "node src/scripts/seedPlans.js"
+    "seed:plans": "node src/scripts/seedPlans.js",
+    "migrate:profile": "node src/scripts/migrateUserProfileData.js"
   },
   "keywords": [],
   "author": "",

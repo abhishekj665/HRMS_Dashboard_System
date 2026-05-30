@@ -1,6 +1,6 @@
 import ExpressError from "../../utils/Error.utils.js";
 import razorpayInstance from "../../utils/razorpay.utils.js";
-import {Op} from "sequelize";
+import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
 import {
   Organization,
@@ -68,6 +68,19 @@ const paymentSuccess = async (orderId) => {
     }
     
 
+    
+    await Subscription.update(
+      { isActive: false },
+      {
+        where: {
+          tenantId: organization.id,
+          isActive: true,
+          validTill: { [Op.lte]: new Date() },
+        },
+        transaction,
+      },
+    );
+
     const subscription = await Subscription.create(
       {
         name: organization.name,
@@ -77,16 +90,12 @@ const paymentSuccess = async (orderId) => {
         isActive: true,
       },
       { transaction },
-    );
-
-    console.log(validTill);
+    )
 
     
 
     organization.subscriptionId = subscription.id;
     await organization.save({ transaction });
-
-    console.log("Subscription created successfully");
 
     await transaction.commit();
 

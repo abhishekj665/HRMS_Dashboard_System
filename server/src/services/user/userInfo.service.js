@@ -1,4 +1,5 @@
 import { User } from "../../models/Associations.model.js";
+import { getProfileService as getProfileDetailsService, upsertProfileService } from "../profile/profile.service.js";
 
 import bcrypt from "bcrypt";
 import ExpressError from "../../utils/Error.utils.js";
@@ -14,18 +15,19 @@ export const updateUserService = async (userId, data) => {
 
     const updateData = {};
 
-    if (data.first_name !== undefined) updateData.first_name = data.first_name;
-    if (data.last_name !== undefined) updateData.last_name = data.last_name;
-    if (data.contact !== undefined) updateData.contact = data.contact;
     if (data.email !== undefined) updateData.email = data.email;
 
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
 
-    const [updatedCount] = await User.update(updateData, {
-      where: { id: userId },
-    });
+    if (data.first_name !== undefined || data.last_name !== undefined || data.contact !== undefined) {
+      await upsertProfileService(userId, data);
+    }
+
+    const [updatedCount] = Object.keys(updateData).length
+      ? await User.update(updateData, { where: { id: userId } })
+      : [1];
 
     if (updatedCount === 0) {
       throw new ExpressError(400, "User not found or no changes made");
@@ -50,16 +52,5 @@ export const deleteUserService = async (id) => {
 };
 
 export const getProfileService = async (id) => {
-  try {
-    const user = await User.findOne({ where: { id },
-    attributes : ["id","first_name","last_name","email","role","isBlocked","isVerified"] });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    return { success: true, user, message: "User Fetched" };
-  } catch (err) {
-    return res.status(500).json({ error: "Failed to load profile" });
-  }
+  return getProfileDetailsService(id);
 };

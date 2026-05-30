@@ -35,7 +35,7 @@ export const fetchUser = createAsyncThunk(
     try {
       const res = await getProfile();
 
-      return res.data.user;
+      return res?.user || res?.data?.user;
     } catch (err) {
       return rejectWithValue(err.response?.data || "fail");
     }
