@@ -5,6 +5,7 @@ import {
   Plans,
   Subscription,
 } from "../../models/Associations.model.js";
+import { Op } from "sequelize";
 
 export const getSubscription = async (userId) => {
   try {
@@ -14,7 +15,8 @@ export const getSubscription = async (userId) => {
         {
           model: Subscription,
           as: "subscription",
-          where: { isActive: true },
+          where: { isActive: true, validTill: { [Op.gt]: new Date() } },
+          order: [["createdAt", "DESC"]],
           attributes: { exclude: ["deletedAt"] },
           include: [
             {
@@ -34,8 +36,8 @@ export const getSubscription = async (userId) => {
       return {
         success: false,
         message: "Subscription not found",
-        status: STATUS.NOT_FOUND, 
-      }
+        status: STATUS.NOT_FOUND,
+      };
     }
 
     return {
