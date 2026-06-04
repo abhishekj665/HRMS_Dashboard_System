@@ -6,7 +6,7 @@ import {
   Organization,
   Payment,
   Subscription,
-  Plans
+  Plans,
 } from "../../models/Associations.model.js";
 import { validateWebhookSignature } from "razorpay/dist/utils/razorpay-utils.js";
 import { env } from "../../config/env.js";
@@ -54,7 +54,6 @@ const paymentSuccess = async (orderId) => {
       };
     }
 
-
     const duration = await Plans.findOne({
       where: { id: payment.planId },
       attributes: ["duration", "durationType"],
@@ -66,21 +65,17 @@ const paymentSuccess = async (orderId) => {
     } else if (duration.durationType === "YEAR") {
       validTill.setFullYear(validTill.getFullYear() + duration.duration);
     }
-    
 
-    
-    await Subscription.update(
-      { isActive: false },
-      {
-        where: {
-          tenantId: organization.id,
-          isActive: true,
-          validTill: { [Op.lte]: new Date() },
-        },
-        transaction,
+    const existingSubscription = await Subscription.findOne({
+      where: {
+        tenantId: organization.id,
+        isActive: true,
       },
-    );
+    });
 
+    if (existingSubscription) {
+      await existingSubscription.update({ isActive: false }, { transaction });
+    }
     const subscription = await Subscription.create(
       {
         name: organization.name,
@@ -90,9 +85,7 @@ const paymentSuccess = async (orderId) => {
         isActive: true,
       },
       { transaction },
-    )
-
-    
+    );
 
     organization.subscriptionId = subscription.id;
     await organization.save({ transaction });
@@ -239,8 +232,6 @@ export const validateWebHook = async (webHookSignature, rawBody) => {
         status: STATUS.BAD_REQUEST,
       };
     }
-
-
 
     if (data.event === "payment.captured") {
       await paymentSuccess(paymentDetails.order_id);
