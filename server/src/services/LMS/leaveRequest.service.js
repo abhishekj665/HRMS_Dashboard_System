@@ -134,7 +134,7 @@ export const registerLeaveRequest = async (data, authUser) => {
       where: { id: leaveTypeId, tenantId },
     });
 
-    if (leaveType.requiresApproval && !user.manager) {
+    if (leaveType.requiresApproval) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
         "This leave type requires manager approval, but no manager is assigned to your profile. Please contact HR.",
