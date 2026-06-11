@@ -17,6 +17,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import { registerJobApplication } from "../../services/JobRecruitmentService/appllicationService";
 import { getCandidate } from "../../services/JobRecruitmentService/candidateService";
+import HomeIcon from "@mui/icons-material/Home";
 
 const steps = [
   "Information",
@@ -281,335 +282,362 @@ export default function JobApplicationPage() {
   };
 
   return (
-    <Container maxWidth="md" className="py-16">
-      <Typography variant="h4" mb={6}>
-        Job Application
-      </Typography>
+    <div>
+      <div className="bg-white border-b">
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              py: 1.5,
+              cursor: "pointer",
+              width: "fit-content",
+            }}
+            onClick={() => navigate("/login")}
+          >
+            <HomeIcon fontSize="small" color="primary" />
+            <Typography
+              sx={{
+                fontWeight: 500,
+                "&:hover": { textDecoration: "underline" },
+              }}
+            >
+              Home
+            </Typography>
+          </Box>
+        </Container>
+      </div>
+      <Container maxWidth="md" className="py-16">
+        <Typography variant="h4" mb={6}>
+          Job Application
+        </Typography>
 
-      {submitted ? (
-        <Box textAlign="center" mt={10}>
-          <Typography variant="h4" gutterBottom>
-            {applicationStatus === "already_applied"
-              ? "✅ You Have Already Applied"
-              : "✅ Application Submitted Successfully"}
-          </Typography>
+        {submitted ? (
+          <Box textAlign="center" mt={10}>
+            <Typography variant="h4" gutterBottom>
+              {applicationStatus === "already_applied"
+                ? "✅ You Have Already Applied"
+                : "✅ Application Submitted Successfully"}
+            </Typography>
 
-          <Typography mt={2} color="text.secondary">
-            Thank you for applying. Our recruitment team will review your
-            application.
-          </Typography>
+            <Typography mt={2} color="text.secondary">
+              Thank you for applying. Our recruitment team will review your
+              application.
+            </Typography>
 
-          <Typography mt={3} color="text.secondary">
-            Redirecting to careers page in few seconds...
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+            <Typography mt={3} color="text.secondary">
+              Redirecting to careers page in few seconds...
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
 
-          <Box mt={8}>
-            {/* STEP 1 */}
-            {activeStep === 0 && (
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="First Name"
-                    name="firstName"
-                    value={form?.firstName}
-                    error={!!error.firstName}
-                    helperText={error.firstName}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Last Name"
-                    name="lastName"
-                    fullWidth
-                    required
-                    value={form?.lastName}
-                    error={!!error.lastName}
-                    helperText={error.lastName}
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Email"
-                    name="email"
-                    type="email"
-                    fullWidth
-                    value={form?.email}
-                    error={!!error.email}
-                    helperText={error.email}
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-              </Grid>
-            )}
-
-            {activeStep === 1 && (
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Contact Number"
-                    name="contact"
-                    value={form.contact}
-                    error={!!error.contact}
-                    helperText={error.contact}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Address"
-                    name="address"
-                    value={form.address}
-                    error={!!error.address}
-                    helperText={error.address}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="City"
-                    name="city"
-                    value={form.city}
-                    error={!!error.city}
-                    helperText={error.city}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="State"
-                    name="state"
-                    value={form.state}
-                    error={!!error.state}
-                    helperText={error.state}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Country"
-                    name="country"
-                    value={form.country}
-                    error={!!error.country}
-                    helperText={error.country}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-              </Grid>
-            )}
-
-            {/* STEP 3 */}
-            {activeStep === 2 && (
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Current Company"
-                    name="currentCompany"
-                    value={form.currentCompany}
-                    error={!!error.currentCompany}
-                    helperText={error.currentCompany}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Total Experience (Years)"
-                    name="totalExperience"
-                    type="number"
-                    value={form.totalExperience}
-                    error={!!error.totalExperience}
-                    helperText={error.totalExperience}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Current CTC"
-                    name="currentCTC"
-                    type="number"
-                    value={form.currentCTC}
-                    error={!!error.currentCTC}
-                    helperText={error.currentCTC}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Expected CTC"
-                    name="expectedCTC"
-                    type="number"
-                    value={form.expectedCTC}
-                    error={!!error.expectedCTC}
-                    helperText={error.expectedCTC}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Notice Period (Days)"
-                    name="noticePeriodDays"
-                    type="number"
-                    value={form.noticePeriodDays}
-                    error={!!error.noticePeriodDays}
-                    helperText={error.noticePeriodDays}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    label="Source"
-                    name="source"
-                    value={form.source}
-                    error={!!error.source}
-                    helperText={error.source}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Grid>
-              </Grid>
-            )}
-
-            {/* STEP 4 */}
-            {activeStep === 3 && (
-              <>
-                <Button variant="outlined" component="label">
-                  Upload Resume
-                  <input
-                    hidden
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => setResumeFile(e.target.files[0])}
-                  />
-                </Button>
-
-                {error.resumeFile && (
-                  <Typography color="error" mt={2}>
-                    {error.resumeFile}
-                  </Typography>
-                )}
-
-                <Box mt={4}>
-                  <TextField
-                    label="LinkedIn URL"
-                    name="linkedInUrl"
-                    value={form.linkedInUrl}
-                    error={!!error.linkedInUrl}
-                    helperText={error.linkedInUrl}
-                    fullWidth
-                    required
-                    onChange={handleChange}
-                  />
-                </Box>
-
-                <Box mt={4}>
-                  <TextField
-                    label="Portfolio / GitHub URL (Optional)"
-                    name="portfolioUrl"
-                    value={form.portfolioUrl}
-                    fullWidth
-                    onChange={handleChange}
-                  />
-                </Box>
-              </>
-            )}
-
-            {activeStep === 4 && (
-              <>
-                <Typography mb={3}>
-                  I certify that all information provided is true and complete.
-                  I authorize the company to verify my credentials and
-                  background.
-                </Typography>
-
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={agree}
-                      onChange={(e) => setAgree(e.target.checked)}
+            <Box mt={8}>
+              {/* STEP 1 */}
+              {activeStep === 0 && (
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="First Name"
+                      name="firstName"
+                      value={form?.firstName}
+                      error={!!error.firstName}
+                      helperText={error.firstName}
+                      fullWidth
+                      required
+                      onChange={handleChange}
                     />
-                  }
-                  label="I agree to the terms and privacy policy"
-                />
-              </>
-            )}
-          </Box>
+                  </Grid>
 
-          {/* ACTION BUTTONS */}
-          <Box mt={6} display="flex" justifyContent="space-between">
-            {activeStep > 0 && <Button onClick={handleBack}>Back</Button>}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      label="Last Name"
+                      name="lastName"
+                      fullWidth
+                      required
+                      value={form?.lastName}
+                      error={!!error.lastName}
+                      helperText={error.lastName}
+                      onChange={handleChange}
+                    />
+                  </Grid>
 
-            {activeStep < steps.length - 1 ? (
-              <Button variant="contained" onClick={handleNext}>
-                Next
-              </Button>
-            ) : (
-              <Button variant="contained" onClick={handleSubmit}>
-                Submit Application
-              </Button>
-            )}
-          </Box>
-        </>
-      )}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Email"
+                      name="email"
+                      type="email"
+                      fullWidth
+                      value={form?.email}
+                      error={!!error.email}
+                      helperText={error.email}
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+                </Grid>
+              )}
+
+              {activeStep === 1 && (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Contact Number"
+                      name="contact"
+                      value={form.contact}
+                      error={!!error.contact}
+                      helperText={error.contact}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Address"
+                      name="address"
+                      value={form.address}
+                      error={!!error.address}
+                      helperText={error.address}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      label="City"
+                      name="city"
+                      value={form.city}
+                      error={!!error.city}
+                      helperText={error.city}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      label="State"
+                      name="state"
+                      value={form.state}
+                      error={!!error.state}
+                      helperText={error.state}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      label="Country"
+                      name="country"
+                      value={form.country}
+                      error={!!error.country}
+                      helperText={error.country}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+                </Grid>
+              )}
+
+              {/* STEP 3 */}
+              {activeStep === 2 && (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Current Company"
+                      name="currentCompany"
+                      value={form.currentCompany}
+                      error={!!error.currentCompany}
+                      helperText={error.currentCompany}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Total Experience (Years)"
+                      name="totalExperience"
+                      type="number"
+                      value={form.totalExperience}
+                      error={!!error.totalExperience}
+                      helperText={error.totalExperience}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Current CTC"
+                      name="currentCTC"
+                      type="number"
+                      value={form.currentCTC}
+                      error={!!error.currentCTC}
+                      helperText={error.currentCTC}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Expected CTC"
+                      name="expectedCTC"
+                      type="number"
+                      value={form.expectedCTC}
+                      error={!!error.expectedCTC}
+                      helperText={error.expectedCTC}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Notice Period (Days)"
+                      name="noticePeriodDays"
+                      type="number"
+                      value={form.noticePeriodDays}
+                      error={!!error.noticePeriodDays}
+                      helperText={error.noticePeriodDays}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Source"
+                      name="source"
+                      value={form.source}
+                      error={!!error.source}
+                      helperText={error.source}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Grid>
+                </Grid>
+              )}
+
+              {/* STEP 4 */}
+              {activeStep === 3 && (
+                <>
+                  <Button variant="outlined" component="label">
+                    Upload Resume
+                    <input
+                      hidden
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={(e) => setResumeFile(e.target.files[0])}
+                    />
+                  </Button>
+
+                  {error.resumeFile && (
+                    <Typography color="error" mt={2}>
+                      {error.resumeFile}
+                    </Typography>
+                  )}
+
+                  <Box mt={4}>
+                    <TextField
+                      label="LinkedIn URL"
+                      name="linkedInUrl"
+                      value={form.linkedInUrl}
+                      error={!!error.linkedInUrl}
+                      helperText={error.linkedInUrl}
+                      fullWidth
+                      required
+                      onChange={handleChange}
+                    />
+                  </Box>
+
+                  <Box mt={4}>
+                    <TextField
+                      label="Portfolio / GitHub URL (Optional)"
+                      name="portfolioUrl"
+                      value={form.portfolioUrl}
+                      fullWidth
+                      onChange={handleChange}
+                    />
+                  </Box>
+                </>
+              )}
+
+              {activeStep === 4 && (
+                <>
+                  <Typography mb={3}>
+                    I certify that all information provided is true and
+                    complete. I authorize the company to verify my credentials
+                    and background.
+                  </Typography>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={agree}
+                        onChange={(e) => setAgree(e.target.checked)}
+                      />
+                    }
+                    label="I agree to the terms and privacy policy"
+                  />
+                </>
+              )}
+            </Box>
+
+            {/* ACTION BUTTONS */}
+            <Box mt={6} display="flex" justifyContent="space-between">
+              {activeStep > 0 && <Button onClick={handleBack}>Back</Button>}
+
+              {activeStep < steps.length - 1 ? (
+                <Button variant="contained" onClick={handleNext}>
+                  Next
+                </Button>
+              ) : (
+                <Button variant="contained" onClick={handleSubmit}>
+                  Submit Application
+                </Button>
+              )}
+            </Box>
+          </>
+        )}
+        <Snackbar
+          open={toast.open}
+          autoHideDuration={3000}
           onClose={() => setToast({ ...toast, open: false })}
-          severity={toast.severity}
-          variant="filled"
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          {toast.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <Alert
+            onClose={() => setToast({ ...toast, open: false })}
+            severity={toast.severity}
+            variant="filled"
+          >
+            {toast.message}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </div>
   );
 }
