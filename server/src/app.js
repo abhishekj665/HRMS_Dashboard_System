@@ -27,11 +27,17 @@ const allowedOrigins = [
   "http://localhost:5173",
   env.client_url?.trim(),
   env.domain_url?.trim(),
+  env.custom_domain?.trim(),
 ];
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
