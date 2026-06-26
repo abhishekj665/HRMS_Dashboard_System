@@ -20,6 +20,7 @@ const io = new Server(server, {
     origin: [
       env.client_url?.trim(),
       env.domain_url?.trim(),
+      env.custom_domain?.trim(),
       "http://localhost:5173",
     ],
     credentials: true,
