@@ -41,7 +41,6 @@ const paymentSuccess = async (orderId) => {
 
     payment.status = "captured";
     await payment.save({ transaction: transaction });
-
     const organization = await Organization.findOne({
       where: { ownerId: payment.userId },
     });
@@ -71,6 +70,7 @@ const paymentSuccess = async (orderId) => {
         tenantId: organization.id,
         isActive: true,
       },
+      order: [["createdAt", "DESC"]],
     });
 
     if (existingSubscription) {
