@@ -6,7 +6,7 @@ export const registerOrganization = async (organizationData) => {
     const response = await API.post("/organization/register", organizationData, {
       headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
     });
-    return response.data;
+    return response?.data;
   } catch (err) {
     return {
       success: false,

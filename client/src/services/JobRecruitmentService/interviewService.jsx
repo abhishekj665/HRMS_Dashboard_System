@@ -4,7 +4,7 @@ export const getInterviewers = async () => {
   try {
     const response = await API.get("/recruitment/interview/interviewers");
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -21,7 +21,7 @@ export const assignInterview = async (data) => {
   try {
     const response = await API.post("/recruitment/interview/assign", data);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -40,7 +40,7 @@ export const getManagerInterviews = async (query) => {
       params: query,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -56,8 +56,7 @@ export const getManagerInterviews = async (query) => {
 export const confirmInterview = async (id) => {
   try {
     const response = await API.patch(`/recruitment/interview/confirm/${id}`);
-    console.log(response);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -76,13 +75,13 @@ export const declineInterview = async (id, remark) => {
       `/recruitment/interview/decline/${id}`,
       remark,
     );
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
       message:
-        error.response.data.message || error.message || "Something went wrong",
-      status: error.response.status || 500,
+        error.response?.data?.message || error.message || "Something went wrong",
+      status: error.response?.status || 500,
     };
   }
 };
@@ -90,13 +89,13 @@ export const declineInterview = async (id, remark) => {
 export const requestReschedule = async (id, data) => {
   try {
     const response = await API.patch(`/recruitment/interview/reschedule/${id}`, data);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
       message:
-        error.response.data.message || error.message || "Something went wrong",
-      status: error.response.status || 500,
+        error.response?.data?.message || error.message || "Something went wrong",
+      status: error.response?.status || 500,
     };
   }
 };
@@ -104,13 +103,13 @@ export const requestReschedule = async (id, data) => {
 export const getActiveInterview = async (id) => {
   try {
     const response = await API.get(`/recruitment/interview/active/${id}`);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
       message:
-        error.response.data.message || error.message || "Something went wrong",
-      status: error.response.status || 500,
+        error.response?.data?.message || error.message || "Something went wrong",
+      status: error.response?.status || 500,
     };
   }
 };

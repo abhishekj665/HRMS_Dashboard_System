@@ -243,20 +243,34 @@ export const registerUserService = async ({ data }, adminUser) => {
   }
 };
 
-export const getIPService = async (adminUser) => {
+export const getIPService = async (page, limits, adminUser) => {
   try {
-    const ips = await UserIP.findAll({
-      where: { tenantId: requireTenantId(adminUser) },
-      attributes: [
-        [sequelize.fn("DISTINCT", sequelize.col("ipAddress")), "ipAddress"],
-        "isBlocked",
-        "failedLogInAttempt",
-      ],
-      raw: true,
-    });
+    const { limit, offset } = getPagination(page, limits);
+    const where = { tenantId: requireTenantId(adminUser) };
+
+    const [rows, total] = await Promise.all([
+      UserIP.findAll({
+        where,
+        attributes: [
+          "ipAddress",
+          [sequelize.fn("MAX", sequelize.col("isBlocked")), "isBlocked"],
+          [
+            sequelize.fn("MAX", sequelize.col("failedLogInAttempt")),
+            "failedLogInAttempt",
+          ],
+        ],
+        group: ["ipAddress"],
+        order: [["ipAddress", "ASC"]],
+        raw: true,
+        offset,
+        limit,
+      }),
+      UserIP.count({ where, distinct: true, col: "ipAddress" }),
+    ]);
+
     return {
       success: true,
-      data: ips,
+      data: { rows, total },
       message: "IPs fetched successfully",
     };
   } catch (error) {

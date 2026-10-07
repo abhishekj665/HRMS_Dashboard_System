@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
-  
+  Typography,
 } from "@mui/material";
 
 import { Close } from "@mui/icons-material";
@@ -99,9 +99,9 @@ const ExpensesPage = () => {
 
   return (
     <div className="p-2">
-      <h1 className="text-2xl font-semibold mb-4">Expense Requests</h1>
+      <Typography variant="h5">Expense Requests</Typography>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ marginTop: "20px" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

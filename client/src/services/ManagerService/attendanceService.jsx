@@ -3,8 +3,8 @@ import { API } from "../AuthService/authService";
 export const getAllAttendanceData = async (filters = {}) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const res = await API.get(`/manager/attendance/?${params}`);
-    return res.data;
+    const response = await API.get(`/manager/attendance/?${params}`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -16,8 +16,8 @@ export const getAllAttendanceData = async (filters = {}) => {
 export const getAttendanceData = async (filters = {}) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const res = await API.get(`/manager/attendance/me/?${params}`);
-    return res.data;
+    const response = await API.get(`/manager/attendance/me/?${params}`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -28,9 +28,9 @@ export const getAttendanceData = async (filters = {}) => {
 
 export const approveAttendance = async (id) => {
   try {
-    let response = await API.patch(`/manager/attendance/approve/${id}`);
+    const response = await API.patch(`/manager/attendance/approve/${id}`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -44,11 +44,11 @@ export const approveAttendance = async (id) => {
 
 export const rejectAttendance = async (id, remark) => {
   try {
-    let response = await API.patch(`/manager/attendance/reject/${id}`, {
+    const response = await API.patch(`/manager/attendance/reject/${id}`, {
       remark,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -62,11 +62,11 @@ export const rejectAttendance = async (id, remark) => {
 
 export const bulkApproveAttendance = async (ids) => {
   try {
-    let response = await API.patch(`/manager/attendance/bulk-approve`, {
+    const response = await API.patch(`/manager/attendance/bulk-approve`, {
       ids,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -80,12 +80,12 @@ export const bulkApproveAttendance = async (ids) => {
 
 export const bulkRejectAttendance = async (ids, remark) => {
   try {
-    let response = await API.patch(`/manager/attendance/bulk-reject`, {
+    const response = await API.patch(`/manager/attendance/bulk-reject`, {
       ids,
       remark,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

@@ -6,7 +6,7 @@ export const generateOffer = async (applicationId, offerData) => {
       `/recruitment/offer/generate/${applicationId}`,
       offerData,
     );
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -22,7 +22,7 @@ export const generateOffer = async (applicationId, offerData) => {
 export const validateOfferToken = async (token) => {
   try {
     const response = await publicAPI.post(`/recruitment/offer/accept/${token}`);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

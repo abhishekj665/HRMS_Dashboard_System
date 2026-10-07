@@ -85,37 +85,89 @@ API.interceptors.response.use(
 );
 
 export const login = async (userData) => {
-  const response = await API.post("/auth/login", userData);
+  try {
+    const response = await API.post("/auth/login", userData);
 
-  return response.data;
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const signup = async (userData) => {
-  const response = await API.post("/auth/signup", userData);
-  return response.data;
+  try {
+    const response = await API.post("/auth/signup", userData);
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const verify = async (data) => {
-  const response = await API.post("/auth/verify", data);
-  return response.data;
+  try {
+    const response = await API.post("/auth/verify", data);
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const logOut = async () => {
-  const response = await API.post("/auth/logout");
-  return response.data;
+  try {
+    const response = await API.post("/auth/logout");
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const forgotPassword = async (email) => {
-  const response = await publicAPI.post("/auth/forgot_password", { email });
-  return response.data;
+  try {
+    const response = await publicAPI.post("/auth/forgot_password", { email });
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const resendOtp = async (email, purpose = "FORGOT_PASSWORD") => {
-  const response = await publicAPI.post("/auth/resend_otp", { email, purpose });
-  return response.data;
+  try {
+    const response = await publicAPI.post("/auth/resend_otp", {
+      email,
+      purpose,
+    });
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };
 
 export const resetPassword = async (payload) => {
-  const response = await publicAPI.post("/auth/reset_password", payload);
-  return response.data;
+  try {
+    const response = await publicAPI.post("/auth/reset_password", payload);
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
 };

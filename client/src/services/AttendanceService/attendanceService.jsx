@@ -51,10 +51,10 @@ export const punchOut = async (data) => {
 
 export const getTodayAttendance = async () => {
   try {
-    const { data } = await API.get("/attendance/today", {
+    const response = await API.get("/attendance/today", {
       skipGlobalLoading: true,
     });
-    return data;
+    return response.data;
   } catch (e) {
     return {
       success: false,
@@ -66,10 +66,10 @@ export const getTodayAttendance = async () => {
 export const getAttendanceByDate = async (filters = {}) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const { data } = await API.get(`/attendance/by-date?${params}`, {
+    const response = await API.get(`/attendance/by-date?${params}`, {
       skipGlobalLoading: true,
     });
-    return data;
+    return response.data;
   } catch (e) {
     return {
       success: false,
@@ -80,10 +80,9 @@ export const getAttendanceByDate = async (filters = {}) => {
 
 export const registerAttendancePolicy = async (data) => {
   try {
-    let response = await API.post("/attendance-policy", {
+    const response = await API.post("/attendance-policy", {
       data: data,
     });
-    console.log(response);
     return response.data;
   } catch (error) {
     return {
@@ -95,10 +94,9 @@ export const registerAttendancePolicy = async (data) => {
 
 export const updateAttendancePolicy = async (data, id) => {
   try {
-    let response = await API.put(`/attendance-policy/${id}`, {
+    const response = await API.put(`/attendance-policy/${id}`, {
       data: data,
     });
-    console.log(response);
     return response.data;
   } catch (error) {
     return {
@@ -110,7 +108,7 @@ export const updateAttendancePolicy = async (data, id) => {
 
 export const getAttendancePolicy = async (data) => {
   try {
-    let response = await API.get("/attendance-policy", {
+    const response = await API.get("/attendance-policy", {
       data: data,
     });
 
@@ -125,7 +123,7 @@ export const getAttendancePolicy = async (data) => {
 
 export const getAttendancePolicyList = async (data) => {
   try {
-    let response = await API.get("/attendance-policy/all", {
+    const response = await API.get("/attendance-policy/all", {
       data: data,
     });
 
@@ -140,7 +138,7 @@ export const getAttendancePolicyList = async (data) => {
 
 export const deleteAttendancePolicy = async (id) => {
   try {
-    let response = await API.delete(`/attendance-policy/${id}`);
+    const response = await API.delete(`/attendance-policy/${id}`);
 
     return response.data;
   } catch (error) {

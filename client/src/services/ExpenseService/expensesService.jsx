@@ -3,7 +3,7 @@ import { API } from "../AuthService/authService";
 export const getExpenses = async () => {
   try {
     const response = await API.get("/users/expenses");
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -21,7 +21,7 @@ export const createExpense = async (formData) => {
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

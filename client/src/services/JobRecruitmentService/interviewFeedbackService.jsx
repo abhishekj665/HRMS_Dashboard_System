@@ -6,7 +6,7 @@ export const submitInterviewFeedback = async (interviewId, feedbackData) => {
       `/recruitment/interview-feedback/${interviewId}`,
       feedbackData,
     );
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -24,13 +24,13 @@ export const getInterviewFeedback = async (interviewId) => {
     const response = await API.get(
       `/recruitment/interview-feedback/${interviewId}`,
     );
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
       message:
-        response.data?.message || error.message || "Something went wrong",
-      status: response.status || 500,
+        error.response?.data?.message || error.message || "Something went wrong",
+      status: error.response?.status || 500,
     };
   }
 };

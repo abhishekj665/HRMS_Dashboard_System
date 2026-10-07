@@ -2,9 +2,9 @@ import { API } from "../AuthService/authService";
 
 export const getAllAssets = async () => {
   try {
-    let response = await API.get(`/manager/asset`);
+    const response = await API.get(`/manager/asset`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -22,8 +22,8 @@ export const createAssetRequest = async (data) => {
       title: data.title,
     };
 
-    let response = await API.post("/manager/asset/request", payload);
-    return response.data;
+    const response = await API.post("/manager/asset/request", payload);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -37,9 +37,9 @@ export const createAssetRequest = async (data) => {
 
 export const getAssetInfo = async () => {
   try {
-    let response = await API.get("/manager/assets");
+    const response = await API.get("/manager/assets");
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

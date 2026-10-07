@@ -2,8 +2,8 @@ import { API } from "../AuthService/authService";
 
 export const getAllExpenses = async () => {
   try {
-    let response = await API.get("/manager/expense");
-    return response.data;
+    const response = await API.get("/manager/expense");
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -14,10 +14,10 @@ export const getAllExpenses = async () => {
 
 export const approveExpense = async (id, data) => {
   try {
-    let response = await API.put(`/manager/expense/approve/${id}`, {
+    const response = await API.put(`/manager/expense/approve/${id}`, {
       data: data,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -28,11 +28,11 @@ export const approveExpense = async (id, data) => {
 
 export const rejectExpense = async (id, adminRemark) => {
   try {
-    let response = await API.put(`/manager/expense/reject/${id}`, {
+    const response = await API.put(`/manager/expense/reject/${id}`, {
       adminRemark: adminRemark,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

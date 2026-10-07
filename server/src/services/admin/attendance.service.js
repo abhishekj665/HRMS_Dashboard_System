@@ -12,23 +12,24 @@ import {
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
 import { sequelize } from "../../config/db.js";
-import {
-  getScopedWhere,
-  requireTenantId,
-} from "../../utils/tenant.utils.js";
+import { getScopedWhere, requireTenantId } from "../../utils/tenant.utils.js";
 
 export const getAttendance = async (filters = {}, adminUser) => {
   try {
     const tenantId = requireTenantId(adminUser);
-    const { status, role, requestedTo, statusGroup, page = 1, limit = 10 } = filters;
+    const { role, requestedTo, statusGroup, page = 1, limit = 10 } = filters;
+
+    const status = filters.status?.toUpperCase() || null;
 
     const where = { tenantId };
-    if (statusGroup === "pending") {
+    if (status) {
+      where.status = status;
+    } else if (statusGroup === "pending") {
       where.status = "PENDING";
     } else if (statusGroup === "nonPending") {
-      where.status = { [Op.in]: ["APPROVED", "REJECTED"] };
-    } else if (status) {
-      where.status = status.toUpperCase();
+      where.status = {
+        [Op.in]: ["APPROVED", "REJECTED"],
+      };
     }
     if (requestedTo) where.requestedTo = requestedTo;
 
@@ -243,7 +244,12 @@ export const bulkAttendanceRequestApprove = async ({ ids }, adminUser) => {
     }
 
     const requests = await AttendanceRequest.findAll({
-      where: { id: ids, status: "PENDING", tenantId, requestedTo: adminUser.id },
+      where: {
+        id: ids,
+        status: "PENDING",
+        tenantId,
+        requestedTo: adminUser.id,
+      },
       include: [
         {
           model: Attendance,
@@ -274,7 +280,12 @@ export const bulkAttendanceRequestApprove = async ({ ids }, adminUser) => {
         reviewedBy: adminUser.id,
       },
       {
-        where: { id: ids, status: "PENDING", tenantId, requestedTo: adminUser.id },
+        where: {
+          id: ids,
+          status: "PENDING",
+          tenantId,
+          requestedTo: adminUser.id,
+        },
       },
       { transaction },
     );
@@ -304,7 +315,10 @@ export const bulkAttendanceRequestApprove = async ({ ids }, adminUser) => {
   }
 };
 
-export const bulkAttendanceRequestReject = async ({ ids, remark }, adminUser) => {
+export const bulkAttendanceRequestReject = async (
+  { ids, remark },
+  adminUser,
+) => {
   try {
     const tenantId = requireTenantId(adminUser);
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -319,7 +333,12 @@ export const bulkAttendanceRequestReject = async ({ ids, remark }, adminUser) =>
     }
 
     const requests = await AttendanceRequest.findAll({
-      where: { id: ids, status: "PENDING", tenantId, requestedTo: adminUser.id },
+      where: {
+        id: ids,
+        status: "PENDING",
+        tenantId,
+        requestedTo: adminUser.id,
+      },
       include: [
         {
           model: Attendance,
@@ -351,7 +370,12 @@ export const bulkAttendanceRequestReject = async ({ ids, remark }, adminUser) =>
         reviewedBy: adminUser.id,
       },
       {
-        where: { id: ids, status: "PENDING", tenantId, requestedTo: adminUser.id },
+        where: {
+          id: ids,
+          status: "PENDING",
+          tenantId,
+          requestedTo: adminUser.id,
+        },
       },
     );
 

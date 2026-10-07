@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getAllExpenses = async () => {
   try {
-    let response = await API.get("/admin/expense");
+    const response = await API.get("/admin/expense");
     return response.data;
   } catch (error) {
     return {

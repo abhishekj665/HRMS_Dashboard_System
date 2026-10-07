@@ -3,7 +3,7 @@ import { publicAPI } from "../AuthService/authService";
 export const getAllJobs = async () => {
   try {
     const response = await publicAPI.get("/recruitment/jobs");
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -15,7 +15,7 @@ export const getAllJobs = async () => {
 export const getJobDetail = async (orgSlug, slug) => {
   try {
     const response = await publicAPI.get(`/recruitment/job/${orgSlug}/${slug}`);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

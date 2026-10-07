@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import React from "react";
 
 import {
   Button,
@@ -13,6 +12,7 @@ import {
   TableRow,
   Paper,
   Chip,
+  Typography,
 } from "@mui/material";
 import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentationRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -172,8 +172,10 @@ const AdminAsset = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto mt-10 px-2 ">
-      <h1 className="text-2xl font-semibold mb-6">Asset Management</h1>
+    <div className="max-w-full mx-auto mt-5 px-2 ">
+      <Typography variant="h5" style={{ marginBottom: "8px" }}>
+        Asset Management
+      </Typography>
 
       <Button onClick={handleCreateClick}>Create Asset</Button>
 

@@ -3,7 +3,7 @@ import { API } from "../AuthService/authService";
 export const getCurrentSubscription = async () => {
   try {
     const response = await API.get("/subscription");
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

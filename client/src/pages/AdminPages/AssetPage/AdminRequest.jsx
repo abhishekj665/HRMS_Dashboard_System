@@ -8,6 +8,7 @@ import {
   Paper,
   Button,
   Chip,
+  Typography,
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
@@ -103,9 +104,9 @@ const AdminRequest = () => {
 
   return (
     <div className="p-2">
-      <h1 className="text-2xl w-5 font-semibold mb-4">Asset Requests</h1>
+      <Typography variant="h5">Asset Requests</Typography>
 
-      <TableContainer  component={Paper}>
+      <TableContainer style={{ marginTop: "20px" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
