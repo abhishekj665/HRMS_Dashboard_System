@@ -7,7 +7,7 @@ export const registerJobApplication = async (orgSlug, slug, data) => {
       data,
     );
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -26,7 +26,7 @@ export const getApplications = async (query) => {
       params: query,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -43,7 +43,7 @@ export const getApplicationById = async (id) => {
   try {
     const response = await API.get(`/recruitment/application/${id}`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -62,7 +62,7 @@ export const shortlistApplication = async (id) => {
       `/recruitment/application/shortlist/${id}`,
     );
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -79,7 +79,7 @@ export const rejectApplication = async (id) => {
   try {
     const response = await API.patch(`/recruitment/application/reject/${id}`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

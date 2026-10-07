@@ -18,8 +18,6 @@ export const registerUser = async (req, res, next) => {
 
 export const blockUserController = async (req, res, next) => {
   try {
-    
-
     const result = await userServices.blockUserService(req.params.id, req.user);
 
     if (!result.success) {
@@ -101,7 +99,11 @@ export const getUsers = async (req, res, next) => {
 
 export const getIPs = async (req, res, next) => {
   try {
-    const result = await userServices.getIPService(req.user);
+    let page = parseInt(req.query.page, 10) || 1;
+    let limit = parseInt(req.query.limit, 10) || 5;
+    const result = await userServices.getIPService(page, limit,
+      req.user,
+    );
     if (result.success) {
       return successResponse(res, result.data, result.message);
     } else {

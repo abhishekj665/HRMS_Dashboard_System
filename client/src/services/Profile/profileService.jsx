@@ -3,7 +3,7 @@ import { API } from "../AuthService/authService";
 export const getMyProfile = async () => {
   try {
     const response = await API.get("/users/profile", { withCredentials: true });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -15,7 +15,7 @@ export const getMyProfile = async () => {
 export const updateMyProfile = async (data) => {
   try {
     const response = await API.put("/users/profile", data, { withCredentials: true });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -30,7 +30,7 @@ export const uploadProfileDocuments = async (formData) => {
       withCredentials: true,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

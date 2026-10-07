@@ -2,8 +2,8 @@ import { API } from "../AuthService/authService";
 
 export const getManagers = async () => {
   try {
-    const { data } = await API.get("/admin/manager");
-    return data;
+    const response = await API.get("/admin/manager");
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -13,8 +13,8 @@ export const getManagers = async () => {
 };
 export const assignManager = async (payload) => {
   try {
-    const { data } = await API.patch("/admin/manager/assign", payload);
-    return data;
+    const response = await API.patch("/admin/manager/assign", payload);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -25,9 +25,9 @@ export const assignManager = async (payload) => {
 
 export const getManagersWithUsers = async () => {
   try {
-    let response = await API.get("/admin/manager/users");
+    const response = await API.get("/admin/manager/users");
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -38,11 +38,11 @@ export const getManagersWithUsers = async () => {
 
 export const registerNewManager = async (data) => {
   try {
-    let response = await API.post("/admin/manager/register", {
+    const response = await API.post("/admin/manager/register", {
       data: data,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

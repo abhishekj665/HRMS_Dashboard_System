@@ -2,10 +2,10 @@ import { API } from "../AuthService/authService";
 
 export const registerUser = async (data) => {
   try {
-    let response = await API.post("/manager/user/register", {
+    const response = await API.post("/manager/user/register", {
       data: data,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -21,7 +21,7 @@ export const getUser = async (page, limit) => {
     );
     return {
       success: true,
-      data: response.data,
+      data: response?.data,
     };
   } catch (error) {
     return {

@@ -25,6 +25,7 @@ import {
   TableRow,
   Paper,
   Autocomplete,
+  Typography,
 } from "@mui/material";
 
 export default function AdminManagersPage() {
@@ -172,7 +173,8 @@ export default function AdminManagersPage() {
   };
 
   const getDisplayName = (user) => {
-    const fullName = `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
+    const fullName =
+      `${user?.first_name || ""} ${user?.last_name || ""}`.trim();
     if (fullName) return fullName;
     return user?.email?.split("@")[0] || "Unknown User";
   };
@@ -199,7 +201,7 @@ export default function AdminManagersPage() {
     <div className="p-2 overflow-y-auto">
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-semibold">Manager Control</h1>
+          <Typography variant="h5">Manager - Employee Assignment</Typography>
 
           <Button
             className="text-xl"
@@ -290,7 +292,9 @@ export default function AdminManagersPage() {
                               onScroll={handleUserDropdownScroll}
                             >
                               {filteredUsers.map((u) => {
-                                const checked = selectedUsers[m.id]?.includes(u.id);
+                                const checked = selectedUsers[m.id]?.includes(
+                                  u.id,
+                                );
 
                                 return (
                                   <MenuItem
@@ -302,7 +306,9 @@ export default function AdminManagersPage() {
                                         return {
                                           ...prev,
                                           [m.id]: checked
-                                            ? prevSelected.filter((id) => id !== u.id)
+                                            ? prevSelected.filter(
+                                                (id) => id !== u.id,
+                                              )
                                             : [...prevSelected, u.id],
                                         };
                                       })
@@ -319,7 +325,9 @@ export default function AdminManagersPage() {
                                 );
                               })}
 
-                              {loadingUsers && <MenuItem disabled>Loading...</MenuItem>}
+                              {loadingUsers && (
+                                <MenuItem disabled>Loading...</MenuItem>
+                              )}
 
                               {!loadingUsers && filteredUsers.length === 0 && (
                                 <MenuItem disabled>No users found</MenuItem>

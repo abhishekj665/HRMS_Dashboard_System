@@ -100,7 +100,7 @@ export default function AdminJobPostsPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Typography variant="h5" fontWeight={600} mb={4}>
+      <Typography variant="h5"  mb={4}>
         Job Posts
       </Typography>
 

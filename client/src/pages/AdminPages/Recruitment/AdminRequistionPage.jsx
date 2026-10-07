@@ -126,7 +126,7 @@ export default function AdminRequisitionPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
-      <Typography variant="h5" fontWeight={600} mb={4}>
+      <Typography variant="h5" mb={4}>
         Requisition Requests
       </Typography>
 
@@ -148,7 +148,7 @@ export default function AdminRequisitionPage() {
         <Typography>Location</Typography>
         <Typography>Status</Typography>
         <Typography>Created By</Typography>
-        <Box /> 
+        <Box />
       </Box>
 
       {requisitions.map((req, index) => (

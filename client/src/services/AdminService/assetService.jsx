@@ -2,9 +2,8 @@ import { API } from "../AuthService/authService";
 
 export const getAllAssets = async () => {
   try {
-    let response = await API.get(`/admin/asset`);
-
-    return response.data;
+    const  response = await API.get(`/admin/asset`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -15,9 +14,9 @@ export const getAllAssets = async () => {
 
 export const createAsset = async (data) => {
   try {
-    let response = await API.post(`/admin/asset`, data);
+    const response = await API.post(`/admin/asset`, data);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -28,9 +27,9 @@ export const createAsset = async (data) => {
 
 export const deleteAsset = async (id) => {
   try {
-    let response = await API.delete(`/admin/asset/${id}`);
+    const response = await API.delete(`/admin/asset/${id}`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -41,8 +40,8 @@ export const deleteAsset = async (id) => {
 
 export const updateAsset = async (id, data) => {
   try {
-    const res = await API.put(`/admin/asset/${id}`, data);
-    return res.data;
+    const response = await API.put(`/admin/asset/${id}`, data);
+    return response?.data;
   } catch (error) {
     return {
       success: false,

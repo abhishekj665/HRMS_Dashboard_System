@@ -2,10 +2,12 @@ import { API } from "../AuthService/authService";
 
 export const createAccount = async (data) => {
   try {
-    let response = await API.post("/account", data);
-
-    return response.data;
+    const response = await API.post("/account", data);
+    return response?.data;
   } catch (error) {
-    return;
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
   }
 };

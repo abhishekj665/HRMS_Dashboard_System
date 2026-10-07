@@ -5,7 +5,7 @@ export const getProfile = async () => {
     const response = await API.get("/users/info/profile", {
       withCredentials: true,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -26,8 +26,8 @@ export const createAssetRequest = async (data) => {
       title: data.title,
     };
 
-    let response = await API.post("/users/asset/request", payload);
-    return response.data;
+    const response = await API.post("/users/asset/request", payload);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -41,8 +41,8 @@ export const createAssetRequest = async (data) => {
 
 export const getAssetRequest = async () => {
   try {
-    let response = await API.get("/users/asset/request");
-    return response.data;
+    const response = await API.get("/users/asset/request");
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -56,9 +56,9 @@ export const getAssetRequest = async () => {
 
 export const getAssetInfo = async () => {
   try {
-    let response = await API.get("/users/assets");
+    const response = await API.get("/users/assets");
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -73,8 +73,8 @@ export const getAssetInfo = async () => {
 export const getAllAttendanceData = async (filters = {}) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const res = await API.get(`/users/attendance/?${params}`);
-    return res.data;
+    const response = await API.get(`/users/attendance/?${params}`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -85,8 +85,8 @@ export const getAllAttendanceData = async (filters = {}) => {
 
 export const getLeaveRequests = async () => {
   try {
-    const res = await API.get(`/users/lms/leave/requests`);
-    return res.data;
+    const response = await API.get(`/users/lms/leave/requests`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -97,8 +97,8 @@ export const getLeaveRequests = async () => {
 
 export const getLeaveBalance = async () => {
   try {
-    const res = await API.get(`/users/lms/leave/leave-balance`);
-    return res.data;
+    const response = await API.get(`/users/lms/leave/leave-balance`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -110,8 +110,8 @@ export const getLeaveBalance = async () => {
 export const registerLeaveRequest = async (data) => {
   try {
     
-    const res = await API.post("/users/lms/leave/apply", data);
-    return res.data;
+    const response = await API.post("/users/lms/leave/apply", data);
+    return response?.data;
   } catch (error) {
     return {
       success: false,

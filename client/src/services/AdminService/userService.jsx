@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const registerUser = async (data) => {
   try {
-    let response = await API.post("/admin/user/register", {
+    const response = await API.post("/admin/user/register", {
       data: data,
     });
     return response.data;
@@ -44,7 +44,7 @@ export const unBlockUser = async (id) => {
   try {
     const response = await API.put(`/admin/unblock/${id}`);
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

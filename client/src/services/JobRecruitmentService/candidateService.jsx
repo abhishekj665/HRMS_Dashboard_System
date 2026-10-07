@@ -5,8 +5,7 @@ export const getCandidate = async (email, orgSlug) => {
     const response = await publicAPI.get("/recruitment/candidate/get-by-email", {
       params: { email, orgSlug },
     });
-    console.log("Candidate response:", response.data);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

@@ -5,7 +5,7 @@ export const getAllUserLeaveRequests = async (filters = {}) => {
     const response = await API.get("/manager/lms/leave/requests", {
       params: filters,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -17,7 +17,7 @@ export const getAllUserLeaveRequests = async (filters = {}) => {
 export const approveLeaveRequest = async (id) => {
   try {
     const response = await API.patch(`/manager/lms/leave/approve/${id}`);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -31,7 +31,7 @@ export const rejectLeaveRequest = async (id, remark) => {
     const response = await API.patch(`/manager/lms/leave/reject/${id}`, {
       remark,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -43,7 +43,7 @@ export const rejectLeaveRequest = async (id, remark) => {
 export const getLeaveBalance = async () => {
   try {
     const response = await API.get("/manager/lms/leave/leave-balance");
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -54,7 +54,6 @@ export const getLeaveBalance = async () => {
 
 export const registerLeaveRequest = async (data) => {
   try {
-    console.log(data);
     const res = await API.post("/manager/lms/leave/apply", data);
     return res.data;
   } catch (error) {
@@ -70,7 +69,7 @@ export const getLeaveRequests = async (filters = {}) => {
     const response = await API.get("/manager/lms/leave/me", {
       params: filters,
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

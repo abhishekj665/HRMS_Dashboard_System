@@ -2,9 +2,9 @@ import { API } from "../AuthService/authService";
 
 export const getRequestData = async () => {
   try {
-    let response = await API.get("/manager/request");
+    const response = await API.get("/manager/request");
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -16,7 +16,7 @@ export const getRequestData = async () => {
 export const approveRequest = async (id) => {
   try {
     const response = await API.put(`/manager/request/approve/${id}`);
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,
@@ -32,7 +32,7 @@ export const rejectRequest = async (id, remark) => {
       remark: remark,
     });
 
-    return response.data;
+    return response?.data;
   } catch (error) {
     return {
       success: false,

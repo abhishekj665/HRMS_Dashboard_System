@@ -26,10 +26,10 @@ export const unBlockIP = async (ip) => {
   }
 };
 
-export const getAllIps = async () => {
+export const getAllIps = async (page, limit) => {
   try {
-    let response = await API.get("/admin/ips");
-    return response.data;
+    const response = await API.get(`/admin/ips/?page=${page}&limit=${limit}`);
+    return response?.data;
   } catch (error) {
     return {
       success: false,

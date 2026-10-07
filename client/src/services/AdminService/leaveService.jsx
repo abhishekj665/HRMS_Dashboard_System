@@ -2,10 +2,10 @@ import { API } from "../AuthService/authService";
 
 export const getAllManagerLeaveRequests = async (filters = {}) => {
   try {
-    const res = await API.get(`/admin/leave/requests`, {
+    const response = await API.get(`/admin/leave/requests`, {
       params: filters,
     });
-    return res.data;
+    return response.data;
   } catch (error) {
     return {
       success: false,
