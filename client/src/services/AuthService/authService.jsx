@@ -87,7 +87,6 @@ API.interceptors.response.use(
 export const login = async (userData) => {
   try {
     const response = await API.post("/auth/login", userData);
-
     return response?.data;
   } catch (error) {
     return {

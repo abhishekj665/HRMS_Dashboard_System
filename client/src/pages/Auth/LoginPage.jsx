@@ -93,14 +93,15 @@ function LoginPage() {
         return;
       }
 
-      if (response.success) {
+      if (response?.success) {
         await handlePostLogin(response);
       } else {
-        toast.error(response.message);
+        toast.error(response?.message);
         resetData();
       }
     } catch (error) {
-      toast.error(error.message);
+      console.error("Login error:", error);
+      toast.error(error?.message);
       resetData();
     }
   };

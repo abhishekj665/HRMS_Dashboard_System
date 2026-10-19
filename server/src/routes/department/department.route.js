@@ -3,6 +3,7 @@ import {
   userAuth,
   refreshAuth,
 } from "../../middlewares/auth.middleware.js";
+import { isSubscribed } from "../../middlewares/subscription.middleware.js";
 import * as departmentController from "../../controllers/department/department.controller.js";
 
 import express from "express";
@@ -13,6 +14,7 @@ Router.post(
   "/",
   refreshAuth,
   adminAuth,
+  isSubscribed,
   departmentController.registerDepartment,
 );
 Router.get("/",userAuth, departmentController.getDepartments);
@@ -20,6 +22,7 @@ Router.get(
   "/:id",
   refreshAuth,
   adminAuth,
+  isSubscribed,
   departmentController.getDepartmentById,
 );
 
