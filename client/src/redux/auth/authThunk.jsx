@@ -9,8 +9,7 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await signup(userData);
-
-      return response.data;
+      return response.data || response;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
@@ -22,8 +21,9 @@ export const loginUser = createAsyncThunk(
   async (loginData, { rejectWithValue }) => {
     try {
       const response = await login(loginData);
-      return response.data;
+      return response?.data || response;
     } catch (error) {
+      console.log("Login error in thunk:", error.response?.data?.message || error.message);
       return rejectWithValue(error.response.data);
     }
   },
