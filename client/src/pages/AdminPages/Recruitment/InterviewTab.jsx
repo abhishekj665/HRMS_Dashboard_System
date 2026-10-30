@@ -42,7 +42,14 @@ export default function InterviewTab({
   const [activeInterview, setActiveInterview] = useState(null);
   const [checkingInterview, setCheckingInterview] = useState(true);
 
-  const ACTIVE_STATUSES = ["SCHEDULED", "ASSIGNED", "ACCEPTED", "RESCHEDULED"];
+  const ACTIVE_STATUSES = [
+    "SCHEDULED",
+    "PENDING_CONFIRMATION",
+    "ACCEPTED",
+    "RESCHEDULED",
+  ];
+
+  const PENDING_STATUSES = ["PENDING_CONFIRMATION", "ASSIGNED"];
 
   const isDeclined = activeInterview?.status === "DECLINED";
 
@@ -119,10 +126,24 @@ export default function InterviewTab({
   const isActive =
     activeInterview && ACTIVE_STATUSES.includes(activeInterview.status);
 
+  const isPending =
+    activeInterview && PENDING_STATUSES.includes(activeInterview.status);
+
+  const statusLabel = activeInterview?.status
+    ?.replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
   if (isActive) {
     return (
       <Card variant="outlined" sx={{ p: 3 }}>
-        <Typography variant="h6">Interview Already Scheduled</Typography>
+        <Typography variant="h6">Interview Scheduled</Typography>
+
+        {isPending && (
+          <Typography variant="body2" color="warning.main" mt={0.5}>
+            Waiting for the interviewer to confirm this interview.
+          </Typography>
+        )}
 
         <Stack spacing={2} mt={2}>
           <DetailRow label="Round" value={activeInterview.roundName} />
@@ -146,7 +167,15 @@ export default function InterviewTab({
             <DetailRow label="Meeting URL" value={activeInterview.meetingUrl} />
           )}
 
-          <Chip label={activeInterview.status} color="success" />
+          {activeInterview.mode === "OFFLINE" && (
+            <DetailRow label="Location" value={activeInterview.location} />
+          )}
+
+          <Chip
+            label={statusLabel}
+            color={isPending ? "warning" : "success"}
+            sx={{ width: "fit-content" }}
+          />
         </Stack>
       </Card>
     );

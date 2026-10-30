@@ -18,6 +18,10 @@ import { Snackbar, Alert } from "@mui/material";
 import { registerJobApplication } from "../../services/JobRecruitmentService/appllicationService";
 import { getCandidate } from "../../services/JobRecruitmentService/candidateService";
 import HomeIcon from "@mui/icons-material/Home";
+import { IconButton } from "@mui/material";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 
 const steps = [
   "Information",
@@ -141,6 +145,42 @@ export default function JobApplicationPage() {
         [name]: "",
       }));
     }
+  };
+
+  const handleResumeChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+    if (![".pdf", ".doc", ".docx"].includes(ext)) {
+      setToast({
+        open: true,
+        message: "Only PDF, DOC or DOCX files are allowed",
+        severity: "error",
+      });
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setToast({
+        open: true,
+        message: "File size must be under 5 MB",
+        severity: "error",
+      });
+      e.target.value = "";
+      return;
+    }
+
+    setResumeFile(file);
+    setError((prev) => ({ ...prev, resumeFile: "" }));
+    setToast({
+      open: true,
+      message: "Resume attached successfully",
+      severity: "success",
+    });
+
+    e.target.value = "";
   };
 
   const handleSubmit = async () => {
@@ -545,15 +585,58 @@ export default function JobApplicationPage() {
               {/* STEP 4 */}
               {activeStep === 3 && (
                 <>
-                  <Button variant="outlined" component="label">
-                    Upload Resume
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<UploadFileIcon />}
+                  >
+                    {resumeFile ? "Change Resume" : "Upload Resume"}
                     <input
                       hidden
                       type="file"
                       accept=".pdf,.doc,.docx"
-                      onChange={(e) => setResumeFile(e.target.files[0])}
+                      onChange={handleResumeChange}
                     />
                   </Button>
+
+                  {resumeFile && (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        p: 1.5,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        border: "1px solid #e6eaf2",
+                        borderRadius: 2,
+                        width: "fit-content",
+                        maxWidth: "100%",
+                      }}
+                    >
+                      <InsertDriveFileOutlinedIcon color="primary" />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" fontWeight={600} noWrap>
+                          {resumeFile.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {(resumeFile.size / 1024).toFixed(0)} KB
+                        </Typography>
+                      </Box>
+                      <IconButton
+                        size="small"
+                        onClick={() => setResumeFile(null)}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  )}
+
+                  {!resumeFile && form.resumeUrl && (
+                    <Typography variant="body2" color="text.secondary" mt={2}>
+                      Your previously uploaded resume will be used unless you
+                      upload a new one.
+                    </Typography>
+                  )}
 
                   {error.resumeFile && (
                     <Typography color="error" mt={2}>

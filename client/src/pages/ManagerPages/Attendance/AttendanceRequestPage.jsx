@@ -71,7 +71,9 @@ export default function AttendanceData() {
 
   const visibleRows = useMemo(() => {
     if (tab === 1) {
-      return rows.filter((r) => r.role === "employee" && r.status === "pending");
+      return rows.filter(
+        (r) => r.role === "employee" && r.status === "pending",
+      );
     }
 
     return rows.filter((r) => r.status !== "pending");
@@ -173,8 +175,6 @@ export default function AttendanceData() {
       toast.error(error.message);
     }
   };
-
-  
 
   const handleBulkApprove = async () => {
     if (!selectedIds.length) return toast.error("Select rows first");
@@ -334,11 +334,7 @@ export default function AttendanceData() {
             </FormControl>
           </Box>
 
-          <TableContainer
-            
-            component={Paper}
-            className="rounded-xl"
-          >
+          <TableContainer component={Paper} className="rounded-xl">
             {tab === 1 && selectedIds.length > 0 && (
               <Box className="flex gap-3 mb-3">
                 <Button
@@ -410,10 +406,7 @@ export default function AttendanceData() {
                     <TableCell>{row.requestDate}</TableCell>
 
                     <TableCell>
-                      <Chip
-                        label={row.email.split("@")[0]}
-                        size="small"
-                      />
+                      <Chip label={row.email.split("@")[0]} size="small" />
                     </TableCell>
 
                     <TableCell>{row.punchIn}</TableCell>
@@ -478,6 +471,9 @@ export default function AttendanceData() {
             <Box className="flex justify-end mt-4">
               <Pagination
                 count={Math.max(1, Math.ceil(total / limit))}
+                color="primary"
+                variant="outlined"
+                shape="rounded"
                 page={page}
                 onChange={(e, value) => setPage(value)}
               />
