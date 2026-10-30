@@ -8,9 +8,9 @@ import {
   EventNote,
   AssignmentTurnedIn,
   Assignment,
-  LogoutOutlined,
+  LogoutOutlined
 } from "@mui/icons-material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
+import HomeIcon from "@mui/icons-material/Home";
 import { EventAvailable } from "@mui/icons-material";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -71,7 +71,7 @@ export default function ManagerSidebar({ open, setOpen }) {
               onClick={() => setOpen(false)}
               className={linkClass}
             >
-              <DashboardIcon fontSize="small" /> Dashboard
+              <HomeIcon fontSize="small" /> Home
             </NavLink>
           </div>
         </div>

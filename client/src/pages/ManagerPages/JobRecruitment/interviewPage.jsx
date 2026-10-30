@@ -487,8 +487,10 @@ export default function ManagerInterviewsPage() {
               page={page}
               onPageChange={(e, newPage) => setPage(newPage)}
               rowsPerPage={rowsPerPage}
+              defaultRowsPerPage={5}
+              rowsPerPageOptions={[5, 10, 20]}
               onRowsPerPageChange={(e) => {
-                setRowsPerPage(parseInt(e.target.value, 10));
+                setRowsPerPage(parseInt(e.target?.value));
                 setPage(0);
               }}
             />

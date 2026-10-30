@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { useState } from "react";
 import HomeIcon from "@mui/icons-material/Home";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 
 export default function CareersPage() {
   const navigate = useNavigate();
@@ -121,18 +123,26 @@ export default function CareersPage() {
                 className="cursor-pointer border-b pb-8 hover:border-black transition"
               >
                 <div className="flex items-start gap-4">
-                  <span className="text-blue-600 text-xl mt-1">?</span>
+                  <span className="text-blue-600 text-xl mt-1"></span>
 
                   <div>
-                    <Typography className="text-sm text-gray-500 mb-2">
-                      {job?.requisition?.location} • {job?.requisition?.employmentType}
-                    </Typography>
-
                     <Typography
                       variant="h6"
                       className="font-medium hover:underline"
                     >
                       {job.title}
+                    </Typography>
+                    <Typography className="text-sm text-gray-500 mb-2">
+                      <LocationOnIcon
+                        fontSize="small"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      {job?.requisition?.location} |{" "}
+                      <WorkOutlineIcon
+                        fontSize="small"
+                        sx={{ verticalAlign: "middle", mr: 1 }}
+                      />
+                      {job?.requisition?.employmentType}
                     </Typography>
                   </div>
                 </div>

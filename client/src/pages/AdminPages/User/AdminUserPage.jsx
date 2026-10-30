@@ -31,12 +31,6 @@ import {
   getUser,
 } from "../../../services/AdminService/userService";
 
-const roleColor = (role) => {
-  if (role === "admin") return "error";
-  if (role === "manager") return "warning";
-  return "primary";
-};
-
 const AdminUserPage = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
@@ -58,20 +52,32 @@ const AdminUserPage = () => {
   });
 
   const fetchUsers = async (currentPage = page) => {
-    try {
-      const res = await getUser(currentPage, limit, search);
+  try {
+    const res = await getUser(currentPage, limit, search);
 
-      if (!res.success) {
-        toast.error(res.message || "Failed to fetch users");
+    if (!res.success) {
+      if (currentPage > 1) {
+        setPage(1); 
         return;
       }
-
-      setUsers(res.data.users);
-      setTotalPages(res.data.pagination.totalPages);
-    } catch (err) {
-      console.error(err);
+      toast.error(res.message || "Failed to fetch users");
+      return;
     }
-  };
+
+    const { users, pagination } = res.data;
+
+    if (currentPage > 1 && (users.length === 0 || currentPage > pagination.totalPages)) {
+      setPage(1);
+      return;
+    }
+
+    setUsers(users);
+    setTotalPages(Math.max(1, pagination.totalPages));
+  } catch (err) {
+    console.error(err);
+    if (currentPage > 1) setPage(1);
+  }
+};
 
   const handleBlock = async (id) => {
     if (!window.confirm("Are you sure you want to block this user?")) return;
@@ -149,10 +155,19 @@ const AdminUserPage = () => {
     }
   };
 
+  const setLimitHandler = (e) => {
+    const newLimit = parseInt(e.target.value, 10);
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   useEffect(() => {
-    fetchUsers(page);
+    fetchUsers();
+  }, [page, limit, search]);
+
+  useEffect(() => {
     fetchDepartments();
-  }, [page, limit, openCreateUser]);
+  }, []);
 
   return (
     <div className="max-w-full mx-auto mt-10 px-2">
@@ -203,7 +218,6 @@ const AdminUserPage = () => {
               setUserForm({ ...userForm, password: e.target.value })
             }
           />
-
           <Autocomplete
             size="small"
             options={departments}
@@ -250,7 +264,7 @@ const AdminUserPage = () => {
             <span className="text-sm text-gray-600">Limit:</span>
             <select
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              onChange={(e) => setLimitHandler(e)}
               className="border rounded-md px-2 py-1 text-sm"
             >
               <option value={2}>2</option>

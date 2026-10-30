@@ -53,6 +53,9 @@ export const assignInterview = async (data, userId) => {
   try {
     const interviewer = await User.findByPk(data.interviewerId);
 
+    if (!interviewer)
+      throw new ExpressError(STATUS.NOT_FOUND, "Interviewer not found");
+
     const application = await Application.findOne({
       where: { id: data.applicationId },
       include: [
@@ -109,8 +112,7 @@ export const assignInterview = async (data, userId) => {
         "Can not schedule interview Application already rejected",
       );
 
-    if (!interviewer)
-      throw new ExpressError(STATUS.NOT_FOUND, "Interviewer not found");
+    
 
     const stage = application.currentStage;
 
@@ -344,7 +346,6 @@ export const confirmInterview = async (id) => {
       transaction,
     });
 
-    console.log("Interview found:", interview ? "Yes" : "No"); // Debug log
     if (!interview)
       throw new ExpressError(STATUS.NOT_FOUND, "Interview not found");
 
