@@ -10,6 +10,7 @@ import InterviewFeedback from "../RecruitmentModels/InterviewFeedback.model.js";
 import Referral from "../RecruitmentModels/Referral.model.js";
 import JobRequisition from "../RecruitmentModels/JobRequisition.model.js";
 import InterviewAuditLog from "../RecruitmentModels/InterviewAuditLog.model.js";
+import Department from "../Department/Department.model.js";
 
 Candidate.hasMany(Application, {
   foreignKey: "candidateId",
@@ -115,6 +116,7 @@ JobRequisition.hasOne(JobPosting, {
   foreignKey: "requisitionId",
   as: "jobPosting",
 });
+
 
 JobPosting.belongsTo(JobRequisition, {
   foreignKey: "requisitionId",

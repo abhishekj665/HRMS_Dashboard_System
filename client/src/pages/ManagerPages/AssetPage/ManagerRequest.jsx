@@ -53,8 +53,6 @@ const ManagerRequest = () => {
     quantity: 1,
   });
 
-  const role = user.role;
-
   const fetchRequestsData = async () => {
     const response = await getRequestData();
 
@@ -153,10 +151,6 @@ const ManagerRequest = () => {
       socket.off("requestUpdated");
     };
   }, []);
-
-  if (role != "manager") {
-    return <h1>You don't have permission for this dashboard</h1>;
-  }
 
   return (
     <div className="p-3">

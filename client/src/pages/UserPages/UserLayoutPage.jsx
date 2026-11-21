@@ -1,30 +1,10 @@
 import Topbar from "../../components/TopBar";
-import UserSidebar from "./UserSideBar";
-import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 import { useState } from "react";
-import { useEffect } from "react";
+import UserSidebar from "./UserSideBar";
 
 const UserLayoutPage = () => {
   const [open, setOpen] = useState(false);
-  const { user, loading } = useSelector((state) => state.auth);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && user?.role !== "employee") {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (user?.role !== "employee") {
-    return null;
-  }
   return (
     <div className="flex h-[96vh]  relative">
       {open && (

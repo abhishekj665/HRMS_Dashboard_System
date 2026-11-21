@@ -8,6 +8,7 @@ import {
   EventNote,
   LogoutOutlined,
 } from "@mui/icons-material";
+import WorkIcon from "@mui/icons-material/Work";
 import { useEffect } from "react";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { logOutUser } from "../../redux/auth/authThunk";
@@ -42,7 +43,8 @@ export default function UserSidebar({ open, setOpen }) {
     }
   };
 
-  const initials = `${user?.firstName?.[0] || user?.name?.[0] || "U"}`.toUpperCase();
+  const initials =
+    `${user?.firstName?.[0] || user?.name?.[0] || "U"}`.toUpperCase();
 
   return (
     <aside
@@ -134,6 +136,20 @@ export default function UserSidebar({ open, setOpen }) {
             </NavLink>
           </div>
         </div>
+        <div>
+          <p className="text-xs text-gray-400 uppercase mb-2 tracking-wider">
+            Hiring
+          </p>
+          <div className="flex flex-col gap-1">
+            <NavLink
+              to="/user/job-posts"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <WorkIcon fontSize="small" /> Job Posts
+            </NavLink>
+          </div>
+        </div>
       </div>
 
       <div className="border-t px-4 py-3 bg-white shrink-0">
@@ -158,7 +174,6 @@ export default function UserSidebar({ open, setOpen }) {
           onClick={handleLogOut}
           style={{ cursor: "pointer" }}
           className="w-full h-11  text-gray-800 font-semibold text-base flex items-center justify-start px-4 gap-2 hover:bg-gray-50"
-
         >
           <LogoutOutlined fontSize="small" /> Log Out
         </button>

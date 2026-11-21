@@ -14,6 +14,7 @@ import { OrganizationRouter } from "./routes/organization/organization.route.js"
 import { DepartmentRouter } from "./routes/department/department.route.js";
 import { PaymentRouter } from "./routes/payment/payment.route.js";
 import { subscriptionRouter } from "./routes/subsciption/subscription.route.js";
+import { standardRateLimiter } from "./middlewares/rateLimit.middleware.js";
 
 import cors from "cors";
 import path from "path";
@@ -43,6 +44,8 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+
+app.use(standardRateLimiter);
 
 app.use("/payment/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());

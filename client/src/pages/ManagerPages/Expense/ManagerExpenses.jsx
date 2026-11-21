@@ -52,8 +52,6 @@ const ManagerExpensesPage = () => {
   const [approveUserEmail, setApproveUserEmail] = useState("");
   const [approveRequestedAmount, setApproveRequestedAmount] = useState("");
 
-  const role = user?.role;
-
   const fetchExpenses = async () => {
     const response = await getAllExpenses();
 
@@ -115,10 +113,6 @@ const ManagerExpensesPage = () => {
       socket.off("expenseUpdated");
     };
   }, []);
-
-  if (role !== "manager") {
-    return <h1>You don't have permission for this dashboard</h1>;
-  }
 
   return (
     <div className="p-3">

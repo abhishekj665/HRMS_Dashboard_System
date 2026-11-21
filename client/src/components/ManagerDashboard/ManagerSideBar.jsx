@@ -16,6 +16,7 @@ import { EventAvailable } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { logOutUser } from "../../redux/auth/authThunk";
 import { toast } from "react-toastify";
+import WorkIcon from '@mui/icons-material/Work';
 
 export default function ManagerSidebar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
@@ -171,6 +172,13 @@ export default function ManagerSidebar({ open, setOpen }) {
               className={linkClass}
             >
               <Assignment fontSize="small" /> Job Requisition
+            </NavLink>
+            <NavLink
+              to="/manager/job-posts"
+              onClick={() => setOpen(false)}
+              className={linkClass}
+            >
+              <WorkIcon fontSize="small" /> Job Posts
             </NavLink>
 
             <NavLink

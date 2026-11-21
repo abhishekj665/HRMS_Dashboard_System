@@ -7,6 +7,7 @@ import { InterviewRouter } from "./interview.route.js";
 import { InterviewFeedbackRouter } from "./interviewFeedback.route.js";
 import { HiringStageRoute } from "./hiringStage.route.js";
 import { OfferRoute } from "./offer.route.js";
+import {InternalJobPostingRouter} from "./internalJobs.route.js";
 
 const Router = express.Router();
 
@@ -25,5 +26,7 @@ Router.use(InterviewFeedbackRouter);
 Router.use(HiringStageRoute);
 
 Router.use(OfferRoute);
+
+Router.use(InternalJobPostingRouter);
 
 export const RecruitmentRouter = Router;

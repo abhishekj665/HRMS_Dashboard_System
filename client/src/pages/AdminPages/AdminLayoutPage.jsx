@@ -1,29 +1,26 @@
 import Sidebar from "../../components/AdminDashboard/SideBar";
 import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getCurrentSubscription } from "../../services/SubscriptionService/subscriptionDetailsService";
+import { fetchUser } from "../../redux/auth/authThunk";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
 
-  const { user, loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (!loading && user?.role !== "admin") {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
+    let active = true;
     const checkSubscription = async () => {
-      if (loading || user?.role !== "admin") return;
+      if (loading) return;
 
       const allowedWithoutSubscription = [
         "/admin/profile",
@@ -32,6 +29,11 @@ export default function AdminLayout() {
       ];
 
       const response = await getCurrentSubscription();
+      if (!active) return;
+      if (response?.status === 401 || response?.status === 403) {
+        dispatch(fetchUser());
+        return;
+      }
       const hasSubscription = response?.success;
 
       if (!hasSubscription && !allowedWithoutSubscription.includes(location.pathname)) {
@@ -43,15 +45,10 @@ export default function AdminLayout() {
     };
 
     checkSubscription();
-  }, [loading, user?.role, location.pathname, navigate]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (user?.role !== "admin") {
-    return null;
-  }
+    return () => {
+      active = false;
+    };
+  }, [dispatch, loading, location.pathname, navigate]);
 
   if (!subscriptionChecked) {
     return <div>Loading...</div>;
