@@ -4,7 +4,17 @@ import ExpressError from "../../utils/Error.utils.js";
 export const getProfileService = async (userId) => {
   const user = await User.findOne({
     where: { id: userId },
-    attributes: ["id", "email", "role", "isBlocked", "isVerified", "tenantId"],
+    attributes: [
+      "id",
+      "email",
+      "role",
+      "isBlocked",
+      "isVerified",
+      "tenantId",
+      "first_name",
+      "last_name",
+      "contact",
+    ],
   });
 
   if (!user) {
@@ -26,9 +36,9 @@ export const getProfileService = async (userId) => {
     success: true,
     user: {
       ...user.toJSON(),
-      first_name: profile.first_name || "",
-      last_name: profile.last_name || "",
-      contact: profile.contact || "",
+      first_name: profile.first_name || user.first_name || "",
+      last_name: profile.last_name || user.last_name || "",
+      contact: profile.contact || user.contact || "",
       profile: profile.toJSON(),
     },
     message: "Profile fetched successfully",

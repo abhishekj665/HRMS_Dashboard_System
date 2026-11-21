@@ -1,10 +1,5 @@
 import express from "express";
-import {
-  adminAuth,
-  managerAuth,
-  refreshAuth,
-  userAuth,
-} from "../../middlewares/auth.middleware.js";
+import { adminAuth, userAuth } from "../../middlewares/auth.middleware.js";
 import * as JobPostingController from "../../controllers/recruitment/jobPosting.controller.js";
 import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 

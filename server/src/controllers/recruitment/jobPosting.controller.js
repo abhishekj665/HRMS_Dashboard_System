@@ -22,7 +22,10 @@ export const updateJobPosting = async (req, res, next) => {
 
 export const getJobPosting = async (req, res, next) => {
   try {
-    const response = await JobPostingService.getJobPosting(req.params.id, req.user);
+    const response = await JobPostingService.getJobPosting(
+      req.params.id,
+      req.user,
+    );
 
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);
@@ -79,7 +82,6 @@ export const getJobs = async (req, res, next) => {
   }
 };
 
-
 export const getJob = async (req, res, next) => {
   try {
     const response = await JobPostingService.getJob(
@@ -96,3 +98,4 @@ export const getJob = async (req, res, next) => {
     next(error);
   }
 };
+

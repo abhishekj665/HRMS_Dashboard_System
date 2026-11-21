@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Button,
@@ -31,6 +31,8 @@ function LoginPage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const requestedPath = location.state?.from?.pathname;
 
   const handlePostLogin = async (response) => {
     const role = response?.user?.role;
@@ -39,7 +41,7 @@ function LoginPage() {
       const subscriptionRes = await getCurrentSubscription();
       if (subscriptionRes?.success) {
         toast.success(response.message || "Welcome");
-        navigate("/admin/dashboard");
+        navigate(requestedPath?.startsWith("/admin/") ? requestedPath : "/admin/dashboard", { replace: true });
       } else {
         toast.info("Please choose a subscription plan to continue.");
         navigate("/admin/subscription/payment");
@@ -50,14 +52,14 @@ function LoginPage() {
 
     if (role === "manager") {
       toast.success(response.message || "Welcome");
-      navigate("/manager/dashboard");
+      navigate(requestedPath?.startsWith("/manager/") ? requestedPath : "/manager/dashboard", { replace: true });
       resetData();
       return;
     }
 
     if (role === "employee" || role === "user") {
       toast.success(response.message || "Welcome");
-      navigate("/user/dashboard");
+      navigate(requestedPath?.startsWith("/user/") ? requestedPath : "/user/dashboard", { replace: true });
       resetData();
       return;
     }

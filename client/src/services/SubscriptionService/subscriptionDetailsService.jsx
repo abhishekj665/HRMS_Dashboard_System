@@ -7,6 +7,7 @@ export const getCurrentSubscription = async () => {
   } catch (error) {
     return {
       success: false,
+      status: error.response?.status,
       message:
         error.response?.data?.message ||
         error.message ||

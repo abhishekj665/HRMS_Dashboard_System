@@ -39,7 +39,7 @@ const resumeFileFilter = (req, file, cb) => {
 export const uploadResume = multer({
   storage,
   fileFilter: resumeFileFilter,
-  limits: { fileSize: 3 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const organizationDocsFileFilter = (req, file, cb) => {

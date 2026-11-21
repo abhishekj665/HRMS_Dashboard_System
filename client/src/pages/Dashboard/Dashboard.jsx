@@ -2,21 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
-  Alert,
   Avatar,
   Badge,
   Box,
   Button,
-  Divider,
   Chip,
   CircularProgress,
-  Grid,
+  Divider,
   IconButton,
-  Tooltip,
   Menu,
   MenuItem,
   Paper,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import {
@@ -51,6 +49,45 @@ import { getManagerInterviews } from "../../services/JobRecruitmentService/inter
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const tokens = {
+  bg: "#f8fafc",
+  surface: "#ffffff",
+  border: "#e5e7eb",
+  borderSoft: "#f1f5f9",
+  text: "#0f172a",
+  body: "#334155",
+  muted: "#64748b",
+  subtle: "#94a3b8",
+  accent: "#1d4ed8",
+  accentSoft: "#eff6ff",
+  accentBorder: "#bfdbfe",
+  success: "#15803d",
+  successSoft: "#f0fdf4",
+  successBorder: "#bbf7d0",
+  warning: "#b45309",
+  warningSoft: "#fffbeb",
+  warningBorder: "#fde68a",
+  danger: "#b91c1c",
+  dangerSoft: "#fef2f2",
+  dangerBorder: "#fecaca",
+};
+
+const cardSx = {
+  borderRadius: 3,
+  border: `1px solid ${tokens.border}`,
+  bgcolor: tokens.surface,
+  boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)",
+};
+
+const padNumber = (value) => String(value).padStart(2, "0");
+
+const formatDateInput = (value) => {
+  const date = new Date(value);
+  return `${date.getFullYear()}-${padNumber(date.getMonth() + 1)}-${padNumber(
+    date.getDate(),
+  )}`;
+};
+
 const formatSeconds = (value) => {
   const total = Math.max(0, Number(value) || 0);
   const hours = Math.floor(total / 3600);
@@ -84,36 +121,144 @@ const formatDateTime = (iso) =>
       })
     : "--";
 
-function MetricCard({ icon, label, value, helper, color }) {
+const formatMonthLabel = (value) =>
+  value.toLocaleDateString([], {
+    month: "long",
+    year: "numeric",
+  });
+
+const formatLongDate = (value) =>
+  value.toLocaleDateString([], {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+const toTitleCase = (value) =>
+  String(value || "")
+    .replace(/[._-]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+
+const getDisplayName = (user) => {
+  const source =
+    user?.user && typeof user.user === "object" ? user.user : user;
+  if (!source) return "User";
+
+  const fullName = [
+    source.firstName || source.first_name,
+    source.lastName || source.last_name,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    fullName ||
+    source.name ||
+    source.fullName ||
+    source.username ||
+    (source.email ? toTitleCase(source.email.split("@")[0]) : "") ||
+    "User"
+  );
+};
+
+const capitalize = (value) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
+
+const statusStyles = {
+  APPROVED: {
+    bg: tokens.successSoft,
+    color: tokens.success,
+    border: tokens.successBorder,
+    label: "Approved",
+  },
+  PENDING: {
+    bg: tokens.warningSoft,
+    color: tokens.warning,
+    border: tokens.warningBorder,
+    label: "Pending",
+  },
+  REJECTED: {
+    bg: tokens.dangerSoft,
+    color: tokens.danger,
+    border: tokens.dangerBorder,
+    label: "Rejected",
+  },
+  ABSENT: {
+    bg: tokens.dangerSoft,
+    color: tokens.danger,
+    border: tokens.dangerBorder,
+    label: "No record",
+  },
+  NEUTRAL: {
+    bg: tokens.bg,
+    color: tokens.muted,
+    border: tokens.border,
+    label: "No request",
+  },
+};
+
+const notificationDot = {
+  success: tokens.success,
+  warning: "#d97706",
+  info: tokens.accent,
+};
+
+function StatusPill({ status }) {
+  const style = statusStyles[status] || statusStyles.NEUTRAL;
+
+  return (
+    <Chip
+      size="small"
+      label={style.label}
+      sx={{
+        height: 24,
+        fontWeight: 600,
+        fontSize: 12,
+        color: style.color,
+        bgcolor: style.bg,
+        border: `1px solid ${style.border}`,
+      }}
+    />
+  );
+}
+
+function MetricCard({ icon, label, value, helper }) {
   return (
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 2.5, md: 3 },
-        borderRadius: 4,
-        border: "1px solid #e2e8f0",
+        ...cardSx,
+        p: { xs: 1.75, sm: 2.5 },
         height: "100%",
+        transition: "border-color .2s ease, box-shadow .2s ease",
+        "&:hover": {
+          borderColor: tokens.accentBorder,
+          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.06)",
+        },
       }}
     >
-      <Stack direction="row" justifyContent="space-between" spacing={2}>
-        <Box>
-          <Typography variant="body2" sx={{ color: "#64748b", mb: 0.75 }}>
-            {label}
-          </Typography>
-          <Typography variant="h5" sx={{ color: "#0f172a", fontWeight: 800 }}>
-            {value}
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#94a3b8" }}>
-            {helper}
-          </Typography>
-        </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row-reverse" },
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: { xs: 1.5, sm: 2 },
+          height: "100%",
+        }}
+      >
         <Box
           sx={{
-            width: 46,
-            height: 46,
-            borderRadius: 3,
-            bgcolor: color,
-            color: "#fff",
+            width: { xs: 34, sm: 40 },
+            height: { xs: 34, sm: 40 },
+            borderRadius: 2,
+            bgcolor: tokens.accentSoft,
+            color: tokens.accent,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -122,7 +267,43 @@ function MetricCard({ icon, label, value, helper, color }) {
         >
           {icon}
         </Box>
-      </Stack>
+        <Box sx={{ minWidth: 0, width: "100%" }}>
+          <Typography
+            sx={{
+              fontSize: { xs: 12.5, sm: 13 },
+              fontWeight: 500,
+              color: tokens.muted,
+              mb: { xs: 0.5, sm: 1 },
+            }}
+          >
+            {label}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: { xs: 22, sm: 26 },
+              lineHeight: 1.15,
+              fontWeight: 700,
+              color: tokens.text,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {value}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: 12,
+              lineHeight: 1.4,
+              color: tokens.subtle,
+              mt: 0.75,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: { xs: "normal", lg: "nowrap" },
+            }}
+          >
+            {helper}
+          </Typography>
+        </Box>
+      </Box>
     </Paper>
   );
 }
@@ -131,12 +312,7 @@ function SectionCard({ title, subtitle, children, action }) {
   return (
     <Paper
       elevation={0}
-      sx={{
-        p: { xs: 2.5, md: 3 },
-        borderRadius: 4,
-        border: "1px solid #e2e8f0",
-        height: "100%",
-      }}
+      sx={{ ...cardSx, p: { xs: 2, md: 3 }, height: "100%" }}
     >
       <Stack
         direction={{ xs: "column", sm: "row" }}
@@ -146,11 +322,18 @@ function SectionCard({ title, subtitle, children, action }) {
         sx={{ mb: 2.5 }}
       >
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 800, color: "#0f172a" }}>
+          <Typography
+            sx={{
+              fontSize: 17,
+              fontWeight: 700,
+              color: tokens.text,
+              letterSpacing: "-0.01em",
+            }}
+          >
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body2" sx={{ color: "#64748b", mt: 0.5 }}>
+            <Typography sx={{ fontSize: 13, color: tokens.muted, mt: 0.25 }}>
               {subtitle}
             </Typography>
           )}
@@ -162,16 +345,65 @@ function SectionCard({ title, subtitle, children, action }) {
   );
 }
 
-const formatDateInput = (value) => {
-  const date = new Date(value);
-  return date.toISOString().slice(0, 10);
-};
+function SummaryCounter({ label, value, status }) {
+  const style = statusStyles[status];
 
-const formatMonthLabel = (value) =>
-  value.toLocaleDateString([], {
-    month: "long",
-    year: "numeric",
-  });
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        p: 1.5,
+        borderRadius: 2,
+        border: `1px solid ${style.border}`,
+        bgcolor: style.bg,
+      }}
+    >
+      <Typography
+        sx={{ fontSize: 22, fontWeight: 700, color: style.color, lineHeight: 1 }}
+      >
+        {value}
+      </Typography>
+      <Typography
+        sx={{ fontSize: 12, fontWeight: 500, color: style.color, mt: 0.5 }}
+      >
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      alignItems="center"
+      sx={{ py: 1.25 }}
+    >
+      <Typography sx={{ fontSize: 13, color: tokens.muted }}>{label}</Typography>
+      <Typography sx={{ fontSize: 13, fontWeight: 600, color: tokens.text }}>
+        {value}
+      </Typography>
+    </Stack>
+  );
+}
+
+function LegendItem({ color, border, label }) {
+  return (
+    <Stack direction="row" spacing={0.75} alignItems="center">
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: "3px",
+          bgcolor: color,
+          border: `1px solid ${border}`,
+        }}
+      />
+      <Typography sx={{ fontSize: 12, color: tokens.muted }}>{label}</Typography>
+    </Stack>
+  );
+}
 
 function MiniCalendar({
   monthDate,
@@ -197,19 +429,27 @@ function MiniCalendar({
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ mb: 1.75 }}
+        sx={{ mb: 2 }}
       >
-        <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+        <Typography sx={{ fontWeight: 700, color: tokens.text, fontSize: 15 }}>
           {formatMonthLabel(monthDate)}
         </Typography>
         <Stack direction="row" spacing={0.5}>
           <Tooltip title="Previous month">
-            <IconButton size="small" onClick={() => onMonthChange(-1)}>
+            <IconButton
+              size="small"
+              onClick={() => onMonthChange(-1)}
+              sx={{ border: `1px solid ${tokens.border}`, borderRadius: 1.5 }}
+            >
               <ChevronLeft fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Next month">
-            <IconButton size="small" onClick={() => onMonthChange(1)}>
+            <IconButton
+              size="small"
+              onClick={() => onMonthChange(1)}
+              sx={{ border: `1px solid ${tokens.border}`, borderRadius: 1.5 }}
+            >
               <ChevronRight fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -220,15 +460,21 @@ function MiniCalendar({
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-          gap: 1,
-          mb: 1.25,
+          gap: { xs: 0.5, sm: 1 },
+          mb: 1,
         }}
       >
         {WEEK_DAYS.map((day) => (
           <Typography
             key={day}
-            variant="caption"
-            sx={{ textAlign: "center", color: "#64748b", fontWeight: 700 }}
+            sx={{
+              textAlign: "center",
+              color: tokens.subtle,
+              fontWeight: 600,
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: 0.6,
+            }}
           >
             {day}
           </Typography>
@@ -239,7 +485,7 @@ function MiniCalendar({
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-          gap: 1,
+          gap: { xs: 0.5, sm: 1 },
         }}
       >
         {cells.map((day, index) => {
@@ -256,54 +502,60 @@ function MiniCalendar({
           const dateKey = formatDateInput(cellDate);
           const attendance = attendanceMap[dateKey];
           const status = attendance?.requestStatus;
-          const isApproved = status === "APPROVED";
-          const isPending = status === "PENDING";
-          const isRejected = status === "REJECTED";
           const isSelected = selectedDate === dateKey;
 
-          let background = "#f8fafc";
-          let color = "#334155";
-
+          let style = statusStyles.ABSENT;
           if (isFuture) {
-            background = "#f8fafc";
-            color = "#334155";
-          } else if (isApproved) {
-            background = "#dcfce7";
-            color = "#166534";
-          } else if (isPending) {
-            background = "#fef3c7";
-            color = "#92400e";
-          } else if (isRejected) {
-            background = "#ff0000";
-            color = "#b91c1c";
-          } else {
-            background = "#fee2e2";
-            color = "#b91c1c";
+            style = {
+              bg: tokens.surface,
+              color: tokens.subtle,
+              border: tokens.borderSoft,
+            };
+          } else if (status && statusStyles[status]) {
+            style = statusStyles[status];
           }
 
           return (
             <Box
               key={day}
+              role="button"
+              tabIndex={0}
               onClick={() => onDateSelect(dateKey)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onDateSelect(dateKey);
+                }
+              }}
               sx={{
-                width: 36,
-                height: 36,
+                aspectRatio: "1 / 1",
+                width: "100%",
+                maxWidth: 44,
                 mx: "auto",
                 borderRadius: 2,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                bgcolor: background,
-                color,
+                bgcolor: style.bg,
+                color: style.color,
                 border: isSelected
-                  ? "2px solid #0f172a"
+                  ? `2px solid ${tokens.text}`
                   : isToday
-                    ? "2px solid #2563eb"
-                    : "1px solid #e2e8f0",
-                fontWeight:
-                  isToday || isApproved || isPending || isRejected ? 700 : 500,
-                fontSize: 12,
+                    ? `2px solid ${tokens.accent}`
+                    : `1px solid ${style.border}`,
+                fontWeight: isToday || status ? 700 : 500,
+                fontSize: 13,
                 cursor: "pointer",
+                userSelect: "none",
+                transition: "transform .15s ease, box-shadow .15s ease",
+                "&:hover": {
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 3px 8px rgba(15, 23, 42, 0.10)",
+                },
+                "&:focus-visible": {
+                  outline: `2px solid ${tokens.accent}`,
+                  outlineOffset: 2,
+                },
               }}
             >
               {day}
@@ -311,6 +563,30 @@ function MiniCalendar({
           );
         })}
       </Box>
+
+      <Stack
+        direction="row"
+        flexWrap="wrap"
+        useFlexGap
+        spacing={2}
+        sx={{ mt: 2.5, pt: 2, borderTop: `1px solid ${tokens.borderSoft}` }}
+      >
+        <LegendItem
+          color={tokens.successSoft}
+          border={tokens.successBorder}
+          label="Approved"
+        />
+        <LegendItem
+          color={tokens.warningSoft}
+          border={tokens.warningBorder}
+          label="Pending"
+        />
+        <LegendItem
+          color={tokens.dangerSoft}
+          border={tokens.dangerBorder}
+          label="Rejected / Absent"
+        />
+      </Stack>
     </Box>
   );
 }
@@ -506,11 +782,12 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, [attendanceStatus]);
 
+  const isPunchedIn = Boolean(
+    attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt,
+  );
+
   const handlePunch = async () => {
-    const action =
-      attendanceStatus?.lastInAt && !attendanceStatus?.punchOutAt
-        ? punchOut
-        : punchIn;
+    const action = isPunchedIn ? punchOut : punchIn;
 
     setPunchLoading(true);
     try {
@@ -660,8 +937,11 @@ export default function Dashboard() {
   const selectedAttendanceInfo = useMemo(() => {
     if (!selectedAttendance) {
       return {
-        label: selectedCalendarDate,
-        status: "No attendance",
+        label: new Date(`${selectedCalendarDate}T00:00:00`).toLocaleDateString(
+          [],
+          { day: "2-digit", month: "short", year: "numeric" },
+        ),
+        status: "ABSENT",
         punchIn: "--",
         punchOut: "--",
         worked: "0h 0m",
@@ -674,7 +954,7 @@ export default function Dashboard() {
         month: "short",
         year: "numeric",
       }),
-      status: selectedAttendance.requestStatus || "No request",
+      status: selectedAttendance.requestStatus || "NEUTRAL",
       punchIn: formatTime(selectedAttendance.punchInAt),
       punchOut: formatTime(selectedAttendance.punchOutAt),
       worked: formatMinutes(selectedAttendance.workedMinutes),
@@ -684,16 +964,19 @@ export default function Dashboard() {
   const quickActions = [
     {
       label: "Attendance",
+      description: "View your records",
       icon: <AccessTime fontSize="small" />,
       path: isEmployee ? "/user/attendance" : "/manager/attendance/me",
     },
     {
       label: "Leave Management",
+      description: "Apply and track leaves",
       icon: <CalendarMonth fontSize="small" />,
       path: isEmployee ? "/user/leave-management" : "/manager/leave/management",
     },
     {
       label: "Expenses",
+      description: "Submit and review claims",
       icon: <Payments fontSize="small" />,
       path: isEmployee ? "/user/expense" : "/manager/expenses",
     },
@@ -701,22 +984,51 @@ export default function Dashboard() {
       ? [
           {
             label: "Attendance Requests",
+            description: "Review team requests",
             icon: <EventAvailable fontSize="small" />,
             path: "/manager/attendance/request",
           },
           {
             label: "Leave Requests",
+            description: "Approve or reject leaves",
             icon: <ReceiptLong fontSize="small" />,
             path: "/manager/leave-requests",
           },
           {
             label: "Interviews",
+            description: "Upcoming and pending",
             icon: <NotificationsActive fontSize="small" />,
             path: "/manager/interviews",
           },
         ]
       : []),
   ];
+
+  const pendingApprovals = isManager
+    ? managerLeaveRequests.filter((item) => item.status === "PENDING").length +
+      managerAttendanceRequests.filter((item) => item.status === "PENDING")
+        .length
+    : leaveRequests.filter((item) => item.status === "PENDING").length;
+
+  const heroStats = [
+    {
+      label: "Status",
+      value: isPunchedIn ? "Punched in" : "Punched out",
+      dot: isPunchedIn ? "#4ade80" : "#94a3b8",
+    },
+    {
+      label: isManager ? "Awaiting approval" : "Pending requests",
+      value: pendingApprovals,
+      dot: pendingApprovals > 0 ? "#fbbf24" : null,
+    },
+    {
+      label: "Notifications",
+      value: notifications.length,
+      dot: null,
+    },
+  ];
+
+  const displayName = getDisplayName(user);
 
   if (loading) {
     return (
@@ -728,105 +1040,246 @@ export default function Dashboard() {
           justifyContent: "center",
         }}
       >
-        <CircularProgress />
+        <CircularProgress size={32} />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ bgcolor: "#f8fafc", minHeight: "100%", p: { xs: 2, md: 3 } }}>
+    <Box
+      sx={{
+        bgcolor: tokens.bg,
+        minHeight: "100%",
+        p: { xs: 2, sm: 2.5, md: 3 },
+      }}
+    >
       <Box sx={{ maxWidth: 1440, mx: "auto" }}>
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 2.5, md: 3.5 },
-            borderRadius: 5,
+            position: "relative",
+            overflow: "hidden",
+            p: { xs: 2.5, md: 4 },
+            mb: 3,
+            borderRadius: 4,
             color: "#fff",
             background:
-              "linear-gradient(135deg, #0f2d5c 0%, #1d4f91 52%, #3b82f6 100%)",
-            mb: 3,
-            overflow: "hidden",
-            position: "relative",
+              "linear-gradient(120deg, #0f2a56 0%, #163a73 55%, #1d4ed8 135%)",
+            boxShadow: "0 10px 30px rgba(15, 42, 86, 0.18)",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: -120,
+              right: -80,
+              width: 340,
+              height: 340,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 70%)",
+            },
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              bottom: -150,
+              left: "32%",
+              width: 380,
+              height: 380,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(96,165,250,0.24) 0%, rgba(96,165,250,0) 70%)",
+            },
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 35%)",
-            }}
-          />
           <Stack
             direction={{ xs: "column", lg: "row" }}
             justifyContent="space-between"
-            spacing={3}
-            sx={{ position: "relative" }}
+            alignItems={{ xs: "stretch", lg: "center" }}
+            spacing={{ xs: 3, lg: 4 }}
+            sx={{ position: "relative", zIndex: 1 }}
           >
-            <Box>
-              <Typography variant="overline" sx={{ opacity: 0.78 }}>
-                {user?.role || "dashboard"}
+            <Box sx={{ minWidth: 0 }}>
+              <Stack
+                direction="row"
+                spacing={1.25}
+                alignItems="center"
+                flexWrap="wrap"
+                useFlexGap
+                mb={1.5}
+              >
+                <Chip
+                  size="small"
+                  label={capitalize(user?.role) || "Dashboard"}
+                  sx={{
+                    height: 24,
+                    fontWeight: 600,
+                    fontSize: 12,
+                    color: "#fff",
+                    bgcolor: "rgba(255,255,255,0.16)",
+                    border: "1px solid rgba(255,255,255,0.22)",
+                  }}
+                />
+                <Typography
+                  sx={{ fontSize: 13, color: "rgba(255,255,255,0.72)" }}
+                >
+                  {formatLongDate(today)}
+                </Typography>
+              </Stack>
+              <Typography
+                component="h1"
+                sx={{
+                  fontSize: { xs: 26, md: 34 },
+                  fontWeight: 800,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.15,
+                  mb: 1.25,
+                }}
+              >
+                Welcome back, {displayName}
               </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>
-                Welcome,{" "}
-                {user?.firstName ||
-                  user?.name ||
-                  user?.email.split("@")[0] ||
-                  "User"}
-              </Typography>
-              <Typography variant="body1" sx={{ maxWidth: 640, opacity: 0.88 }}>
+              <Typography
+                sx={{
+                  fontSize: 14.5,
+                  lineHeight: 1.65,
+                  color: "rgba(255,255,255,0.78)",
+                  maxWidth: 540,
+                }}
+              >
                 Track attendance, leave balance, working hours, notifications,
                 and your next actions from one place.
               </Typography>
-            </Box>
 
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2.25,
-                minWidth: { xs: "100%", lg: 320 },
-                borderRadius: 4,
-                bgcolor: "rgba(255,255,255,0.12)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.16)",
-              }}
-            >
-              <Stack direction="row" justifyContent="space-between" spacing={2}>
-                <Box>
-                  <Typography variant="body2" sx={{ opacity: 0.84 }}>
-                    Today's Working Time
-                  </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.75 }}>
-                    {formatSeconds(liveSeconds)}
-                  </Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.84 }}>
-                    Punch in at {formatTime(attendanceStatus?.lastInAt)}
-                  </Typography>
-                </Box>
-                <Stack spacing={1} alignItems="center">
-                  <Typography
-                    variant="caption"
+              <Stack
+                direction="row"
+                flexWrap="wrap"
+                useFlexGap
+                spacing={1.5}
+                sx={{ mt: 3 }}
+              >
+                {heroStats.map((stat) => (
+                  <Box
+                    key={stat.label}
                     sx={{
-                      opacity: 0.84,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.8,
+                      flex: { xs: "1 1 calc(50% - 6px)", sm: "0 0 auto" },
+                      minWidth: { xs: 0, sm: 128 },
+                      px: 1.75,
+                      py: 1.25,
+                      borderRadius: 2.5,
+                      bgcolor: "rgba(255,255,255,0.10)",
+                      border: "1px solid rgba(255,255,255,0.16)",
+                      backdropFilter: "blur(6px)",
                     }}
                   >
-                    Notification
+                    <Typography
+                      sx={{
+                        fontSize: 11.5,
+                        fontWeight: 500,
+                        color: "rgba(255,255,255,0.68)",
+                        textTransform: "uppercase",
+                        letterSpacing: 0.6,
+                      }}
+                    >
+                      {stat.label}
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      alignItems="center"
+                      sx={{ mt: 0.5 }}
+                    >
+                      {stat.dot && (
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            bgcolor: stat.dot,
+                          }}
+                        />
+                      )}
+                      <Typography sx={{ fontSize: 15, fontWeight: 700 }}>
+                        {stat.value}
+                      </Typography>
+                    </Stack>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+
+            <Box
+              sx={{
+                width: { xs: "100%", lg: 380 },
+                flexShrink: 0,
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: "rgba(255,255,255,0.12)",
+                border: "1px solid rgba(255,255,255,0.20)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="flex-start"
+                spacing={2}
+              >
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: isPunchedIn ? "#4ade80" : "#94a3b8",
+                        boxShadow: isPunchedIn
+                          ? "0 0 0 4px rgba(74, 222, 128, 0.22)"
+                          : "none",
+                      }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "rgba(255,255,255,0.78)",
+                      }}
+                    >
+                      Today's working time
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: 26, md: 32 },
+                      fontWeight: 700,
+                      letterSpacing: "-0.02em",
+                      fontVariantNumeric: "tabular-nums",
+                      mt: 0.75,
+                    }}
+                  >
+                    {formatSeconds(liveSeconds)}
                   </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.62)",
+                      mt: 0.25,
+                    }}
+                  >
+                    Punched in at {formatTime(attendanceStatus?.lastInAt)}
+                  </Typography>
+                </Box>
+
+                <Tooltip title="Notifications">
                   <IconButton
+                    aria-label="Open notifications"
                     onClick={(event) =>
                       setNotificationAnchorEl(event.currentTarget)
                     }
                     sx={{
-                      width: 54,
-                      height: 54,
-                      border: "1px solid rgba(255,255,255,0.18)",
-                      bgcolor: "rgba(255,255,255,0.16)",
+                      width: 44,
+                      height: 44,
                       color: "#fff",
-                      "&:hover": {
-                        bgcolor: "rgba(255,255,255,0.24)",
-                      },
+                      bgcolor: "rgba(255,255,255,0.14)",
+                      border: "1px solid rgba(255,255,255,0.22)",
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.24)" },
                     }}
                   >
                     <Badge
@@ -834,52 +1287,39 @@ export default function Dashboard() {
                       color="error"
                       max={99}
                     >
-                      <NotificationsActive />
+                      <NotificationsActive fontSize="small" />
                     </Badge>
                   </IconButton>
-                </Stack>
+                </Tooltip>
               </Stack>
 
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={1.25}
-                sx={{ mt: 2 }}
+                sx={{ mt: 2.5 }}
               >
                 <Button
                   fullWidth
+                  disableElevation
                   variant="contained"
                   onClick={handlePunch}
                   disabled={punchLoading}
-                  startIcon={
-                    attendanceStatus?.lastInAt &&
-                    !attendanceStatus?.punchOutAt ? (
-                      <Logout />
-                    ) : (
-                      <Login />
-                    )
-                  }
+                  startIcon={isPunchedIn ? <Logout /> : <Login />}
                   sx={{
-                    bgcolor:
-                      attendanceStatus?.lastInAt &&
-                      !attendanceStatus?.punchOutAt
-                        ? "#ef4444"
-                        : "#22c55e",
+                    py: 1.2,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    fontSize: 14,
+                    bgcolor: isPunchedIn ? "#ef4444" : "#22c55e",
                     "&:hover": {
-                      bgcolor:
-                        attendanceStatus?.lastInAt &&
-                        !attendanceStatus?.punchOutAt
-                          ? "#dc2626"
-                          : "#16a34a",
+                      bgcolor: isPunchedIn ? "#dc2626" : "#16a34a",
                     },
-                    py: 1.1,
-                    borderRadius: 2.5,
-                    fontWeight: 800,
                   }}
                 >
                   {punchLoading
                     ? "Please wait..."
-                    : attendanceStatus?.lastInAt &&
-                        !attendanceStatus?.punchOutAt
+                    : isPunchedIn
                       ? "Punch Out"
                       : "Punch In"}
                 </Button>
@@ -892,160 +1332,230 @@ export default function Dashboard() {
                     setQuickActionAnchorEl(event.currentTarget)
                   }
                   sx={{
+                    py: 1.2,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    fontSize: 14,
                     color: "#fff",
-                    borderColor: "rgba(255,255,255,0.28)",
                     bgcolor: "rgba(255,255,255,0.08)",
+                    borderColor: "rgba(255,255,255,0.32)",
                     "&:hover": {
-                      borderColor: "rgba(255,255,255,0.45)",
-                      bgcolor: "rgba(255,255,255,0.14)",
+                      borderColor: "rgba(255,255,255,0.5)",
+                      bgcolor: "rgba(255,255,255,0.16)",
                     },
-                    py: 1.1,
-                    borderRadius: 2.5,
-                    fontWeight: 800,
                   }}
                 >
                   Quick Actions
                 </Button>
               </Stack>
-            </Paper>
+            </Box>
           </Stack>
         </Paper>
 
-        <Grid container spacing={3} sx={{ mb: 1 }}>
-          <Grid item xs={12} sm={6} xl={3}>
-            <MetricCard
-              icon={<CalendarMonth />}
-              label="Working Days"
-              value={summary.workingDays}
-              helper="Attendance records this cycle"
-              color="#2563eb"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} xl={3}>
-            <MetricCard
-              icon={<EventAvailable />}
-              label="Present Days"
-              value={summary.present}
-              helper="Approved attendance entries"
-              color="#16a34a"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} xl={3}>
-            <MetricCard
-              icon={<ReceiptLong />}
-              label="Leave Balance"
-              value={summary.leaveAvailable}
-              helper="Available leave days"
-              color="#f59e0b"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} xl={3}>
-            <MetricCard
-              icon={<AccessTime />}
-              label="Worked Hours"
-              value={formatMinutes(summary.workedMinutes)}
-              helper={`Break time ${formatMinutes(summary.breakMinutes)}`}
-              color="#7c3aed"
-            />
-          </Grid>
-        </Grid>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(2, minmax(0, 1fr))",
+              lg: "repeat(4, minmax(0, 1fr))",
+            },
+            gap: { xs: 1.5, sm: 2.5 },
+            mb: 3,
+          }}
+        >
+          <MetricCard
+            icon={<CalendarMonth fontSize="small" />}
+            label="Working Days"
+            value={summary.workingDays}
+            helper="Attendance records this cycle"
+          />
+          <MetricCard
+            icon={<EventAvailable fontSize="small" />}
+            label="Present Days"
+            value={summary.present}
+            helper="Approved attendance entries"
+          />
+          <MetricCard
+            icon={<ReceiptLong fontSize="small" />}
+            label="Leave Balance"
+            value={summary.leaveAvailable}
+            helper="Available leave days"
+          />
+          <MetricCard
+            icon={<AccessTime fontSize="small" />}
+            label="Worked Hours"
+            value={formatMinutes(summary.workedMinutes)}
+            helper={`Break time ${formatMinutes(summary.breakMinutes)}`}
+          />
+        </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
-            <SectionCard
-              title="Attendance Overview"
-              subtitle="Monthly presence snapshot and approval status"
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr)",
+              lg: "minmax(0, 2fr) minmax(0, 1fr)",
+            },
+            gap: { xs: 2, md: 2.5 },
+          }}
+        >
+          <SectionCard
+            title="Attendance Overview"
+            subtitle="Monthly presence snapshot and approval status"
+          >
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "minmax(0, 1fr)",
+                  md: "minmax(0, 7fr) minmax(0, 5fr)",
+                },
+                gap: 3,
+              }}
             >
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={7}>
-                  <MiniCalendar
-                    monthDate={calendarMonth}
-                    selectedDate={selectedCalendarDate}
-                    attendanceMap={summary.attendanceMap}
-                    onDateSelect={setSelectedCalendarDate}
-                    onMonthChange={(step) => {
-                      const nextMonth = new Date(
-                        calendarMonth.getFullYear(),
-                        calendarMonth.getMonth() + step,
-                        1,
-                      );
-                      setCalendarMonth(nextMonth);
-                      setSelectedCalendarDate(formatDateInput(nextMonth));
-                    }}
+              <MiniCalendar
+                monthDate={calendarMonth}
+                selectedDate={selectedCalendarDate}
+                attendanceMap={summary.attendanceMap}
+                onDateSelect={setSelectedCalendarDate}
+                onMonthChange={(step) => {
+                  const nextMonth = new Date(
+                    calendarMonth.getFullYear(),
+                    calendarMonth.getMonth() + step,
+                    1,
+                  );
+                  setCalendarMonth(nextMonth);
+                  setSelectedCalendarDate(formatDateInput(nextMonth));
+                }}
+              />
+
+              <Box>
+                <Stack direction="row" spacing={1.25} sx={{ mb: 2.5 }}>
+                  <SummaryCounter
+                    label="Approved"
+                    value={summary.present}
+                    status="APPROVED"
                   />
-                </Grid>
-                <Grid item xs={12} md={5}>
-                  <Stack spacing={1.25}>
-                    <Alert severity="success" variant="outlined">
-                      Approved: {summary.present}
-                    </Alert>
-                    <Alert severity="warning" variant="outlined">
-                      Pending: {summary.pending}
-                    </Alert>
-                    <Alert severity="error" variant="outlined">
-                      Rejected: {summary.rejected}
-                    </Alert>
-                    <Alert severity="info" variant="outlined">
-                      {selectedAttendanceInfo.label}:{" "}
-                      {selectedAttendanceInfo.status}
-                    </Alert>
-                    <Alert severity="info" variant="outlined">
-                      Punch In {selectedAttendanceInfo.punchIn} | Punch Out{" "}
-                      {selectedAttendanceInfo.punchOut}
-                    </Alert>
-                    <Alert severity="info" variant="outlined">
-                      Worked: {selectedAttendanceInfo.worked}
-                    </Alert>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </SectionCard>
-          </Grid>
+                  <SummaryCounter
+                    label="Pending"
+                    value={summary.pending}
+                    status="PENDING"
+                  />
+                  <SummaryCounter
+                    label="Rejected"
+                    value={summary.rejected}
+                    status="REJECTED"
+                  />
+                </Stack>
 
-          <Grid item xs={12} lg={4}>
-            <SectionCard
-              title="Current Project"
-              subtitle="Assignment and workload status"
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: `1px solid ${tokens.border}`,
+                    bgcolor: tokens.bg,
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    sx={{ mb: 0.5 }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: tokens.text,
+                      }}
+                    >
+                      {selectedAttendanceInfo.label}
+                    </Typography>
+                    <StatusPill status={selectedAttendanceInfo.status} />
+                  </Stack>
+                  <Divider sx={{ borderColor: tokens.border }} />
+                  <DetailRow
+                    label="Punch in"
+                    value={selectedAttendanceInfo.punchIn}
+                  />
+                  <Divider sx={{ borderColor: tokens.borderSoft }} />
+                  <DetailRow
+                    label="Punch out"
+                    value={selectedAttendanceInfo.punchOut}
+                  />
+                  <Divider sx={{ borderColor: tokens.borderSoft }} />
+                  <DetailRow
+                    label="Worked"
+                    value={selectedAttendanceInfo.worked}
+                  />
+                </Box>
+              </Box>
+            </Box>
+          </SectionCard>
+
+          <SectionCard
+            title="Current Project"
+            subtitle="Assignment and workload status"
+          >
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: 2.5,
+                bgcolor: tokens.bg,
+                border: `1px dashed ${tokens.border}`,
+                minHeight: { xs: 180, lg: 260 },
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
             >
-              <Box
+              <Avatar
                 sx={{
-                  p: 3.5,
-                  borderRadius: 3,
-                  bgcolor: "#f8fafc",
-                  border: "1px dashed #cbd5e1",
-                  minHeight: 240,
-                  display: "flex",
-                  alignItems: "center",
+                  width: 48,
+                  height: 48,
+                  mb: 1.5,
+                  bgcolor: tokens.accentSoft,
+                  color: tokens.accent,
                 }}
               >
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar sx={{ bgcolor: "#dbeafe", color: "#1d4ed8" }}>
-                    <WorkOutline />
-                  </Avatar>
-                  <Box>
-                    <Typography sx={{ fontWeight: 700, color: "#0f172a" }}>
-                      Project Not Assigned
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "#64748b" }}>
-                      Update this card once project mapping is available from
-                      the backend.
-                    </Typography>
-                    <Chip
-                      label="Awaiting Allocation"
-                      size="small"
-                      sx={{
-                        mt: 1.5,
-                        bgcolor: "#fee2e2",
-                        color: "#b91c1c",
-                        fontWeight: 700,
-                      }}
-                    />
-                  </Box>
-                </Stack>
-              </Box>
-            </SectionCard>
-          </Grid>
-        </Grid>
+                <WorkOutline />
+              </Avatar>
+              <Typography
+                sx={{ fontWeight: 700, color: tokens.text, fontSize: 15 }}
+              >
+                Project not assigned
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: 13,
+                  color: tokens.muted,
+                  mt: 0.5,
+                  maxWidth: 260,
+                  lineHeight: 1.55,
+                }}
+              >
+                Update this card once project mapping is available from the
+                backend.
+              </Typography>
+              <Chip
+                label="Awaiting allocation"
+                size="small"
+                sx={{
+                  mt: 2,
+                  height: 24,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  color: tokens.warning,
+                  bgcolor: tokens.warningSoft,
+                  border: `1px solid ${tokens.warningBorder}`,
+                }}
+              />
+            </Box>
+          </SectionCard>
+        </Box>
 
         <Menu
           anchorEl={notificationAnchorEl}
@@ -1053,23 +1563,26 @@ export default function Dashboard() {
           onClose={() => setNotificationAnchorEl(null)}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
+          MenuListProps={{ disablePadding: true }}
           PaperProps={{
             sx: {
               mt: 1,
-              width: 400,
+              width: 380,
               maxWidth: "calc(100vw - 32px)",
               borderRadius: 3,
-              border: "1px solid #e2e8f0",
-              boxShadow: "0 20px 45px rgba(15, 23, 42, 0.14)",
+              border: `1px solid ${tokens.border}`,
+              boxShadow: "0 16px 40px rgba(15, 23, 42, 0.12)",
               overflow: "hidden",
             },
           }}
         >
-          <Box sx={{ px: 2, py: 1.75, bgcolor: "#f8fafc" }}>
-            <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+          <Box sx={{ px: 2, py: 1.75, bgcolor: tokens.bg }}>
+            <Typography
+              sx={{ fontWeight: 700, color: tokens.text, fontSize: 15 }}
+            >
               Notifications
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
+            <Typography sx={{ fontSize: 12.5, color: tokens.muted }}>
               {notifications.length > 0
                 ? `${notifications.length} update${notifications.length > 1 ? "s" : ""} available`
                 : "You're all caught up."}
@@ -1085,34 +1598,32 @@ export default function Dashboard() {
                   if (item.path) navigate(item.path);
                 }}
                 sx={{
-                  py: 1.75,
+                  py: 1.5,
                   px: 2,
                   alignItems: "flex-start",
                   whiteSpace: "normal",
                   borderBottom:
                     index === notifications.length - 1
                       ? "none"
-                      : "1px solid #f1f5f9",
+                      : `1px solid ${tokens.borderSoft}`,
                 }}
               >
-                <Stack spacing={0.75}>
-                  <Chip
-                    label={item.type.toUpperCase()}
-                    size="small"
-                    color={
-                      item.type === "warning"
-                        ? "warning"
-                        : item.type === "success"
-                          ? "success"
-                          : "info"
-                    }
-                    sx={{ width: "fit-content", fontWeight: 700 }}
+                <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      mt: 0.75,
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                      bgcolor: notificationDot[item.type] || tokens.accent,
+                    }}
                   />
                   <Typography
-                    variant="body2"
                     sx={{
+                      fontSize: 13.5,
                       whiteSpace: "normal",
-                      color: "#0f172a",
+                      color: tokens.body,
                       lineHeight: 1.5,
                     }}
                   >
@@ -1125,13 +1636,13 @@ export default function Dashboard() {
             <Box
               sx={{
                 px: 2,
-                py: 3,
+                py: 4,
                 textAlign: "center",
-                color: "#64748b",
+                color: tokens.muted,
               }}
             >
-              <NotificationsNone sx={{ mb: 1, color: "#94a3b8" }} />
-              <Typography variant="body2">
+              <NotificationsNone sx={{ mb: 1, color: tokens.subtle }} />
+              <Typography sx={{ fontSize: 13 }}>
                 No new notifications right now.
               </Typography>
             </Box>
@@ -1144,85 +1655,77 @@ export default function Dashboard() {
           onClose={() => setQuickActionAnchorEl(null)}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
+          MenuListProps={{ disablePadding: true }}
           PaperProps={{
             sx: {
               mt: 1,
-              width: 420,
+              width: 400,
               maxWidth: "calc(100vw - 32px)",
-              borderRadius: 4,
-              border: "1px solid #dbeafe",
-              boxShadow: "0 24px 60px rgba(37, 99, 235, 0.18)",
+              borderRadius: 3,
+              border: `1px solid ${tokens.border}`,
+              boxShadow: "0 16px 40px rgba(15, 23, 42, 0.12)",
               overflow: "hidden",
             },
           }}
         >
-          <Box
-            sx={{
-              px: 2.25,
-              py: 2,
-              background: "linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%)",
-            }}
-          >
-            <Typography sx={{ fontWeight: 800, color: "#0f172a" }}>
+          <Box sx={{ px: 2, py: 1.75, bgcolor: tokens.bg }}>
+            <Typography
+              sx={{ fontWeight: 700, color: tokens.text, fontSize: 15 }}
+            >
               Quick Actions
             </Typography>
-            <Typography variant="body2" sx={{ color: "#64748b" }}>
-              Open common manager and employee tasks from one place.
+            <Typography sx={{ fontSize: 12.5, color: tokens.muted }}>
+              Jump to the tasks you use most.
             </Typography>
           </Box>
-          <Box sx={{ p: 1.5 }}>
-            <Grid container spacing={1.5}>
-              {quickActions.map((action) => (
-                <Grid item xs={12} sm={6} key={action.label}>
-                  <Paper
-                    variant="outlined"
-                    onClick={() => {
-                      setQuickActionAnchorEl(null);
-                      navigate(action.path);
-                    }}
+          <Divider />
+          <Box sx={{ p: 1 }}>
+            {quickActions.map((action) => (
+              <MenuItem
+                key={action.label}
+                onClick={() => {
+                  setQuickActionAnchorEl(null);
+                  navigate(action.path);
+                }}
+                sx={{ borderRadius: 2, py: 1.25, px: 1.25 }}
+              >
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  alignItems="center"
+                  sx={{ width: "100%" }}
+                >
+                  <Avatar
+                    variant="rounded"
                     sx={{
-                      p: 1.5,
-                      borderRadius: 3,
-                      cursor: "pointer",
-                      borderColor: "#e2e8f0",
-                      transition: "all .18s ease",
-                      "&:hover": {
-                        borderColor: "#93c5fd",
-                        bgcolor: "#f8fbff",
-                        transform: "translateY(-1px)",
-                      },
+                      width: 36,
+                      height: 36,
+                      borderRadius: 2,
+                      bgcolor: tokens.accentSoft,
+                      color: tokens.accent,
                     }}
                   >
-                    <Stack direction="row" spacing={1.25} alignItems="center">
-                      <Avatar
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: "#eff6ff",
-                          color: "#2563eb",
-                        }}
-                      >
-                        {action.icon}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            fontWeight: 700,
-                            color: "#0f172a",
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          {action.label}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#64748b" }}>
-                          Open now
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
+                    {action.icon}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: 14,
+                        color: tokens.text,
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {action.label}
+                    </Typography>
+                    <Typography sx={{ fontSize: 12, color: tokens.muted }}>
+                      {action.description}
+                    </Typography>
+                  </Box>
+                  <ChevronRight fontSize="small" sx={{ color: tokens.subtle }} />
+                </Stack>
+              </MenuItem>
+            ))}
           </Box>
         </Menu>
       </Box>

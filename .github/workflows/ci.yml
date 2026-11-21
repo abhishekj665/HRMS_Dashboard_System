@@ -31,8 +31,8 @@ jobs:
         run: npm ci
         working-directory: ./server
 
-      - name: Test server
-        run: npm test
+      - name: Test server with coverage
+        run: npm test -- --coverage
         working-directory: ./server
 
       # Client

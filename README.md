@@ -13,7 +13,9 @@ This repository is focused on practical, production-style HR workflows:
 - leave policy, leave balance, and leave approval workflows
 - asset allocation and request handling
 - expense submission and approval
-- recruitment pipelines from requisition to offer
+- recruitment pipelines from requisition to offer, including employee applications and referrals
+- role-protected dashboards with cross-tab session revalidation
+- API rate limits for standard and authentication requests
 - realtime request updates using Socket.IO
 
 ## Default Credentials
@@ -49,6 +51,7 @@ When a new organization is registered through the organization onboarding flow, 
 - [User Roles](#user-roles)
 - [Tech Stack](#tech-stack)
 - [System Architecture](#system-architecture)
+- [High-Level Design](#high-level-design)
 - [Folder Structure](#folder-structure)
 - [Frontend Routes](#frontend-routes)
 - [Backend Modules](#backend-modules)
@@ -57,6 +60,7 @@ When a new organization is registered through the organization onboarding flow, 
 - [Local Development Setup](#local-development-setup)
 - [Database Notes](#database-notes)
 - [Available Scripts](#available-scripts)
+- [Continuous Integration](#continuous-integration)
 - [Authentication and Security](#authentication-and-security)
 - [Realtime Communication](#realtime-communication)
 - [Recent Project Updates](#recent-project-updates)
@@ -96,10 +100,12 @@ The system currently includes modules for:
 
 ### Authentication and Session Management
 
-- user signup with OTP verification
+- OTP verification for account access
 - login with JWT-based cookie session
 - logout and current-user session check
-- role-protected routes for admin, manager, and user access
+- profile hydration after login so the header immediately shows the account name and avatar
+- protected admin, manager, and employee route groups
+- cross-tab session revalidation when another tab logs in or logs out
 
 ### Employee Administration
 
@@ -144,6 +150,9 @@ The system currently includes modules for:
 - collect interview feedback
 - move candidates across hiring stages
 - generate and accept offers
+- allow employees and managers to apply to active internal and external jobs
+- allow employees and managers to refer candidates to active internal and external jobs
+- create candidate, application, and referral records for employee referrals and email candidates a profile-received confirmation
 
 ### Public Careers Experience
 
@@ -163,6 +172,7 @@ The platform is now structured as a multi-tenant HRMS system.
 - major business entities carry `tenantId` for data isolation
 - tenant-aware helpers such as `requireTenantId`, `getScopedWhere`, and `assertSameTenant` are used across services
 - public recruitment routes support organization-aware career pages using organization slug-based URLs
+- employee applications and referrals are scoped to the employee's tenant, require an active job with remaining headcount, and start at its default hiring stage
 - Socket.IO rooms are tenant-aware for admin, manager, and user notifications
 
 ### Tenant-Aware Modules
@@ -188,9 +198,9 @@ Admins have the highest level of operational control in the system for their own
 
 Managers can supervise team-level operations including users assigned to them, attendance review, leave request decisions, asset requests, expenses, and recruitment-related responsibilities.
 
-### User
+### Employee
 
-Standard users can access their own attendance, leave, assets, expenses, and profile/account-related flows.
+Employees can access their own attendance, leave, assets, expenses, profile, and internal recruitment pages. Frontend route guards recognize the `employee` role and the legacy `user` role value.
 
 ### Candidate
 
@@ -263,12 +273,15 @@ Client UI
 ## Folder Structure
 
 ```text
-Authentication_Security/
+HRMS_Dashboard_System/
+|-- docs/
+|   \-- HLD.svg
 |-- client/
 |   |-- public/
 |   |-- src/
 |   |   |-- assets/
 |   |   |-- components/
+|   |   |   \-- routing/ProtectedRoute.jsx
 |   |   |-- pages/
 |   |   |   |-- AdminPages/
 |   |   |   |-- Auth/
@@ -334,6 +347,14 @@ Authentication_Security/
 - `server/src/middlewares/` auth and validation middleware
 - `server/src/utils/tenant.utils.js` tenant-scoping utilities
 
+## High-Level Design
+
+The production-style system diagram covers the browser, role-aware frontend routes, Express API middleware, tenant-scoped services, MySQL, external providers, realtime traffic, and CI.
+
+![HRMS Dashboard System high-level design](docs/HLD.svg)
+
+See [docs/HLD.svg](docs/HLD.svg) for the full-size architecture diagram.
+
 ## Frontend Routes
 
 The frontend uses React Router and currently exposes major screens such as:
@@ -342,6 +363,7 @@ The frontend uses React Router and currently exposes major screens such as:
 
 - `/`
 - `/login`
+- `/forgot`
 - `/organization/register`
 - `/careers`
 - `/careers/:orgSlug/:slug`
@@ -350,10 +372,13 @@ The frontend uses React Router and currently exposes major screens such as:
 
 ### User Dashboard
 
-- `/home/asset`
-- `/home/expense`
-- `/home/attendance`
-- `/home/leave-management`
+- `/user/dashboard`
+- `/user/asset`
+- `/user/expense`
+- `/user/attendance`
+- `/user/leave-management`
+- `/user/profile`
+- `/user/job-posts`
 
 ### Admin Dashboard
 
@@ -374,16 +399,21 @@ The frontend uses React Router and currently exposes major screens such as:
 
 ### Manager Dashboard
 
-- `/manager/dashboard/assets`
-- `/manager/dashboard/users`
-- `/manager/dashboard/requests`
-- `/manager/dashboard/attendance/request`
-- `/manager/dashboard/attendance/me`
-- `/manager/dashboard/expenses`
-- `/manager/dashboard/leave-requests`
-- `/manager/dashboard/job-requisition`
-- `/manager/dashboard/leave/management`
-- `/manager/dashboard/interviews`
+- `/manager/dashboard`
+- `/manager/assets`
+- `/manager/users`
+- `/manager/requests`
+- `/manager/attendance/request`
+- `/manager/attendance/me`
+- `/manager/expenses`
+- `/manager/leave-requests`
+- `/manager/job-posts`
+- `/manager/job-requisition`
+- `/manager/leave/management`
+- `/manager/interviews`
+- `/manager/profile`
+
+Protected dashboard routes redirect signed-out users to `/login`. Authenticated users who open a route for another role are redirected to their own dashboard.
 
 ## Backend Modules
 
@@ -398,6 +428,8 @@ Major backend route groups mounted in `server/src/app.js`:
 - `/attendance-policy`
 - `/lms`
 - `/recruitment`
+- `/payment`
+- `/subscription`
 - `/organization`
 - `/department`
 
@@ -405,7 +437,7 @@ Major backend route groups mounted in `server/src/app.js`:
 
 #### Auth Module
 
-Handles signup, login, OTP verification, logout, and session inspection.
+Handles login, OTP verification, logout, session inspection, access-token refresh, and password recovery. Login, OTP, and recovery endpoints use a stricter rate limit.
 
 #### User Module
 
@@ -425,7 +457,11 @@ Handles leave balances, leave types, leave policies, and leave-related workflows
 
 #### Recruitment Module
 
-Handles requisitions, job postings, applications, candidates, interviews, interview feedback, stage progression, and offers.
+Handles requisitions, job postings, applications, candidates, interviews, interview feedback, stage progression, offers, and referrals. Employee/manager apply and referral endpoints support both internal and external visibility, create records in the standard hiring pipeline, and validate active status, expiration, tenant, and headcount.
+
+#### Request Protection
+
+Applies a shared standard request budget to API traffic and a separate stricter budget to authentication and account-recovery endpoints. The payment webhook is excluded from the standard browser request limit.
 
 #### Organization Module
 
@@ -443,11 +479,14 @@ This section is intentionally high-level so a visitor can understand the shape o
 
 Base path: `/auth`
 
-- `POST /auth/signup`
 - `POST /auth/login`
 - `POST /auth/verify`
 - `POST /auth/logout`
 - `GET /auth/me`
+- `POST /auth/access_token`
+- `POST /auth/forgot_password`
+- `POST /auth/reset_password`
+- `POST /auth/resend_otp`
 
 ### Organization Endpoints
 
@@ -509,6 +548,15 @@ Base path: `/recruitment`
 - interview feedback
 - offer generation
 - offer acceptance
+
+Employee and manager job-post actions:
+
+- `GET /recruitment/internal/jobs`
+- `GET /recruitment/internal/jobs/:slug`
+- `POST /recruitment/internal/jobs/apply/:slug` (multipart form with a `resume`)
+- `POST /recruitment/internal/jobs/referral/:slug` (candidate details and a `resume`)
+
+These authenticated actions accept active internal or external postings. Public candidate applications use `POST /recruitment/application/apply/:orgSlug/:slug`.
 
 ### Department Examples
 
@@ -627,7 +675,14 @@ From `server/package.json`:
 npm run dev
 npm start
 npm test
+npm test -- --coverage
 ```
+
+## Continuous Integration
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs on pushes and pull requests to `main`. It installs dependencies with `npm ci`, runs the server Jest suite with coverage thresholds, and builds the client using Node.js 22.
+
+Coverage reports are generated under `server/coverage/` and are git-ignored. Jest enforces per-file coverage thresholds for the tested recruitment, rate-limiting, validation, and tenant-scope modules.
 
 ## Authentication and Security
 
@@ -636,6 +691,9 @@ The project currently uses several security-related controls:
 - JWT-based authentication
 - HTTP-only cookie session storage
 - role-based access middleware
+- client-side protected route groups for admin, manager, and employee roles
+- server-side request rate limiting: 300 requests per IP per 15 minutes for standard API traffic and 12 requests per IP per 15 minutes for authentication and recovery attempts
+- cross-tab session revalidation after login/logout and when a protected tab regains focus
 - OTP verification for critical auth flows
 - IP logging on login
 - IP and user blocking capabilities
@@ -649,6 +707,8 @@ The project currently uses several security-related controls:
 - cross-origin requests are enabled for trusted frontend origins
 - production deployments should run over HTTPS
 - tenant-aware service checks help prevent cross-organization access
+- the standard API rate limiter skips the payment webhook; authentication routes have a separate, stricter limit
+- the rate limiter currently uses an in-memory store per Node.js process; multiple API replicas require a shared store to enforce a common quota
 
 ## Realtime Communication
 
@@ -672,6 +732,11 @@ Supported events in the current implementation include:
 - added payment module endpoints under `/payment` (including webhook handling)
 - added subscription module endpoints under `/subscription`
 - expanded recruitment tracking with `Referral` and `InterviewAuditLog` entities
+- completed employee job application and referral flows for internal and external postings, including candidate profile creation, hiring-stage assignment, referral attribution, and candidate email confirmation
+- added centralized role-based frontend route protection and cross-tab session refresh
+- added standard and auth-specific API rate limiting
+- added recruitment, validation, tenant utility, and rate-limit tests with CI coverage thresholds
+- replaced the recruitment-only ER text with the project HLD at [`docs/HLD.svg`](docs/HLD.svg)
 - continued tenant-aware modeling with `tenantId` on latest recruitment entities
 - maintained organization-scoped realtime and API access patterns across new modules
 
@@ -686,12 +751,12 @@ Supported events in the current implementation include:
 
 ## Current Limitations
 
-- no automated test suite is configured yet
 - no root license is defined yet
 - no `.env.example` files are included yet
 - API request and response examples are not documented yet
 - setup instructions do not yet include seed/demo data for multiple organizations
 - organization onboarding documentation can be expanded further with payload examples
+- the in-memory request limiter does not share quotas between multiple backend instances
 
 ## Roadmap
 
@@ -700,7 +765,8 @@ Supported events in the current implementation include:
 - add screenshots of admin, manager, and user dashboards
 - add screenshots for the organization registration flow
 - add seed scripts for demo users, policies, and organizations
-- add automated tests for auth and core HR workflows
+- expand automated tests to remaining legacy HR services and auth workflows
+- add a shared rate-limit store before horizontally scaling the backend
 - add deployment guides for frontend and backend
 - expand documentation around tenant lifecycle and organization administration
 

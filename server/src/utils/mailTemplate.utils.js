@@ -1,5 +1,21 @@
 import { env } from "../config/env.js";
 
+const escapeEmailHtml = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+})[char]);
+
+export const internalReferralEmailTemplate = ({ candidateName, jobTitle, companyName }) => `<!doctype html>
+<html><body style="margin:0;padding:24px;background:#f5f6f8;font-family:Arial,sans-serif;color:#1f2937">
+  <table role="presentation" style="max-width:600px;margin:auto;background:#fff;border-radius:8px;padding:28px">
+    <tr><td><h2 style="color:#1d4ed8">Your profile has been created</h2>
+      <p>Hello ${escapeEmailHtml(candidateName)},</p>
+      <p>${escapeEmailHtml(companyName)} received your profile through an employee referral for <strong>${escapeEmailHtml(jobTitle)}</strong>.</p>
+      <p>We will review your profile and contact you if a role matches your experience.</p>
+      <p style="margin-top:28px">Regards,<br/>${escapeEmailHtml(companyName)} Talent Team</p>
+    </td></tr>
+  </table>
+</body></html>`;
+
 export const expenseMailToManagerTemplate = (data) => {
   const {
     managerName,

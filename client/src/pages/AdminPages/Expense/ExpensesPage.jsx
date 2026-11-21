@@ -20,7 +20,6 @@ import { Close } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 
 import { socket } from "../../../socket";
 import {
@@ -38,16 +37,12 @@ const statusColor = (status) => {
 const ExpensesPage = () => {
   const [expenses, setExpenses] = useState([]);
 
-  const { user } = useSelector((state) => state.auth);
-
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
 
   const [openReceipt, setOpenReceipt] = useState(false);
   const [receiptUrl, setReceiptUrl] = useState(null);
-
-  const role = user?.role;
 
   const fetchExpenses = async () => {
     const response = await getAllExpenses();
@@ -92,10 +87,6 @@ const ExpensesPage = () => {
       socket.off("expenseUpdated", fetchExpenses);
     };
   }, []);
-
-  if (role !== "admin") {
-    return <h1>You don't have permission for this dashboard</h1>;
-  }
 
   return (
     <div className="p-2">

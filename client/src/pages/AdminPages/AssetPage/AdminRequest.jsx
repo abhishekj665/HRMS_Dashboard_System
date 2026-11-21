@@ -19,8 +19,6 @@ import {
   rejectRequest,
 } from "../../../services/AdminService/requestService";
 
-import { useSelector } from "react-redux";
-
 import { socket } from "../../../socket";
 
 const statusColor = (status) => {
@@ -32,13 +30,9 @@ const statusColor = (status) => {
 const AdminRequest = () => {
   const [requestData, setRequestsData] = useState([]);
 
-  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
-
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
-
-  const role = user?.role;
 
   const fetchRequestsData = async () => {
     const response = await getRequestData();
@@ -97,10 +91,6 @@ const AdminRequest = () => {
       socket.off("requestUpdated", handleRequestUpdate);
     };
   }, []);
-
-  if (role != "admin") {
-    return <h1>You don't have permission for this dashboard</h1>;
-  }
 
   return (
     <div className="p-2">

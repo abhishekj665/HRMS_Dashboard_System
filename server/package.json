@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "jest --passWithNoTests",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:plans": "node src/scripts/seedPlans.js",
@@ -51,6 +51,50 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "transform": {}
+    "transform": {},
+    "coverageThreshold": {
+      "./src/middlewares/rateLimit.middleware.js": {
+        "branches": 70,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/services/recruitment/internalJobs.service.js": {
+        "branches": 65,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/services/recruitment/application.service.js": {
+        "branches": 60,
+        "functions": 85,
+        "lines": 80,
+        "statements": 80
+      },
+      "./src/controllers/recruitment/internalJob.controller.js": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/validators/internalReferral.validator.js": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/utils/tenant.utils.js": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/utils/Error.utils.js": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
   }
 }

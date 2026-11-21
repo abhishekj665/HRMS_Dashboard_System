@@ -97,6 +97,7 @@ export const registerApplication = async (orgSlug, slug, data) => {
     });
 
     if (application) {
+      await transaction.rollback();
       return {
         success: false,
         message: "You have already applied for this job",
@@ -146,6 +147,85 @@ export const registerApplication = async (orgSlug, slug, data) => {
   } catch (error) {
     await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+// Internal employee applications enter the same Application/HiringStage pipeline as public applications.
+export const registerInternalApplication = async (user, slug, data) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const tenantId = requireTenantId(user);
+    const jobPosting = await JobPosting.findOne({
+      where: {
+        tenantId,
+        slug,
+        visibility: { [Op.in]: ["INTERNAL", "EXTERNAL"] },
+        isActive: true,
+        [Op.or]: [{ expiresAt: { [Op.gt]: new Date() } }, { expiresAt: { [Op.is]: null } }],
+      },
+      include: [{ model: JobRequisition, as: "requisition", where: { headCount: { [Op.gt]: 0 } } }],
+      transaction,
+    });
+    if (!jobPosting) throw new ExpressError(STATUS.NOT_FOUND, "No open internal job found");
+
+    const email = String(data.email || "").trim().toLowerCase();
+    const candidateValues = {
+      tenantId,
+      firstName: String(data.firstName || "").trim(),
+      lastName: String(data.lastName || "").trim(),
+      email,
+      contact: String(data.contact || "").replace(/\D/g, ""),
+      resumeUrl: data.resumeUrl,
+      currentCompany: data.currentCompany,
+      totalExperience: Number(data.totalExperience),
+      currentCTC: Number(data.currentCTC),
+      expectedCTC: Number(data.expectedCTC),
+      noticePeriodDays: Number(data.noticePeriodDays),
+      linkedInUrl: data.linkedInUrl,
+      portfolioUrl: data.portfolioUrl,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      country: data.country,
+      source: "INTERNAL_EMPLOYEE",
+    };
+    let candidate = await Candidate.findOne({ where: { tenantId, email }, transaction });
+    if (candidate) await candidate.update(candidateValues, { transaction });
+    else candidate = await Candidate.create(candidateValues, { transaction });
+
+    const duplicate = await Application.findOne({
+      where: { tenantId, candidateId: candidate.id, jobPostingId: jobPosting.id },
+      transaction,
+    });
+    if (duplicate) throw new ExpressError(STATUS.NOT_ACCEPTABLE, "You have already applied for this job");
+
+    const firstStage = await HiringStage.findOne({
+      where: { tenantId, jobPostingId: jobPosting.id, isDefault: true },
+      transaction,
+    });
+    if (!firstStage) throw new ExpressError(STATUS.BAD_REQUEST, "Hiring stage not configured");
+    const application = await Application.create({
+      tenantId,
+      candidateId: candidate.id,
+      jobPostingId: jobPosting.id,
+      currentStageId: firstStage.id,
+      referredByEmployeeId: user.id,
+      status: "ACTIVE",
+    }, { transaction });
+
+    await transaction.commit();
+    const html = jobApplicationReceivedEmailTemplate({
+      firstName: candidate.firstName,
+      companyName: "Orvane Digitals",
+      jobTitle: jobPosting.title,
+    });
+    sendMail(candidate.email, "Application Received - Orvane Digitals", html).catch((error) =>
+      console.error("INTERNAL APPLICATION EMAIL ERROR:", error.message),
+    );
+    return { success: true, data: application, message: "Application submitted successfully" };
+  } catch (error) {
+    if (!transaction.finished) await transaction.rollback();
+    throw new ExpressError(error.statusCode || STATUS.BAD_REQUEST, error.message);
   }
 };
 
@@ -292,7 +372,7 @@ export const getApplicationById = async (id, user) => {
       message: "Application fetched successfully",
     };
   } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+    throw new ExpressError(error.statusCode || STATUS.BAD_REQUEST, error.message);
   }
 };
 
@@ -464,7 +544,7 @@ export const rejectApplication = async (id, user) => {
         fromStageId: currentStage.id,
         toStageId: rejectStage.id,
         changedBy: user.id,
-        chandegedByType: "ADMIN",
+          changedByType: "ADMIN",
         oldStatus: currentStage.name,
         newStatus: rejectStage.name,
       },

@@ -10,7 +10,6 @@ import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Button, Pagination, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
 
 export default function AdminIps() {
   const [page, setPage] = useState(1); // MUI Pagination is 1-based
@@ -19,9 +18,6 @@ export default function AdminIps() {
   const [searchInput, setSearchInput] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [total, setTotal] = useState(0);
-  const { user } = useSelector((state) => state.auth);
-
-  const role = user?.role;
 
   const fetchUser = async () => {
     try {
@@ -90,10 +86,6 @@ export default function AdminIps() {
   useEffect(() => {
     fetchUser();
   }, [page, limit]);
-
-  if (role == "employee") {
-    return <h1>You don't have permission for Dashboard</h1>;
-  }
 
   const uniqueIpOptions = Array.from(
     new Set(userIPs?.map((ip) => ip.ipAddress)),
