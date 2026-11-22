@@ -4,7 +4,7 @@ export const validate =
     const { error, value } = schema.validate(req[property] ?? {}, {
       abortEarly: false,
       convert: true,
-      stripUnknown: false,
+      stripUnknown: true,
     });
 
     if (error) {
