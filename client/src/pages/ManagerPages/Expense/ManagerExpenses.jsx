@@ -8,12 +8,7 @@ import {
   Paper,
   Button,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
 } from "@mui/material";
-import { Close } from "@mui/icons-material";
 
 import { useState, useEffect } from "react";
 
@@ -21,6 +16,7 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
 import { socket } from "../../../socket";
+import ExpenseReceiptPreview from "../../../components/ExpenseReceiptPreview";
 import {
   getAllExpenses,
   approveExpense,
@@ -118,7 +114,7 @@ const ManagerExpensesPage = () => {
     <div className="p-3">
       <h1 className="text-2xl font-semibold mb-4">Expense Requests</h1>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -325,49 +321,7 @@ const ManagerExpensesPage = () => {
         </div>
       )}
 
-      <Dialog
-        open={openReceipt}
-        onClose={() => setOpenReceipt(false)}
-        maxWidth="lg"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          Expense Receipt
-          <IconButton
-            onClick={() => {
-              setOpenReceipt(false);
-              setReceiptUrl(null);
-            }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent
-          sx={{
-            p: 0,
-            height: "80vh",
-          }}
-        >
-          {receiptUrl && (
-            <iframe
-              src={receiptUrl}
-              title="Expense Receipt"
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <ExpenseReceiptPreview open={openReceipt} url={receiptUrl} onClose={() => { setOpenReceipt(false); setReceiptUrl(null); }} />
     </div>
   );
 };
