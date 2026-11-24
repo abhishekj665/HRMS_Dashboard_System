@@ -23,6 +23,7 @@ import { getExpenses } from "../../services/ExpenseService/expensesService";
 import { createAccount } from "../../services/AccountService/accountService";
 
 import { socket } from "../../socket";
+import ExpenseReceiptPreview from "../../components/ExpenseReceiptPreview";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";
@@ -162,10 +163,10 @@ export default function UserExpensePage() {
       </Button>
 
       {expenses.length > 0 && (
-        <div className="mt-10 p-6">
+        <div className="mt-10 p-2 sm:p-6">
           <h2 className="text-xl font-semibold mb-4">Your Expenses</h2>
 
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -280,6 +281,12 @@ export default function UserExpensePage() {
                   }}
                 />
               </Button>
+              {formData.bill && (
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                  <span className="min-w-0 truncate" title={formData.bill.name}>{formData.bill.name}</span>
+                  <Button size="small" color="error" onClick={() => setFormData({ ...formData, bill: null })}>Remove</Button>
+                </div>
+              )}
 
               <TextField
                 label="Account PIN"
@@ -376,34 +383,11 @@ export default function UserExpensePage() {
           </div>
         </div>
       )}
-      {openPreview && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-3xl h-[85vh] rounded-xl shadow-lg flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="font-semibold text-lg">Receipt -</h2>
-              <button
-                className="text-red-500 font-semibold"
-                onClick={() => {
-                  setOpenPreview(false);
-                  setPreviewUrl(null);
-                }}
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="flex-1 p-2">
-              {previewUrl && (
-                <iframe
-                  src={previewUrl}
-                  title="Receipt Preview"
-                  className="w-full h-full rounded-md border"
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <ExpenseReceiptPreview
+        open={openPreview}
+        url={previewUrl}
+        onClose={() => { setOpenPreview(false); setPreviewUrl(null); }}
+      />
     </div>
   );
 }

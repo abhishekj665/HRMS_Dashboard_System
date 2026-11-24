@@ -102,7 +102,8 @@ export const newExpensesService = async (data, user) => {
       );
     }
 
-    if (expenseDate < new Date())
+
+    if (expenseDate > new Date())
       throw new ExpressError(STATUS.BAD_REQUEST, "Invalid Expense Date");
     const expense = await Expenses.create(
       {
